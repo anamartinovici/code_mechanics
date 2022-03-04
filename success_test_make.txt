@@ -1,0 +1,1 @@
+ 'make works just fine'
