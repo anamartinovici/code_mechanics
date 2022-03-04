@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
-"""
-Spyder Editor
 
-This is a temporary script file.
-"""
+'''
+RQ1
+'''
+
+'''
+install libraries
+'''
 
 # pip install mne matplotlib mne_bids
+
+'''
+import libraries
+'''
 
 import mne
 # import pandas as pd
@@ -31,6 +38,10 @@ import numpy as np
 #             raise
 
 '''
+test procedure on single participant
+'''
+
+'''
 load preprocessed data
 '''
 
@@ -53,84 +64,93 @@ baseline correction & epoch selection
 ####### TO DECIDE #######
 
 
-epochs.equalize_event_counts() # drops 40 epochs from 'natural' condition, to have equal epoch number as `manmade`
+epochs, dropped_epochs = epochs.equalize_event_counts() # drops 40 epochs from 'natural' condition, to have equal epoch number as `manmade`
 
 '''
 visualization
 '''
 
 ### visualize epochs
-# epochs.plot(n_epochs=10) # not a very clear visualization
 
-evokeds = dict(manmade = list(epochs['manmade'].iter_evoked()),
-               natural = list(epochs['natural'].iter_evoked()))
+# evokeds = dict(manmade = list(epochs['manmade'].iter_evoked()),
+               # natural = list(epochs['natural'].iter_evoked()))
 
 # picks = ['P9', 'P7', 'P5', 'P3', 'P1', 'Pz', 'P2', 'P4', 'P6', 'P8', 'P10', 'PO7', 'PO3', 'O1', 'POz', 'Oz', 'Iz', 'PO4', 'PO8', 'O2'] # channels
 # mne.viz.plot_compare_evokeds(evokeds, combine = 'mean', picks = picks)
 
-
-
-
-
-
-
-manmade_evoked = manmade_epochs.average()
-natural_evoked = natural_epochs.average()
-
-mne.viz.plot_compare_evokeds(dict(manmade = manmade_evoked, natural = natural_evoked),
-                             legend='upper left', show_sensors='lower right')
-
-
-
-
-evoked_diff = mne.combine_evoked([manmade_evoked, natural_evoked], weights=[1, -1])
-evoked_diff.pick_types(eeg = True).plot_topo(color = 'r', legend = True)
-
-
-
-
-
+# select epochs
 manmade_epochs = epochs['manmade'] # `manmade` epochs only
 natural_epochs = epochs['natural'] # 'natural' epochs only
 
-# trial-averaged epochs
-avg_manmade_epochs = manmade_epochs.average() # `manmade`
-avg_natural_epochs = natural_epochs.average() # `natural` 
+# trial-averaged evoked potentials
+manmade_evoked = manmade_epochs.average() # `manmade`
+natural_evoked = natural_epochs.average() # 'natural'
+
+# Global Field Power
+# mne.viz.plot_compare_evokeds(dict(manmade = manmade_evoked, natural = natural_evoked),
+#                              picks = 'eeg',
+#                              legend='upper left', show_sensors='lower right')
 
 ## inspect trial-averaged epochs
-# butterfly plots
-butterfly_avg_manmade_epochs = avg_manmade_epochs.plot(spatial_colors = True) # `manmade`
-butterfly_avg_natural_epochs = avg_natural_epochs.plot(spatial_colors = True) # `natural`
-# topographies
-topomap_avg_manmade_epochs = avg_manmade_epochs.plot_topomap(times = np.arange(0, 0.55, 0.05)) # `manmade`
-topomap_avg_natural_epochs = avg_natural_epochs.plot_topomap(times = np.arange(0, 0.55, 0.05)) # `natural`
+# # butterfly plots
+# butterfly_manmade_evoked = manmade_evoked.plot(spatial_colors = True) # `manmade`
+# butterfly_natural_evoked = natural_evoked.plot(spatial_colors = True) # `natural`
+# # topographies
+# topomap_manmade_evoked = manmade_evoked.plot_topomap(title = 'manmade', times = np.arange(0, 0.55, 0.05)) # `manmade`
+# topomap_natural_evoked = natural_evoked.plot_topomap(title = 'natural', times = np.arange(0, 0.55, 0.05)) # `natural`
 # joint butterfly + topographies
-butterfly_topomap_avg_manmade_epochs = avg_manmade_epochs.plot_joint(title = 'manmade', times = [0, 0.08, 0.125, 0.18]) # `manmade`
-butterfly_topomap_avg_natural_epochs = avg_natural_epochs.plot_joint(title = 'natural', times = [0, 0.08, 0.125, 0.18]) # `natural`
-
-
+butterfly_topomap_manmade_evoked = manmade_evoked.plot_joint(title = 'manmade', times = [0, 0.08, 0.125, 0.18]) # `manmade`
+butterfly_topomap_natural_evoked = natural_evoked.plot_joint(title = 'natural', times = [0, 0.08, 0.125, 0.18]) # `natural`
 
 # trial-averaged epochs
-avg_all_epochs = epochs.average() # all conditions
+all_evoked = epochs.average() # all conditions
 # joint butterfly + topographies
-butterfly_topomap_avg_all_epochs = avg_all_epochs.plot_joint(title = 'all epochs', times = [0, 0.08, 0.125, 0.18]) # all conditions
+butterfly_topomap_all_evoked = all_evoked.plot_joint(title = 'all epochs', times = [0, 0.08, 0.125, 0.18]) # all conditions
 
+# trial-averaged difference between conditions
+evoked_diff = mne.combine_evoked([manmade_evoked, natural_evoked], weights = [1, -1])
+butterfly_topomap_evoked_diff = evoked_diff.plot_joint(title = 'condition difference', times = [0, 0.08, 0.125, 0.18]) # all conditions
 
+'''
+analysis
+'''
 
-
-
-
-
-### analysis
 times = epochs.times # extract time samples
-data_all = epochs.get_data() # extract data
+all_data = epochs.get_data() # extract data
 
 time_window = np.logical_and(0 <= times, times <= 0.3) # time window (0-300 ms --> 0-0.3 sec)
-data = np.mean(data_all[:, :, time_window], axis = 2) # data in specified time window
+data_permute = np.mean(all_data[:, :, time_window], axis = 2) # signal in specified time window
 
-n_permutations = 1000 # number of permutations (should be at least 1000)
+n_perm = 1000 # number of permutations (should be at least 1000)
 
-T0, p_values, H0 = mne.stats.permutation_t_test(data, n_permutations, n_jobs = 1)
+T0, p_values, H0 = mne.stats.permutation_t_test(data_permute, n_perm, n_jobs = 1)
+
+
+###### TO DO ######
+# select electrodes in data_permute based on the labels in epochs.info
+# goal: only 
+
+
+
+
+tempor = arr_a[arr_a == arr_b]
+
+
+
+
+
+
+
+
+arr_a = np.array(['1m_nd', '2m_nd', '1m_4wk'], dtype='<U15')
+arr_b =  np.array('1m_nd')
+tempor = arr_a[arr_a == arr_b]
+
+
+
+picks = mne.pick_types(epochs.info, eeg = True, exclude = '')
+
+
 
 
 picks = mne.pick_types(epochs.info, eeg = True, exclude = 'bads')
@@ -166,33 +186,4 @@ mne.viz.plot_compare_evokeds(evokeds, combine = 'mean', picks = picks)
 
 
 
-
-
-t_vals, clusters, p_vals, h0 = mne.stats.permutation_cluster_test([condition1, condition2], out_type='mask', seed=111)
-
-# Visualize
-## <string>:1: RuntimeWarning: Ignoring argument "tail", performing 1-tailed F-test
-fig, (ax0, ax1, ax2) = plt.subplots(nrows=3, ncols=1, sharex=True)
-
-
-
-
-
-
-### analysis
-data_all = epochs.get_data() # extract data
-times = epochs.times # extract time samples
-
-time_window = np.logical_and(0.3 <= times, times <= 0.5) # time window (300-500 ms --> 0.3-0.5 sec)
-data = np.mean(data_all[:, :, time_window], axis = 2) # data in specified time window
-
-n_permutations = 50 # number of permutations (should be at least 1000)
-
-T0, p_values, H0 = permutation_t_test(data, n_permutations, n_jobs=1)
-
-significant_sensors = picks[p_values <= 0.05]
-significant_sensors_names = [raw.ch_names[k] for k in significant_sensors]
-
-print("Number of significant sensors : %d" % len(significant_sensors))
-print("Sensors names : %s" % significant_sensors_names)
 
