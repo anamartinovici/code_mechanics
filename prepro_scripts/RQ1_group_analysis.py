@@ -35,7 +35,6 @@ filenames = glob.glob(preproc_path + '/*.fif') # list of .fif files
 
 conditions = ['manmade', 'natural'] # condition names
 sub_pattern = re.compile(r"\bsub-0\w*-\b") # regex pattern for plot titles 
-topo_times = [0, 0.08, 0.125, 0.18] # time points for topographies
 electrodes_graph = ['P9', 'P7', 'P5', 'P3', 'P1', 'Pz', 'P2', 'P4', 'P6', 'P8', 'P10', 'PO7', 'PO3', 'O1', 'POz', 'Oz', 'Iz', 'PO4', 'PO8', 'O2'] # region of interest for plots
 
 '''
@@ -56,7 +55,8 @@ dropped_epochs = {} # dropped epochs per dataset
 
 for i in range(len(filenames)):
     epochs_equal[i], dropped_epochs[i] = epochs[i].equalize_event_counts() # drop epochs from condition with more data
-    # WE LOSE A LOT OF DATA! Double-check if this is still necessary after fixing preprocessing pipeline!
+    
+# WE LOSE A LOT OF DATA! Double-check if this is still necessary after fixing preprocessing pipeline!
 
 '''
 create trial-averaged evoked data
@@ -65,32 +65,39 @@ create trial-averaged evoked data
 evoked_equal = {} # store trial-averaged evoked data
 
 for i in range(len(filenames)):
-    evoked_equal[i] = {c:epochs_equal[i][c].average() for c in conditions}       
-
+    evoked_equal[i] = {c:epochs_equal[i][c].average() for c in conditions}
+         
 '''
 plots
 '''  
 
 # plot electrode montage
-epochs_equal[1].plot_sensors(ch_type = 'eeg', show_names = True) 
+epochs_equal[0].plot_sensors(ch_type = 'eeg', show_names = True) 
 
-# plot trial-averaged evoked data, separately for each participant and condition
-for i in range(len(filenames)):
-    {evoked_equal[i][c].plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + c) for c in conditions}
+# # plot trial-averaged evoked data, separately for each participant and condition
+# # topo_times = [0, 0.08, 0.125, 0.18] # time points for topographies
+# topo_times = np.arange(0, 0.5, 0.05) # time points for topographies
+# for i in range(len(filenames)):
+#     {evoked_equal[i][c].plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + c) for c in conditions}
 
  
+# evoked_equal = dict(manmade = list(epochs_equal['manmade'].iter_evoked()),
+#                     natural = list(epochs_equal['natural'].iter_evoked()))
  
- 
- 
+
 color_dict = {'manmade':'blue', 'natural':'red'}
 linestyle_dict = {'manmade':'-', 'natural':'--'}
 
 for i in range(len(filenames)):
+    # calculate confidence intervals
+    evoked_equal[i] = dict(manmade = list(epochs_equal[i]['manmade'].iter_evoked()),
+                        natural = list(epochs_equal[i]['natural'].iter_evoked()))  
+    # plot
     mne.viz.plot_compare_evokeds(evoked_equal[i],
                                  combine = 'mean',
-                                 legend = 'lower right',
+                                 legend = 'lower left',
                                  picks = electrodes_graph, 
-                                 show_sensors = 'upper right',
+                                 show_sensors = 'upper left',
                                  colors = color_dict,
                                  linestyles = linestyle_dict,
                                  title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + conditions[0] + '-' + conditions[1]
@@ -103,32 +110,27 @@ for i in range(len(filenames)):
 ############################################
 
 
+tempor = {}
+
+for i in range(len(epochs)):
+    tempor[i] = evoked_equal[i].average() 
+    
+    
+    
 
 
+evoked_equal.average
 
 
-
-
-
-epochs_equal[1].plot_sensors(ch_type = 'eeg', show_names = True) # show electrode montage
-
-topo_times = [0, 0.08, 0.125, 0.18] # time points for topographies
-
-# define region of interest
-electrodes_graph = ['P9', 'P7', 'P5', 'P3', 'P1', 'Pz', 'P2', 'P4', 'P6', 'P8', 'P10', 'PO7', 'PO3', 'O1', 'POz', 'Oz', 'Iz', 'PO4', 'PO8', 'O2']
-
-# color_dict = {'manmade':'blue', 'natural':'yellow'}
-# linestyle_dict = {'manmade':'-', 'natural':'--'}
-
-mne.viz.plot_compare_evokeds(evoked_equal[i],
+mne.viz.plot_compare_evokeds(evoked_equal[i].average,
                              combine = 'mean',
                              legend = 'lower right',
-                             picks = electrodes_graph,
-                             show_sensors = 'upper right',
-                             # colors = color_dict,
-                             # linestyles = linestyle_dict,
-                             title = 'collapsed'
-                            )
+                             picks = electrodes_graph, 
+                             show_sensors = 'upper left',
+                             colors = color_dict,
+                             linestyles = linestyle_dict,
+                             title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + conditions[0] + '-' + conditions[1]
+                             )
 
 
 
@@ -140,37 +142,6 @@ mne.viz.plot_compare_evokeds(evoked_equal[i],
 
 
 
-
-
-
-
-
-
-'''
-load preprocessed data
-'''
-
-preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/eeg_BIDS/' # directory with preprocessed files
-
-filenames = glob.glob(preproc_path + '/*.fif') # list of .fif files
-
-epochs = [mne.read_epochs(f, preload = False) for f in filenames]
-
-channels = mne.pick_types(epochs[1].info, eeg = True, exclude = ['M1', 'M2', 'VEOG', 'HEOG']) # select scalp electrodes only
-
-'''
-modify data
-'''
-
-####### equalize epochs across conditions #######
-epochs_equal = {}
-dropped_epochs = {} # dropped epochs per dataset
-
-for i in range(len(epochs)): # loop through files
-    epochs_equal[i], dropped_epochs[i] = epochs[i].equalize_event_counts() # drop epochs from condition with more data
-    # WE LOSE A LOT OF DATA! Double-check if this is still necessary after fixing preprocessing pipeline!
-
-#################################################
 
 
 
