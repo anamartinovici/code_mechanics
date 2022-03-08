@@ -34,8 +34,65 @@ preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/eeg_BIDS/' # di
 filenames = glob.glob(preproc_path + '/*.fif') # list of .fif files
 
 conditions = ['manmade', 'natural'] # condition names
+
+# plot parameters
 sub_pattern = re.compile(r"\bsub-0\w*-\b") # regex pattern for plot titles 
-electrodes_graph = ['P9', 'P7', 'P5', 'P3', 'P1', 'Pz', 'P2', 'P4', 'P6', 'P8', 'P10', 'PO7', 'PO3', 'O1', 'POz', 'Oz', 'Iz', 'PO4', 'PO8', 'O2'] # region of interest for plots
+electrodes_graph = ['P9', 'P7', 'P5', 'P3', 'P1', 'Pz', 'P2', 'P4', 'P6', 'P8', # region of interest for plots
+                    'P10', 'PO7', 'PO3', 'O1', 'POz', 'Oz', 'Iz', 'PO4', 'PO8', 'O2'] 
+# # topo_times = [0, 0.08, 0.125, 0.18] # time points for topographies
+topo_times = np.arange(0, 0.5, 0.05) # time points for topographies
+color_dict = {'manmade':'blue', 'natural':'red'} # graph: line colors
+linestyle_dict = {'manmade':'-', 'natural':'--'} # graph: line type
+
+'''
+pipeline (loop across participants)
+'''
+
+# preallocate arrays
+epochs = {} # epochs
+epochs_equal = {} # equalized epochs
+dropped_epochs = {} # dropped epochs per dataset
+evoked_equal = {} # trial-averaged evoked data
+
+for i in range(len(filenames)): # loop through files
+    epochs[i] = mne.read_epochs(filenames[i], preload = False) # load data (preload  = False or python will crash on my coomputer)
+    epochs_equal[i], dropped_epochs[i] = epochs[i].equalize_event_counts() # equalize epochs across conditions (drop epochs from condition with more data)
+    evoked_equal[i] = {c:epochs_equal[i][c].average() for c in conditions} # create trial-averaged evoked data
+    # plot trial-averaged evoked data, separately for each condition
+    {evoked_equal[i][c].plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + c) for c in conditions}  
+    # confidence intervals arond trial-averaged evoked data
+    evoked_equal[i] = dict(manmade = list(epochs_equal[i]['manmade'].iter_evoked()),
+                        natural = list(epochs_equal[i]['natural'].iter_evoked()))  
+    # compare plot
+    mne.viz.plot_compare_evokeds(evoked_equal[i],
+                                 combine = 'mean',
+                                 legend = 'lower left',
+                                 picks = electrodes_graph, 
+                                 show_sensors = 'upper left',
+                                 colors = color_dict,
+                                 linestyles = linestyle_dict,
+                                 title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + conditions[0] + '-' + conditions[1]
+                                 )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 '''
 load preprocessed epoched data
@@ -44,7 +101,7 @@ load preprocessed epoched data
 epochs = {} # preallocate array
 
 for i in range(len(filenames)): # loop through files
-    epochs[i] = mne.read_epochs(filenames[i], preload = False) # load data
+    epochs[i] = mne.read_epochs(filenames[i], preload = False) # load data (preload  = False or python will crash on my coomputer)
 
 '''
 equalize epochs across conditions
@@ -56,7 +113,7 @@ dropped_epochs = {} # dropped epochs per dataset
 for i in range(len(filenames)):
     epochs_equal[i], dropped_epochs[i] = epochs[i].equalize_event_counts() # drop epochs from condition with more data
     
-# WE LOSE A LOT OF DATA! Double-check if this is still necessary after fixing preprocessing pipeline!
+# WE LOSE A LOT OF DATA! Double-check if this is still necessary after fixing the preprocessing pipeline!
 
 '''
 create trial-averaged evoked data
@@ -72,18 +129,13 @@ plots
 '''  
 
 # plot electrode montage
-epochs_equal[0].plot_sensors(ch_type = 'eeg', show_names = True) 
+epochs_equal[2].plot_sensors(ch_type = 'eeg', show_names = True) 
 
 # # plot trial-averaged evoked data, separately for each participant and condition
 # # topo_times = [0, 0.08, 0.125, 0.18] # time points for topographies
 # topo_times = np.arange(0, 0.5, 0.05) # time points for topographies
 # for i in range(len(filenames)):
 #     {evoked_equal[i][c].plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + c) for c in conditions}
-
- 
-# evoked_equal = dict(manmade = list(epochs_equal['manmade'].iter_evoked()),
-#                     natural = list(epochs_equal['natural'].iter_evoked()))
- 
 
 color_dict = {'manmade':'blue', 'natural':'red'}
 linestyle_dict = {'manmade':'-', 'natural':'--'}
