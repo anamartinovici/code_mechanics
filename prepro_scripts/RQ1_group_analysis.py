@@ -22,6 +22,10 @@ import matplotlib.pyplot as plt
 import glob
 import re
 
+from scipy.stats import ttest_ind
+from mne.channels import find_ch_adjacency, make_1020_channel_selections
+from mne.stats import spatio_temporal_cluster_test
+
 '''
 set parameters
 '''
@@ -37,30 +41,271 @@ conditions = ['manmade', 'natural'] # condition names
 
 # plot parameters
 sub_pattern = re.compile(r"\bsub-0\w*-\b") # regex pattern for plot titles 
-electrodes_graph = ['P9', 'P7', 'P5', 'P3', 'P1', 'Pz', 'P2', 'P4', 'P6', 'P8', # region of interest for plots
-                    'P10', 'PO7', 'PO3', 'O1', 'POz', 'Oz', 'Iz', 'PO4', 'PO8', 'O2'] 
-# # topo_times = [0, 0.08, 0.125, 0.18] # time points for topographies
+
+# region of interest for plots
+electrodes_graph = ['PO7', 'PO3', 'O1', 
+                    'PO4', 'PO8', 'O2',
+                    'POz', 'Oz', 'Iz']
+                    
 topo_times = np.arange(0, 0.5, 0.05) # time points for topographies
+
 color_dict = {'manmade':'blue', 'natural':'red'} # graph: line colors
 linestyle_dict = {'manmade':'-', 'natural':'--'} # graph: line type
 
 '''
-pipeline (loop across participants)
+data cleaning & visualization with one dataset
+https://mne.tools/stable/auto_tutorials/evoked/30_eeg_erp.html#sphx-glr-auto-tutorials-evoked-30-eeg-erp-py
 '''
+
+epochs = mne.read_epochs(filenames[0], preload = True).pick_types(eeg = True, exclude = ['M1', 'M2', 'VEOG', 'HEOG']) # load data, select scalp electrodes only
+
+epochs_equal, dropped_epochs = epochs.equalize_event_counts() # equalize epochs across conditions (drop epochs from condition with more data)
+
+evoked_equal_manmade = epochs_equal['manmade'].average() # evoked responses, 'manmade' condition
+evoked_equal_natural = epochs_equal['natural'].average() # evoked responses, 'natural' condition
+
+# joint plots (butterfly + topography)
+evoked_equal_manmade.plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[0], flags = 0).group(0) + conditions[0])
+evoked_equal_natural.plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[0], flags = 0).group(0) + conditions[1])
+
+# plot electrode montage
+epochs_equal.plot_sensors(ch_type = 'eeg', show_names = True) 
+
+# trial-averaged evoked responses with confidence intervals
+evokeds = dict(manmade = list(epochs_equal['manmade'].iter_evoked()),
+               natural = list(epochs_equal['natural'].iter_evoked()))
+
+# comparing conditions
+mne.viz.plot_compare_evokeds(evokeds, 
+                             combine = 'mean',
+                             legend = 'lower left',
+                             picks = electrodes_graph, 
+                             show_sensors = 'upper left',
+                             colors = color_dict,
+                             linestyles = linestyle_dict,
+                             title = re.search(sub_pattern, filenames[0], flags = 0).group(0) + conditions[0] + '-' + conditions[1]
+                             )
+
+# # difference wave
+# manmade_minus_natural = mne.combine_evoked([evoked_equal_manmade, evoked_equal_natural], weights = [1, -1])
+# manmade_minus_natural.plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[0], flags = 0).group(0) + conditions[1])
+
+# grand average
+grand_average = mne.grand_average([evoked_equal_manmade, evoked_equal_natural])
+
+'''
+stats: TFCE (threshold-free cluster enhancement)
+https://mne.tools/stable/auto_tutorials/stats-sensor-space/20_erp_stats.html#sphx-glr-auto-tutorials-stats-sensor-space-20-erp-stats-py
+'''
+
+n_perm = 50 # number of permutations
+
+
+epochs_equal_manmade = epochs_equal['manmade']
+epochs_equal_natural = epochs_equal['natural']
+
+
+# Calculate adjacency matrix between sensors from their locations
+adjacency, _ = find_ch_adjacency(epochs_equal.info, "eeg")
+
+# Extract data: transpose because the cluster test requires channels to be last
+# In this case, inference is done over items. In the same manner, we could
+# also conduct the test over, e.g., subjects.
+X = [epochs_equal_manmade.get_data().transpose(0, 2, 1),
+     epochs_equal_natural.get_data().transpose(0, 2, 1)]
+tfce = dict(start = .4, step = .4)  # ideally start and step would be smaller
+
+# Calculate statistical thresholds
+t_obs, clusters, cluster_pv, h0 = spatio_temporal_cluster_test(
+    X, 
+    threshold = tfce, 
+    n_permutations = n_perm, 
+    tail = 0, 
+    adjacency = adjacency, 
+    n_jobs = 1, 
+    seed = project_seed, 
+    out_type = 'indices', 
+    check_disjoint = False
+    )
+
+significant_points = cluster_pv.reshape(t_obs.shape).T < .05
+print(str(significant_points.sum()) + " points selected by TFCE ...")
+
+
+# We need an evoked object to plot the image to be masked
+evoked = mne.combine_evoked([epochs_equal_manmade.average(), epochs_equal_natural.average()],
+                            weights = [1, -1])  # calculate difference wave
+
+# Visualize the results
+evoked.plot_image(mask = significant_points, show_names = "all", titles = conditions[0] + '-' + conditions[1])
+
+
+'''
+stats: TFCE (threshold-free cluster enhancement)
+https://mne.tools/stable/auto_tutorials/stats-sensor-space/20_erp_stats.html#sphx-glr-auto-tutorials-stats-sensor-space-20-erp-stats-py
+'''
+
+
+
+
+
+
+data = epochs.get_data()
+times = epochs.times
+
+temporal_mask = np.logical_and(0.04 <= times, times <= 0.06)
+data = np.mean(data[:, :, temporal_mask], axis=2)
+
+n_permutations = 50000
+T0, p_values, H0 = permutation_t_test(data, n_permutations, n_jobs=1)
+
+significant_sensors = picks[p_values <= 0.05]
+significant_sensors_names = [raw.ch_names[k] for k in significant_sensors]
+
+print("Number of significant sensors : %d" % len(significant_sensors))
+print("Sensors names : %s" % significant_sensors_names)
+
+
+
+
+
+
+
+
+
+
+
+
+'''
+create trial-averaged evoked data
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # preallocate arrays
 epochs = {} # epochs
 epochs_equal = {} # equalized epochs
 dropped_epochs = {} # dropped epochs per dataset
-evoked_equal = {} # trial-averaged evoked data
+# evoked_equal = {} # trial-averaged evoked data
+evoked_equal_manmade = {} # trial-averaged evoked data ('manmade' condition)
+evoked_equal_natural = {} # trial-averaged evoked data ('natural' condition)
+
+
+
+
+evoked_grand_average = {} # grand-averaged evoked data
+
+for i in range(len(filenames)): # loop through files
+    epochs[i] = mne.read_epochs(filenames[i], preload = False) # load data (preload  = False or python will crash on my coomputer)
+    epochs_equal[i], dropped_epochs[i] = epochs[i].equalize_event_counts() # equalize epochs across conditions (drop epochs from condition with more data)
+    
+    
+    evoked_equal_manmade[i] = epochs_equal[i]['manmade'].average()
+    evoked_equal_natural[i] = epochs_equal[i]['natural'].average()
+    
+    evokeds[i] = dict(manmade = evoked_equal_manmade[i].iter_evoked()), natural = evoked_equal_natural[i].iter_evoked())))
+    
+    
+    
+    # evoked_equal[i] = {c:epochs_equal[i][c].average() for c in conditions} # create trial-averaged evoked data
+    
+    # # plot trial-averaged evoked data, separately for each condition
+    # {evoked_equal[i][c].plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + c) for c in conditions}  
+    # confidence intervals
+    # evoked_equal[i] = dict(manmade = list(epochs_equal[i]['manmade'].iter_evoked()),
+    #                     natural = list(epochs_equal[i]['natural'].iter_evoked()))  
+    # # compare plot
+    # mne.viz.plot_compare_evokeds(evoked_equal[i],
+    #                              combine = 'mean',
+    #                              legend = 'lower left',
+    #                              picks = electrodes_graph, 
+    #                              show_sensors = 'upper left',
+    #                              colors = color_dict,
+    #                              linestyles = linestyle_dict,
+    #                              title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + conditions[0] + '-' + conditions[1]
+    #                              )
+    evoked_grand_average[i] = mne.grand_average(evoked_equal[i])
+
+
+
+
+
+
+evokeds = {}
+
+
+for i in range(len(filenames)):
+    # confidence intervals
+    evokeds[i] = dict(manmade = evoked_equal_manmade[i].iter_evoked()), natural = evoked_equal_natural[i].iter_evoked())))
+    mne.viz.plot_compare_evokeds(evokeds[i],
+                              combine = 'mean',
+                              legend = 'lower left',
+                              picks = electrodes_graph, 
+                              show_sensors = 'upper left',
+                              colors = color_dict,
+                              linestyles = linestyle_dict,
+                              title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + conditions[0] + '-' + conditions[1]
+                              )
+
+
+
+
+
+evoked_grand_average = {} # grand-averaged evoked data
+
+
+evoked_grand_average[i] = mne.grand_average(evoked_equal[i])
+print(grand_average[i])
+
+
+
+
+
+# plot electrode montage
+epochs_equal[2].plot_sensors(ch_type = 'eeg', show_names = True) 
+
+
+
+
+
+
+
 
 for i in range(len(filenames)): # loop through files
     epochs[i] = mne.read_epochs(filenames[i], preload = False) # load data (preload  = False or python will crash on my coomputer)
     epochs_equal[i], dropped_epochs[i] = epochs[i].equalize_event_counts() # equalize epochs across conditions (drop epochs from condition with more data)
     evoked_equal[i] = {c:epochs_equal[i][c].average() for c in conditions} # create trial-averaged evoked data
-    # plot trial-averaged evoked data, separately for each condition
-    {evoked_equal[i][c].plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + c) for c in conditions}  
-    # confidence intervals arond trial-averaged evoked data
+    # # plot trial-averaged evoked data, separately for each condition
+    # {evoked_equal[i][c].plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + c) for c in conditions}  
+    # confidence intervals around trial-averaged evoked data
     evoked_equal[i] = dict(manmade = list(epochs_equal[i]['manmade'].iter_evoked()),
                         natural = list(epochs_equal[i]['natural'].iter_evoked()))  
     # compare plot
@@ -86,11 +331,9 @@ for i in range(len(filenames)): # loop through files
 
 
 
-
-
-
-
-
+'''
+old code
+'''  
 
 
 
@@ -127,85 +370,6 @@ for i in range(len(filenames)):
 '''
 plots
 '''  
-
-# plot electrode montage
-epochs_equal[2].plot_sensors(ch_type = 'eeg', show_names = True) 
-
-# # plot trial-averaged evoked data, separately for each participant and condition
-# # topo_times = [0, 0.08, 0.125, 0.18] # time points for topographies
-# topo_times = np.arange(0, 0.5, 0.05) # time points for topographies
-# for i in range(len(filenames)):
-#     {evoked_equal[i][c].plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + c) for c in conditions}
-
-color_dict = {'manmade':'blue', 'natural':'red'}
-linestyle_dict = {'manmade':'-', 'natural':'--'}
-
-for i in range(len(filenames)):
-    # calculate confidence intervals
-    evoked_equal[i] = dict(manmade = list(epochs_equal[i]['manmade'].iter_evoked()),
-                        natural = list(epochs_equal[i]['natural'].iter_evoked()))  
-    # plot
-    mne.viz.plot_compare_evokeds(evoked_equal[i],
-                                 combine = 'mean',
-                                 legend = 'lower left',
-                                 picks = electrodes_graph, 
-                                 show_sensors = 'upper left',
-                                 colors = color_dict,
-                                 linestyles = linestyle_dict,
-                                 title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + conditions[0] + '-' + conditions[1]
-                                 )
-
-
-
-############################################
-########## FROM HERE #######################
-############################################
-
-
-tempor = {}
-
-for i in range(len(epochs)):
-    tempor[i] = evoked_equal[i].average() 
-    
-    
-    
-
-
-evoked_equal.average
-
-
-mne.viz.plot_compare_evokeds(evoked_equal[i].average,
-                             combine = 'mean',
-                             legend = 'lower right',
-                             picks = electrodes_graph, 
-                             show_sensors = 'upper left',
-                             colors = color_dict,
-                             linestyles = linestyle_dict,
-                             title = re.search(sub_pattern, filenames[i], flags = 0).group(0) + conditions[0] + '-' + conditions[1]
-                             )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -293,32 +457,6 @@ for m in range(len(epochs)):
 visualization
 '''
 
-epochs_equal[1].plot_sensors(ch_type = 'eeg', show_names = True) # show electrode montage
-
-topo_times = [0, 0.08, 0.125, 0.18] # time points for topographies
-
-# define region of interest
-electrodes_graph = ['P9', 'P7', 'P5', 'P3', 'P1', 'Pz', 'P2', 'P4', 'P6', 'P8', 'P10', 'PO7', 'PO3', 'O1', 'POz', 'Oz', 'Iz', 'PO4', 'PO8', 'O2']
-
-color_dict = {'manmade':'blue', 'natural':'yellow'}
-linestyle_dict = {'manmade':'-', 'natural':'--'}
-
-mne.viz.plot_compare_evokeds(evoked_data_manmade | evoked_data_natural,
-                             combine = 'mean',
-                             legend = 'lower right',
-                             picks = electrodes_graph,
-                             show_sensors = 'upper right',
-                             colors = color_dict,
-                             linestyles = linestyle_dict,
-                             title = 'manmade vs. natural'
-                            )
-
-plt.show()
-
-
-
-
-
 
 
 
@@ -340,18 +478,6 @@ compare evoked waveforms
 '''
 
 
-
-
-
-
-
-
-
-
-    
-    
-  
-    
     
     
     
@@ -371,44 +497,4 @@ epochs, dropped_epochs = [epochs.equalize_event_counts(conditions) for f in file
 
 epochs_data = epochs.get_data(picks = channels) # select data from scalp electrodes only
 
-'''
-compare evoked waveforms
-'''
 
-evoked = epochs[conditions].average()
-
-# define region of interest
-electrodes_graph = ['P9', 'P7', 'P5', 'P3', 'P1', 'Pz', 'P2', 'P4', 'P6', 'P8', 'P10', 'PO7', 'PO3', 'O1', 'POz', 'Oz', 'Iz', 'PO4', 'PO8', 'O2']
-
-color_dict = {'manmade':'blue', 'natural':'yellow'}
-linestyle_dict = {'manmade':'-', 'natural':'--'}
-
-mne.viz.plot_compare_evokeds(evoked,
-                             combine = 'mean',
-                             legend = 'lower right',
-                             picks = electrodes_graph,
-                             show_sensors = 'upper right',
-                             colors = color_dict,
-                             linestyles = linestyle_dict,
-                             title = 'manmade vs. natural'
-                            )
-plt.show()
-
-
-# Define plot parameters
-roi = ['C3', 'Cz', 'C4', 
-       'P3', 'Pz', 'P4']
-
-color_dict = {'Control':'blue', 'Violation':'red'}
-linestyle_dict = {'Control':'-', 'Violation':'--'}
-
-
-mne.viz.plot_compare_evokeds(evokeds,
-                             combine='mean',
-                             legend='lower right',
-                             picks=roi, show_sensors='upper right',
-                             colors=color_dict,
-                             linestyles=linestyle_dict,
-                             title='Violation vs. Control Waveforms'
-                            )
-plt.show()
