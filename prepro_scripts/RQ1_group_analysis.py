@@ -16,15 +16,15 @@ import libraries
 '''
 
 import random
-import mne
 import numpy as np
-import matplotlib.pyplot as plt
 import glob
 import re
+import matplotlib.pyplot as plt
 
-from scipy.stats import ttest_ind
-from mne.channels import find_ch_adjacency, make_1020_channel_selections
-from mne.stats import spatio_temporal_cluster_test
+import mne
+from mne.stats import permutation_t_test # only if using permutation test
+from mne.channels import find_ch_adjacency, make_1020_channel_selections # only if using TFCE
+from mne.stats import spatio_temporal_cluster_test # only if using TFCE
 
 '''
 set parameters
@@ -35,7 +35,7 @@ random.seed(project_seed) # set seed to ensure computational reproducibility
 
 preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/eeg_BIDS/' # directory with preprocessed files
 
-filenames = glob.glob(preproc_path + '/*.fif') # list of .fif files
+filenames = glob.glob(preproc_path + '/*.fif') # list of .fif files in directory
 
 conditions = ['manmade', 'natural'] # condition names
 
@@ -91,7 +91,7 @@ mne.viz.plot_compare_evokeds(evokeds,
 # manmade_minus_natural.plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[0], flags = 0).group(0) + conditions[1])
 
 # grand average
-grand_average = mne.grand_average([evoked_equal_manmade, evoked_equal_natural])
+evoked_grand_average = mne.grand_average([evoked_equal_manmade, evoked_equal_natural])
 
 '''
 stats: TFCE (threshold-free cluster enhancement)
@@ -141,26 +141,62 @@ evoked.plot_image(mask = significant_points, show_names = "all", titles = condit
 
 
 '''
-stats: TFCE (threshold-free cluster enhancement)
-https://mne.tools/stable/auto_tutorials/stats-sensor-space/20_erp_stats.html#sphx-glr-auto-tutorials-stats-sensor-space-20-erp-stats-py
+stats: permutation t-test
+https://mne.tools/stable/auto_examples/stats/sensor_permutation_test.html#sphx-glr-auto-examples-stats-sensor-permutation-test-py
 '''
 
+picks = mne.pick_types(epochs_equal.info, eeg = True, exclude = ['M1', 'M2', 'VEOG', 'HEOG']) # select scalp electrodes only
+
+
+# separate condition-specific epochs
+epochs_equal_manmade = epochs_equal['manmade']
+epochs_equal_natural = epochs_equal['natural']
+
+# extract data and put them in one array 
+all_epochs = [epochs_equal_manmade.get_data(),
+              epochs_equal_natural.get_data()]
+
+
+
+times = epochs_equal.times
+
+
+# define time window
+t_min = 0
+t_max = 0.3
+
+temporal_mask = np.logical_and(t_min <= times, times <= t_max)
+
+
+
+# average across conditions, then across epochs, then extract values only from time points of interest
+all_epochs_perm = np.mean(np.mean(all_epochs, axis = 0), axis = 0)[:, temporal_mask]
+
+
+# # average across conditions, then across epochs, then extract values only from time points of interest,
+# # then transpose in order to have electrodes as last dimension (required by stats function)
+# all_epochs_perm = np.mean(np.mean(all_epochs, axis = 0), axis = 0)[:, temporal_mask].transpose(1, 0)
+
+
+
+
+n_perm = 5000 # number of permutations
+
+T0, p_values, H0 = permutation_t_test(
+    all_epochs_perm, 
+    n_permutations = n_perm,
+    tail = 0,
+    n_jobs = 1,
+    seed = project_seed)
 
 
 
 
 
-data = epochs.get_data()
-times = epochs.times
 
-temporal_mask = np.logical_and(0.04 <= times, times <= 0.06)
-data = np.mean(data[:, :, temporal_mask], axis=2)
-
-n_permutations = 50000
-T0, p_values, H0 = permutation_t_test(data, n_permutations, n_jobs=1)
 
 significant_sensors = picks[p_values <= 0.05]
-significant_sensors_names = [raw.ch_names[k] for k in significant_sensors]
+significant_sensors_names = [epochs_equal_manmade.ch_names[k] for k in significant_sensors]
 
 print("Number of significant sensors : %d" % len(significant_sensors))
 print("Sensors names : %s" % significant_sensors_names)
@@ -168,6 +204,19 @@ print("Sensors names : %s" % significant_sensors_names)
 
 
 
+evoked = mne.EvokedArray(-np.log10(p_values)[:, np.newaxis],
+                         epochs.info, tmin=0.)
+
+# Extract mask and indices of active sensors in the layout
+stats_picks = mne.pick_channels(evoked.ch_names, significant_sensors_names)
+mask = p_values[:, np.newaxis] <= 0.05
+
+evoked.plot_topomap(ch_type='grad', times=[0], scalings=1,
+                    time_format=None, cmap='Reds', vmin=0., vmax=np.max,
+                    units='-log10(p)', cbar_fmt='-%0.1f', mask=mask,
+                    size=3, show_names=lambda x: x[4:] + ' ' * 20,
+                    time_unit='s')
+
 
 
 
@@ -177,12 +226,71 @@ print("Sensors names : %s" % significant_sensors_names)
 
 
 '''
-create trial-averaged evoked data
+ERP analysis using MNE-Python
+https://neurokit2.readthedocs.io/en/dev/studies/erp_gam.html
 '''
 
+epochs_equal_manmade = epochs_equal['manmade']
+epochs_equal_natural = epochs_equal['natural']
 
 
+# Transform each condition to array
+condition1 = np.mean(epochs["audio"].get_data(), axis=1)
+condition2 = np.mean(epochs["visual"].get_data(), axis=1)
 
+# Permutation test to find significant cluster of differences
+t_vals, clusters, p_vals, h0 = mne.stats.permutation_cluster_test([condition1, condition2], out_type='mask', seed=111)
+
+# Visualize
+## <string>:1: RuntimeWarning: Ignoring argument "tail", performing 1-tailed F-test
+fig, (ax0, ax1, ax2) = plt.subplots(nrows=3, ncols=1, sharex=True)
+
+times = epochs.times
+ax0.axvline(x=0, linestyle="--", color="black")
+## <matplotlib.lines.Line2D object at 0x00000000BFAE7640>
+ax0.plot(times, np.mean(condition1, axis=0), label="Audio")
+## [<matplotlib.lines.Line2D object at 0x00000000BFAF3D30>]
+ax0.plot(times, np.mean(condition2, axis=0), label="Visual")
+## [<matplotlib.lines.Line2D object at 0x00000000BFAF3F40>]
+ax0.legend(loc="upper right")
+## <matplotlib.legend.Legend object at 0x00000000BFAF3EE0>
+ax0.set_ylabel("uV")
+
+# Difference
+ax1.axvline(x=0, linestyle="--", color="black")
+ax1.plot(times, condition1.mean(axis=0) - condition2.mean(axis=0))
+## [<matplotlib.lines.Line2D object at 0x00000000BFB07B20>]
+ax1.axhline(y=0, linestyle="--", color="black")
+## <matplotlib.lines.Line2D object at 0x00000000BFB07CD0>
+ax1.set_ylabel("Difference")
+
+# T-values
+ax2.axvline(x=0, linestyle="--", color="black")
+h = None
+for i, c in enumerate(clusters):
+    c = c[0]
+    if p_vals[i] <= 0.05:
+        h = ax2.axvspan(times[c.start],
+                        times[c.stop - 1],
+                        color='red',
+                        alpha=0.5)
+    else:
+        ax2.axvspan(times[c.start],
+                    times[c.stop - 1],
+                    color=(0.3, 0.3, 0.3),
+                    alpha=0.3)
+## <matplotlib.patches.Polygon object at 0x00000000BFB16550>
+## <matplotlib.patches.Polygon object at 0x00000000BFB16BE0>
+hf = ax2.plot(times, t_vals, 'g')
+if h is not None:
+    plt.legend((h, ), ('cluster p-value < 0.05', ))
+## <matplotlib.legend.Legend object at 0x00000000BFB16D00>
+plt.xlabel("time (ms)")
+## Text(0.5, 0, 'time (ms)')
+plt.ylabel("t-values")
+## Text(0, 0.5, 't-values')
+plt.savefig("figures/fig2.png")
+plt.clf()
 
 
 
