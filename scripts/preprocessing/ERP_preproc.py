@@ -50,9 +50,13 @@ datatype = 'eeg'
 # # plot parameters
 # sub_pattern = re.compile(r"\bsub-0\w*-\b") # regex pattern for plot titles 
 
+# define electrode montage
+montage = mne.channels.make_standard_montage("biosemi64")
+# montage.plot() # visualize montage
+
 # filter cutoffs
-cutoff_l = 0.1
-cutoff_h = 100
+cutoff_lowpass = 0.1
+cutoff_highpass = 40
 # cutoff_h = None # we also get rid of anything higher than 100Hz which is typically not of relevance to human studies
 
 # referencing method
@@ -85,72 +89,84 @@ for ssj in subs[:1]:
         datatype = datatype, # BIDS data type        
         root = raw_path, # directory of BIDS dataset
         check = True # BIDS conformity
-        )
+        )    
     
     # load data
-    raw = read_raw_bids(bids_path)
-    # .pick_types(eeg = True, 
-    #                      stim = True, 
-    #                      eog = True, 
-    #                      misc = True, 
-    #                      # include = (), 
-    #                      exclude = 'bads'
-    #                      # selection = None,
-    #                      # verbose = None
-    #                      )
-    
-    print(raw.info)
-    
-    
-    n_time_samps = raw.n_times
-    time_secs = raw.times
-    ch_names = raw.ch_names
-    n_chan = len(ch_names)  # note: there is no raw.n_channels attribute
-    print('the (cropped) sample data object has {} time samples and {} channels.'
-      ''.format(n_time_samps, n_chan))
-    print('The last time sample is at {} seconds.'.format(time_secs[-1]))
-    print('The first few channel names are {}.'.format(', '.join(ch_names[:3])))
-    print()  # insert a blank line in the output
-    # some examples of raw.info:
-    print('bad channels:', raw.info['bads'])  # chs marked "bad" during acquisition
-    print(raw.info['sfreq'], 'Hz')            # sampling frequency
-    print(raw.info['description'], '\n')      # miscellaneous acquisition info
-    print(raw.info)
-    
-    
-    
-    
-    
-    # select channels
-    raw = raw.pick_types(eeg = True, 
-                         stim = True, 
-                         eog = True, 
-                         misc = True, 
-                         # include = (), 
-                         exclude = 'bads'
-                         # selection = None,
-                         # verbose = None
-    )
-    
-
-    
-    
-    
-    # load raw data
     raw = mne.io.read_raw_brainvision(
         bids_path, 
-        eog = ('VEOG', 'HEOG','IO1','IO2','Afp9','Afp10'),
-        misc = ('M1','M2'), 
-        scale = 1.0, 
-        preload = True, 
-        verbose = False
+        eog = ('VEOG', 'HEOG','IO1','IO2','Afp9','Afp10'), # ocular channels
+        misc = ('M1','M2'), # mastoid channels
+        preload = True
+        )        
+    
+    # check data info    
+    print(raw.info)
+    
+    # assign electrode montage
+    raw = raw.set_montage(montage)
+        
+    # create backup copy of raw data
+    raw_backup = raw.copy()    
+    
+    # filter data
+    raw_filt = raw.filter( # apply high-pass filter, then apply low-pass filter
+        l_freq = cutoff_lowpass, 
+        h_freq = None).filter( # apply low-pass filter
+            l_freq = None,
+            h_freq = cutoff_highpass
+            )
+    
+    # plot filtered data
+    raw_filt.plot(
+        duration = 20, # time window (in seconds)
+        start = 20, # start time (in seconds)
+        n_channels = len(raw.ch_names), # number of channels to plot
+        color = 'darkblue', # line color
+        bad_color = 'red', # line color: bad channels
+        title = 'Low- and high-pass filtered EEG', # plot title
+        remove_dc = True, # remove DC component (visualization only)
+        proj = False, # apply projectors prior to plotting
+        group_by = 'type', # group by channel type
+        butterfly = False # butterfly mode        
         )
+ 
+    
+    
 
     
+    
+    
+    
+    
+
+    
+    # Find noisy channels
+    nd = NoisyChannels(raw_notch)
+    nd.find_all_bads(ransac=False) 
+    bads = nd.get_bads(verbose=True)
     
     
     
     # downsample
+    
+    
+    
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
@@ -304,9 +320,16 @@ eeg_data_unfiltered_ica.save(opj(prepro_dir,subject+'_task_after_ica_raw_unfilte
     
     
     
+'''
+epoching
+'''
+
+# RESAMPLE with mne.Epochs.decimate()
+# https://mne.tools/stable/overview/faq.html#resampling-and-decimating
     
     
-    
+# extract current sampling rate
+s_rate = raw.info["sfreq"]
     
     
     
