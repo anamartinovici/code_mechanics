@@ -26,8 +26,8 @@ import mne
 
 from os.path import join as opj
 from mne_bids import BIDSPath, read_raw_bids
+from pyprep import NoisyChannels
 # from mne_bids import BIDSPath, read_raw_bids, print_dir_tree, make_report
-# from pyprep import NoisyChannels
 # from mne.preprocessing import ICA, create_eog_epochs, create_ecg_epochs, corrmap
 # from autoreject import AutoReject
 
@@ -38,16 +38,17 @@ setup
 project_seed = 999 # RNG seed
 random.seed(project_seed) # set seed to ensure computational reproducibility
 
+# directory with raw data
 raw_path = '/home/aschetti/Documents/Projects/code_mechanics/data/raw/eeg_BIDS/' # directory with raw data
+
 # preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/eeg_BIDS/' # directory with preprocessed files
 
 # filenames = glob.glob(preproc_path + '/*.fif') # list of .fif files in directory
 
-conditions = ['manmade', 'natural'] # condition names
+# conditions = ['manmade', 'natural'] # condition names
 
 datatype = 'eeg'
 
-# # plot parameters
 # sub_pattern = re.compile(r"\bsub-0\w*-\b") # regex pattern for plot titles 
 
 # define electrode montage
@@ -55,8 +56,8 @@ montage = mne.channels.make_standard_montage("biosemi64")
 # montage.plot() # visualize montage
 
 # filter cutoffs
-cutoff_lowpass = 0.1
-cutoff_highpass = 40
+cutoff_low = 0.1
+cutoff_high = 40
 # cutoff_h = None # we also get rid of anything higher than 100Hz which is typically not of relevance to human studies
 
 # referencing method
@@ -88,7 +89,7 @@ for ssj in subs[:1]:
         extension = None, # file extension: not specified
         datatype = datatype, # BIDS data type        
         root = raw_path, # directory of BIDS dataset
-        check = True # BIDS conformity
+        check = True # check BIDS conformity
         )    
     
     # load data
@@ -109,13 +110,13 @@ for ssj in subs[:1]:
     raw_backup = raw.copy()    
     
     # filter data
-    raw_filt = raw.filter( # apply high-pass filter, then apply low-pass filter
-        l_freq = cutoff_lowpass, 
+    raw_filt = raw.filter( # apply high-pass filter
+        l_freq = cutoff_low,
         h_freq = None).filter( # apply low-pass filter
             l_freq = None,
-            h_freq = cutoff_highpass
+            h_freq = cutoff_high
             )
-    
+
     # plot filtered data
     raw_filt.plot(
         duration = 20, # time window (in seconds)
@@ -123,31 +124,62 @@ for ssj in subs[:1]:
         n_channels = len(raw.ch_names), # number of channels to plot
         color = 'darkblue', # line color
         bad_color = 'red', # line color: bad channels
-        title = 'Low- and high-pass filtered EEG', # plot title
         remove_dc = True, # remove DC component (visualization only)
         proj = False, # apply projectors prior to plotting
         group_by = 'type', # group by channel type
         butterfly = False # butterfly mode        
         )
- 
-    
-    
 
-    
-    
-    
-    
-    
+    # create backup copy of filtered data
+    raw_filt_backup = raw_filt.copy()   
 
+    # detect noisy channels
+    nd = NoisyChannels(
+        raw_filt,
+        do_detrend = True, # apply 1 Hz high-pass filter before bad channel detection
+        random_state = project_seed # RNG seed
+        )
     
-    # Find noisy channels
-    nd = NoisyChannels(raw_notch)
-    nd.find_all_bads(ransac=False) 
-    bads = nd.get_bads(verbose=True)
+    # detect noisy channels based on:
+    # - missing signal (NaN)
+    # - flat signal
+    # - deviation
+    # - HF noise (frequency components > 50 Hz considerably higher than median channel noisiness )
+    # - correlation
+    #   - bad correlation window if maximum correlation with another channel is below the provided correlation threshold (default: 0.4)
+    #   - a channel is “bad-by-correlation” if its fraction of bad correlation windows is above the bad fraction threshold (default: 0.01)
+    # - low signal-to-noise ratio (too much high-frequency noise + low channel correlation)
+    # - dropout (long time windows with completely flat signal, default fraction threshold 0.01)
+    # - RANSAC (random sample consensus approach): predict signal based on signals and spatial locations of other currently-good channels
+    #   - split recording into non-overlapping time windows (default: 5 seconds)
+    #   - correlate each channel’s RANSAC-predicted signal with its actual signal
+    #   - bad window if predicted vs. actual signal correlation below correlation threshold (default: 0.75)
+    #   - bad channel if its fraction of bad RANSAC windows is above threshold (default: 0.4)
+    # for more info, see https://pyprep.readthedocs.io/en/latest/generated/pyprep.NoisyChannels.html#pyprep.NoisyChannels
+    nd.find_all_bads(
+        # ransac = False, 
+        ransac = True, 
+        channel_wise = False
+        )
+    
+    bads = nd.get_bads(verbose = True)
     
     
     
-    # downsample
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
