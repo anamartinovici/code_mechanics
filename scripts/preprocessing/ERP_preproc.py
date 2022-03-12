@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 # import glob
 # import re
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import os
 import mne
 # import time
@@ -22,9 +22,7 @@ from os.path import join as opj
 from mne_bids import BIDSPath
 from pyprep import NoisyChannels
 from mne.preprocessing import ICA
-# from mne_bids import BIDSPath, read_raw_bids, print_dir_tree, make_report
-# from mne.preprocessing import ICA, create_eog_epochs, create_ecg_epochs, corrmap
-# from autoreject import AutoReject
+from autoreject import AutoReject
 
 # %% SETUP
 
@@ -36,11 +34,7 @@ raw_path = '/home/aschetti/Documents/Projects/code_mechanics/data/raw/eeg_BIDS/'
 preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/data/preproc/' # directory with preprocessed files
 events_path = '/home/aschetti/Documents/Projects/code_mechanics/data/events/' # directory with event files
 
-# filenames = glob.glob(preproc_path + '/*.fif') # list of .fif files in directory
-
-# conditions = ['manmade', 'natural'] # condition names
-
-datatype = 'eeg'
+datatype = 'eeg' # data type
 
 # sub_pattern = re.compile(r"\bsub-0\w*-\b") # regex pattern for plot titles 
 
@@ -52,66 +46,204 @@ montage = mne.channels.make_standard_montage("biosemi64")
 cutoff_low = 0.1
 cutoff_high = 40
 
-# referencing method
-ref_method = 'average' # it could also be 'mastoid', but I prefer average reference
-
 # number of components for ICA decomposition
 ICA_n_comps = 20
 
-# triggers (from TriggerTable.csv)
-triggers_dict = {'man-made/new/hit/forgotten': 1010,
-                 'man-made/new/hit/remembered': 1011,
-                 'man-made/new/hit/na': 1019,
-                 'man-made/new/miss/forgotten': 1020, 
-                 'man-made/new/miss/remembered': 1021,
-                 'man-made/new/miss/na': 1029,
-                 'man-made/new/fa/forgotten': 1030,
-                 'man-made/new/fa/remembered': 1031,
-                 'man-made/new/fa/na': 1039,                  
-                 'man-made/new/cr/forgotten': 1040,
-                 'man-made/new/cr/remembered': 1041,
-                 'man-made/new/cr/na': 1049,
-                 'man-made/new/na/forgotten': 1090,
-                 'man-made/new/na/remembered': 1091,
-                 'man-made/new/na/na': 1099,
-                 'man-made/old/hit/forgotten': 1110,
-                 'man-made/old/hit/remembered': 1111,
-                 'man-made/old/hit/na': 1119, 
-                 'man-made/old/	miss/forgotten': 1120,
-                 'man-made/old/	miss/remembered': 1121,
-                 'man-made/old/	miss/na': 1129,  
-                 'man-made/old/	na/forgotten': 1190,
-                 'man-made/old/	na/remembered': 1191,
-                 'man-made/old/	na/na': 1199,  
-                 'natural/new/hit/forgotten': 2010, 
-                 'natural/new/hit/remembered': 2011,
-                 'natural/new/hit/na': 2019,
-                 'natural/new/miss/forgotten': 2020,    
-                 'natural/new/miss/remembered': 2021,
-                 'natural/new/miss/na': 2029,
-                 'natural/new/fa/forgotten': 2030,
-                 'natural/new/fa/remembered': 2031,
-                 'natural/new/fa/na': 2039,      
-                 'natural/new/cr/forgotten': 2040,   
-                 'natural/new/cr/remembered': 2041,
-                 'natural/new/cr/na': 2049,  
-                 'natural/new/na/forgotten': 2090, 
-                 'natural/new/na/remembered': 2091,  
-                 'natural/new/na/na': 2099,        
-                 'natural/old/hit/forgotten': 2110,
-                 'natural/old/hit/remembered': 2111,
-                 'natural/old/hit/na': 2119,        
-                 'natural/old/miss/forgotten': 2120,
-                 'natural/old/miss/remembered': 2121,
-                 'natural/old/miss/na': 2129,     
-                 'natural/old/na/forgotten': 2190,
-                 'natural/old/na/remembered': 2191,
-                 'natural/old/na/na': 2199}
+# # triggers (from TriggerTable.csv)
+# 'manmade/new/hit/forgotten': 1010
+# 'manmade/new/hit/remembered': 1011
+# 'manmade/new/hit/na': 1019
+# 'manmade/new/miss/forgotten': 1020
+# 'manmade/new/miss/remembered': 1021
+# 'manmade/new/miss/na': 1029
+# 'manmade/new/fa/forgotten': 1030
+# 'manmade/new/fa/remembered': 1031
+# 'manmade/new/fa/na': 1039,             
+# 'manmade/new/cr/forgotten': 1040
+# 'manmade/new/cr/remembered': 1041
+# 'manmade/new/cr/na': 1049
+# 'manmade/new/na/forgotten': 1090
+# 'manmade/new/na/remembered': 1091
+# 'manmade/new/na/na': 1099
+# 'manmade/old/hit/forgotten': 1110
+# 'manmade/old/hit/remembered': 1111
+# 'manmade/old/hit/na': 1119,
+# 'manmade/old/miss/forgotten': 1120
+# 'manmade/old/miss/remembered': 1121
+# 'manmade/old/miss/na': 1129
+# 'manmade/old/na/forgotten': 1190
+# 'manmade/old/na/remembered': 1191
+# 'manmade/old/na/na': 1199
+# 'natural/new/hit/forgotten': 2010
+# 'natural/new/hit/remembered': 2011
+# 'natural/new/hit/na': 2019
+# 'natural/new/miss/forgotten': 2020
+# 'natural/new/miss/remembered': 2021
+# 'natural/new/miss/na': 2029
+# 'natural/new/fa/forgotten': 2030
+# 'natural/new/fa/remembered': 2031
+# 'natural/new/fa/na': 2039
+# 'natural/new/cr/forgotten': 2040
+# 'natural/new/cr/remembered': 2041
+# 'natural/new/cr/na': 2049
+# 'natural/new/na/forgotten': 2090
+# 'natural/new/na/remembered': 2091
+# 'natural/new/na/na': 2099
+# 'natural/old/hit/forgotten': 2110
+# 'natural/old/hit/remembered': 2111
+# 'natural/old/hit/na': 2119
+# 'natural/old/miss/forgotten': 2120
+# 'natural/old/miss/remembered': 2121
+# 'natural/old/miss/na': 2129
+# 'natural/old/na/forgotten': 2190
+# 'natural/old/na/remembered': 2191
+# 'natural/old/na/na': 2199
+
+# combined triggers according to research questions
+# Q1
+# 'manmade' condition
+# NOTE: 'manmade' excludes NAs in behavior: 
+# although scene category is independent from response, 
+# NAs may reflect drops in attention and, consequently, incomplete stimulus perception
+trigs_Q1_manmade = [
+    1010, # 'manmade/new/hit/forgotten'
+    1011, # 'manmade/new/hit/remembered'
+    1019, # 'manmade/new/hit/na'
+    1020, # 'manmade/new/miss/forgotten'
+    1021, # 'manmade/new/miss/remembered'
+    1029, # 'manmade/new/miss/na'
+    1030, # 'manmade/new/fa/forgotten'
+    1031, # 'manmade/new/fa/remembered'
+    1039, # 'manmade/new/fa/na'
+    1040, # 'manmade/new/cr/forgotten'
+    1041, # 'manmade/new/cr/remembered'
+    1049, # 'manmade/new/cr/na'
+    1110, # 'manmade/old/hit/forgotten'
+    1111, # 'manmade/old/hit/remembered'
+    1119, # 'manmade/old/hit/na'
+    1120, # 'manmade/old/miss/forgotten'
+    1121, # 'manmade/old/miss/remembered'
+    1129 # 'manmade/old/miss/na'
+    ]
+# 'natural' condition
+# NOTE: 'natural' excludes NAs in behavior: 
+# although scene category is independent from response, 
+# NAs may reflect drops in attention and, consequently, incomplete stimulus perception
+trigs_Q1_natural = [
+    2010, # 'natural/new/hit/forgotten'
+    2011, # 'natural/new/hit/remembered'
+    2019, # 'natural/new/hit/na'
+    2020, # 'natural/new/miss/forgotten'
+    2021, # 'natural/new/miss/remembered'
+    2029, # 'natural/new/miss/na'
+    2030, # 'natural/new/fa/forgotten'
+    2031, # 'natural/new/fa/remembered'
+    2039, # 'natural/new/fa/na'
+    2040, # 'natural/new/cr/forgotten'
+    2041, # 'natural/new/cr/remembered'
+    2049, # 'natural/new/cr/na'
+    2110, # 'natural/old/hit/forgotten'
+    2111, # 'natural/old/hit/remembered'
+    2119, # 'natural/old/hit/na'
+    2120, # 'natural/old/miss/forgotten'
+    2121, # 'natural/old/miss/remembered'
+    2129 # 'natural/old/miss/na'
+    ]
+# Q2
+# 'new' condition
+# NOTE: 'new' excludes NAs in behavior (possible drops in attention) 
+# but must include NAs in memory: 
+# by definition, a new picture cannot be successfully or unsuccessfully recognized as old
+trigs_Q2_new = [    
+    1019, # 'manmade/new/hit/na'
+    1029, # 'manmade/new/miss/na'
+    1039, # 'manmade/new/fa/na'
+    1049, # 'manmade/new/cr/na'
+    2019, # 'natural/new/hit/na'
+    2029, # 'natural/new/miss/na'
+    2039, # 'natural/new/fa/na'
+    2049 # 'natural/new/cr/na'
+    ]
+# 'old' condition
+# NOTE: 'old' excludes NAs in behavior (possible drops in attention) 
+# but can include NAs in memory: 
+# the point is whether the image has been initially categorized as old, 
+# regardless of whether it's recognized as such in subsequent presentations
+trigs_Q2_old = [
+    1110, # 'manmade/old/hit/forgotten'
+    1111, # 'manmade/old/hit/remembered'
+    1119, # 'manmade/old/hit/na'
+    1120, # 'manmade/old/miss/forgotten'
+    1121, # 'manmade/old/miss/remembered'
+    1129, # 'manmade/old/miss/na'
+    2110, # 'natural/old/hit/forgotten'
+    2111, # 'natural/old/hit/remembered'
+    2119, # 'natural/old/hit/na'
+    2120, # 'natural/old/miss/forgotten'
+    2121, # 'natural/old/miss/remembered'
+    2129 # 'natural/old/miss/na'
+    ]
+# Q3
+# 'old-hit'
+# NOTE: 'old-hit' must only include 
+# old in presentation and hit in behavior but can include NAs in memory: 
+# the point is whether the image has been initially successfully categorized as old, 
+# regardless of whether it's recognized as such in subsequent presentations
+trigs_Q3_old_hit = [    
+    1110, # 'manmade/old/hit/forgotten'
+    1111, # 'manmade/old/hit/remembered'
+    1119, # 'manmade/old/hit/na'
+    2110, # 'natural/old/hit/forgotten'
+    2111, # 'natural/old/hit/remembered'
+    2119 # 'natural/old/hit/na'
+    ]
+# 'old-miss'
+# NOTE: 'old-miss' must only include 
+# old in presentation and misses in behavior but can include NAs in memory: 
+# the point is whether the image has been initially unsuccessfully categorized as old, 
+# regardless of whether it's recognized as such in subsequent presentations
+trigs_Q3_old_miss = [
+    1120, # 'manmade/old/miss/forgotten'
+    1121, # 'manmade/old/miss/remembered'
+    1129, # 'manmade/old/miss/na'
+    2120, # 'natural/old/miss/forgotten'
+    2121, # 'natural/old/miss/remembered'
+    2129 # 'natural/old/miss/na'
+    ]
+# Q4
+# 'remembered'
+# NOTE: 'remembered' must only include old in presentation and hits in behavior
+# and must not include NAs in memory
+trigs_Q4_remembered = [    
+    1111, # 'manmade/old/hit/remembered'
+    2111 # 'natural/old/hit/remembered'
+    ]
+# 'forgotten'
+# NOTE: 'forgotten' must only include old in presentation and hits in behavior 
+# and must not include NAs in memory
+trigs_Q4_forgotten = [
+    1110, # 'manmade/old/hit/forgotten'
+    2110 # 'natural/old/hit/forgotten'    
+    ]
+
+# epoch length (relative to stimulus)
+begin_epoch = -0.2
+end_epoch = 0.5
+
+# AutoReject parameters
+ar = AutoReject(
+    n_interpolate = None, # (default) values to try for the number of channels for which to interpolate (default: np.array([1, 4, 32]))
+    consensus = None, # (default) values to try for percentage of channels that must agree as a fraction of the total number of channels (default: np.linspace(0, 1.0, 11))
+    cv = 10, # cross-validation object
+    picks = datatype,
+    thresh_method = 'bayesian_optimization',
+    random_state = project_seed # RNG seed
+    )
+
+# %% PREPROCESSING
 
 # get all subject numbers
 subs = [ name for name in os.listdir(raw_path) if name.startswith('sub') ] 
-
-# %% PREPROCESSING
 
 for ssj in subs[:1]:
     
@@ -231,15 +363,15 @@ for ssj in subs[:1]:
         
     # plot filtered data with bad channels in red
     raw_filt.plot(
-        duration = 20, # time window (in seconds)
-        start = 20, # start time (in seconds)
-        n_channels = len(raw_filt.ch_names), # number of channels to plot
-        color = 'darkblue', # line color
-        bad_color = 'red', # line color: bad channels
-        remove_dc = True, # remove DC component (visualization only)
-        proj = False, # apply projectors prior to plotting
-        group_by = 'type', # group by channel type
-        butterfly = False # butterfly mode        
+        duration = 20,
+        start = 20,
+        n_channels = len(raw_filt.ch_names),
+        color = 'darkblue',
+        bad_color = 'red',
+        remove_dc = True,
+        proj = False,
+        group_by = 'type',
+        butterfly = False     
         )
     
     # save bad channels to file
@@ -259,15 +391,15 @@ for ssj in subs[:1]:
         
     # plot filtered data with interpolated channels
     raw_filt_interp.plot(
-        duration = 20, # time window (in seconds)
-        start = 20, # start time (in seconds)
-        n_channels = len(raw_filt_interp.ch_names), # number of channels to plot
-        color = 'darkblue', # line color
-        bad_color = 'red', # line color: bad channels
-        remove_dc = True, # remove DC component (visualization only)
-        proj = False, # apply projectors prior to plotting
-        group_by = 'type', # group by channel type
-        butterfly = False # butterfly mode        
+        duration = 20,
+        start = 20,
+        n_channels = len(raw_filt_interp.ch_names),
+        color = 'darkblue',
+        bad_color = 'red',
+        remove_dc = True,
+        proj = False,
+        group_by = 'type',
+        butterfly = False
         )
     
     # # create backup copy of interpolated data
@@ -277,13 +409,10 @@ for ssj in subs[:1]:
     
     # message in console
     print("--- referencing ---")
+     
+    # average reference
+    raw_filt_interp_ref = raw_filt_interp.set_eeg_reference(ref_channels = 'average')
     
-    # referencing
-    if ref_method == 'average':
-        raw_filt_interp_ref = raw_filt_interp.set_eeg_reference(ref_channels = 'average')
-    elif ref_method=='mastoid':
-        raw_filt_interp_ref = raw_filt_interp.set_eeg_reference(ref_channels = ['M1', 'M2'])
-
     # # create backup copy of referenced data
     # raw_filt_interp_ref_backup = raw_filt_interp_ref.copy()  
 
@@ -338,15 +467,15 @@ for ssj in subs[:1]:
     
     # plot clean data
     raw_filt_interp_ref_ICA.plot(
-        duration = 20, # time window (in seconds)
-        start = 20, # start time (in seconds)
-        n_channels = len(raw_filt_interp_ref_ICA.ch_names), # number of channels to plot
-        color = 'darkblue', # line color
-        bad_color = 'red', # line color: bad channels
+        duration = 20,
+        start = 20,
+        n_channels = len(raw_filt_interp_ref_ICA.ch_names),
+        color = 'darkblue',
+        bad_color = 'red',
         remove_dc = True, # remove DC component (visualization only)
-        proj = False, # apply projectors prior to plotting
-        group_by = 'type', # group by channel type
-        butterfly = False # butterfly mode        
+        proj = False,
+        group_by = 'type',
+        butterfly = False
         )
     
     # plot components (topographies)    
@@ -358,20 +487,318 @@ for ssj in subs[:1]:
     # %% SAVE DATA
     raw_filt_interp_ref_ICA.save(opj(preproc_path, ssj + '_filt_interp_ref_ICA.fif'), overwrite = True)
     
-    # %% EPOCHING
-    # https://mne.tools/stable/overview/faq.html#resampling-and-decimating
+    # %% CREATE EPOCHS (ALL CONDITIONS)
 
+    # # load data (for debugging only)
+    # raw_filt_interp_ref_ICA = mne.io.read_raw_fif(
+    #     opj(preproc_path, ssj + '_filt_interp_ref_ICA.fif'),
+    #     preload = True
+    #     )
+
+    # extract events and event_id from data structure
+    events, event_dict = mne.events_from_annotations(raw_filt_interp_ref_ICA)
+    
+    # # visualize events
+    # mne.viz.plot_events(
+    #     events, 
+    #     event_id = event_dict, 
+    #     sfreq = raw_filt_interp_ref_ICA.info['sfreq'] # sample frequency (to display data in seconds)
+    #     )
+        
+    # create epochs (all conditions)
+    epochs = mne.Epochs(
+        raw_filt_interp_ref_ICA, 
+        events, # events
+        event_id = event_dict, # event labels
+        tmin = begin_epoch, # start epoch
+        tmax = end_epoch, #end epoch
+        baseline = (begin_epoch, 0), # time window for baseline correction
+        picks = None, # include all channels 
+        preload = True,
+        decim = 4, # subsample data by a factor of 4, i.e., 128 Hz (for more info, see https://mne.tools/stable/overview/faq.html#resampling-and-decimating)
+        detrend = None, # do not detrend before baseline correction
+        event_repeated = 'drop', # only retain the row occurring first in the events
+        reject_by_annotation = False # because annotations have already been converted to events
+        )
+    
+    # plot epochs
+    epochs.plot(
+        picks = datatype,
+        scalings = None,
+        n_epochs = 5, 
+        n_channels = 64, 
+        events = events,           
+        event_id = event_dict,
+        butterfly = False
+        )
+
+    # %% ARTIFACT REJECTION
+    # artifact rejection is run on all conditions simultenously, 
+    # to avoid bias due to condition-specific artifacts
+      
+    # run artifact rejection
+    ar.fit(epochs)  # fit on all epochs
+    epochs_clean, reject_log = ar.transform(epochs, return_log = True) 
+    
+    # visualize rejected epochs
+    epochs[reject_log.bad_epochs].plot()
+    
+    # visualize reject log
+    reject_log.plot('horizontal')
+    
+    # %% SAVE DATA
+    epochs_clean.save(opj(preproc_path, ssj + '_epochs_AutoReject.fif'), overwrite = True)
+    
+    # %% CREATE EPOCHS (Q1)
+    # create epochs to answer the first research question:
+    # effect of scene category (manmade vs. natural) 
+    # on the amplitude of the N1 component
+    
     # load data (for debugging only)
-    raw_filt_interp_ref_ICA = mne.io.read_raw_fif(
-        opj(preproc_path, ssj + '_filt_interp_ref_ICA.fif'),
+    epochs_clean = mne.read_epochs(
+        opj(preproc_path, ssj + '_epochs_AutoReject.fif'),
         preload = True
         )
+    
+   
+    # event_dict
+    
+    
+    trigs_Q1_manmade
+    
+    epochs.equalize_event_counts(trigs_Q1_manmade) 
+    
+    
+    {'New Segment/': 1,
+     'Stimulus/1030': 2,
+     'Stimulus/1031': 3,
+     'Stimulus/1039': 4,
+     'Stimulus/1040': 5,
+     'Stimulus/1041': 6,
+     'Stimulus/1049': 7,
+     'Stimulus/1110': 8,
+     'Stimulus/1111': 9,
+     'Stimulus/1119': 10,
+     'Stimulus/1120': 11,
+     'Stimulus/1121': 12,
+     'Stimulus/1129': 13,
+     'Stimulus/2030': 14,
+     'Stimulus/2031': 15,
+     'Stimulus/2039': 16,
+     'Stimulus/2040': 17,
+     'Stimulus/2041': 18,
+     'Stimulus/2049': 19,
+     'Stimulus/2110': 20,
+     'Stimulus/2111': 21,
+     'Stimulus/2119': 22,
+     'Stimulus/2120': 23,
+     'Stimulus/2121': 24,
+     'Stimulus/2129': 25,
+     'Time 0/': 26}
+    
+    
+    conds_we_care_about = {
+        'Stimulus/1010',
+        'Stimulus/1011',
+        'Stimulus/1019',
+        'Stimulus/1020',
+        'Stimulus/1021',
+        'Stimulus/1029',
+        'Stimulus/1030',
+        'Stimulus/1031',
+        'Stimulus/1039',
+        'Stimulus/1040',
+        'Stimulus/1041',
+        'Stimulus/1049',
+        'Stimulus/1110',
+        'Stimulus/1111',
+        'Stimulus/1119',
+        'Stimulus/1120',
+        'Stimulus/1121',
+        'Stimulus/1129
+        }
+    
+    
+    
+    
+    epochs.equalize_event_counts(conds_we_care_about)
+    
+    
+    conds_we_care_about = ['auditory/left', 'auditory/right',
+                       'visual/left', 'visual/right']
+epochs.equalize_event_counts(conds_we_care_about)  # this operates in-place
+aud_epochs = epochs['auditory']
+vis_epochs = epochs['visual']
+del raw, epochs  # free up memory
+    
+    
+    
+    
+    # combine events according to research questions
+    # 'manmade' condition
+    events_manmade = mne.merge_events(
+        events,
+        trigs_Q1_manmade,
+        1000, # recode 'manmade'
+        replace_events = True
+        )
+    
+    
+    
+    
+    
+    # create epochs ('manmade' condition)
+    epochs_manmade = mne.Epochs(
+        raw_filt_interp_ref_ICA, 
+        events, # events
+        event_id = event_dict, # event labels
+        tmin = begin_epoch, # start epoch
+        tmax = end_epoch, #end epoch
+        baseline = (begin_epoch, 0), # time window for baseline correction
+        picks = None, # include all channels 
+        preload = True,
+        decim = 4, # subsample data by a factor of 4, i.e., 128 Hz (for more info, see https://mne.tools/stable/overview/faq.html#resampling-and-decimating)
+        detrend = None, # do not detrend before baseline correction
+        event_repeated = 'drop', # only retain the row occurring first in the events
+        reject_by_annotation = False # because annotations have already been converted to events
+        )
+    
+    
+    
+    
+    
+    # 'natural' condition
+    events_natural = mne.merge_events(
+        events,
+        trigs_Q1_natural,
+        2000, # recode 'natural'
+        replace_events = True
+        )
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    # Q2
+    # 'new' condition
+    events_new = mne.merge_events(
+        events,
+        trigs_Q2_new,
+        3000, # recode 'new'
+        replace_events = True
+        )
+    # 'old' condition
+    events_old = mne.merge_events(
+        events,
+        trigs_Q2_old,
+        4000, # recode 'old'
+        replace_events = True
+        )
+    # Q3
+    # 'old-hit' condition
+    events_old_hit = mne.merge_events(
+        events,
+        trigs_Q3_old_hit,
+        5000, # recode 'old-hit'
+        replace_events = True
+        )
+    # 'old-miss' condition
+    events_old_miss = mne.merge_events(
+        events,
+        trigs_Q3_old_miss,
+        6000, # recode 'old-miss'
+        replace_events = True
+        )
+    # Q4
+    # 'remembered' condition
+    events_remembered = mne.merge_events(
+        events,
+        trigs_Q4_remembered,
+        7000, # recode 'remembered'
+        replace_events = True
+        )
+    # 'forgotten' condition
+    events_forgotten = mne.merge_events(
+        events,
+        trigs_Q4_forgotten,
+        8000, # recode 'forgotten'
+        replace_events = True
+        )
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    # create epochs
+    
+    
+    
+    
+    
+    
+    AutoReject(
+        n_interpolate = None, # (default) values to try for the number of channels for which to interpolate (default: np.array([1, 4, 32]))
+        consensus = None, # (default) values to try for percentage of channels that must agree as a fraction of the total number of channels (default: np.linspace(0, 1.0, 11))
+        cv = 10, # cross-validation object
+        picks = datatype,
+        thresh_method = 'bayesian_optimization',
+        random_state = project_seed # RNG seed
+        )
+    
+    
+    
+    epochs_clean = ar.fit_transform(epochs) 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    # Autoreject
+    # compute channel-level rejections
+    ar = autoreject.AutoReject(n_interpolate=[1, 2, 3, 4], random_state=11,
+                               n_jobs=1, verbose=True)
+    ar.fit(epochs[:20])  # fit on the first 20 epochs to save time
+    epochs_ar, reject_log = ar.transform(epochs, return_log=True)
+    epochs[reject_log.bad_epochs].plot(scalings=dict(eeg=100e-6))
+
+
+    
+    
+    
+
 
     # read event file
     events_csv = pd.read_csv(opj(events_path, 'EMP' + ssj[-2:] + '_events.csv'))
     events = events_csv[['latency','trial','trigger']].to_numpy(dtype = int)
 
-
+    mne.viz.plot_events(events,
+                        event_id = event_dict, 
+                        sfreq = raw_filt_interp_ref_ICA.info['sfreq'],
+                        first_samp = raw_filt_interp_ref_ICA.first_samp)
 
 
 
@@ -387,21 +814,6 @@ for ssj in subs[:1]:
 
 
 
-
-    events = mne.find_events(
-        raw_filt_interp_ref_ICA, 
-        stim_channel=None, 
-        output='onset', 
-        consecutive='increasing', 
-        min_duration=0, 
-        shortest_event=2, 
-        mask=None,
-        uint_cast=False, 
-        mask_type='and', 
-        initial_event=False,
-        verbose=None
-        )
-    
     
 
     # resample
