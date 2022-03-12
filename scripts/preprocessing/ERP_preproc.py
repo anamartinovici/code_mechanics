@@ -25,7 +25,7 @@ import mne
 # import time
 
 from os.path import join as opj
-from mne_bids import BIDSPath, read_raw_bids
+from mne_bids import BIDSPath
 from pyprep import NoisyChannels
 # from mne_bids import BIDSPath, read_raw_bids, print_dir_tree, make_report
 # from mne.preprocessing import ICA, create_eog_epochs, create_ecg_epochs, corrmap
@@ -109,6 +109,8 @@ for ssj in subs[:1]:
     # create backup copy of raw data
     raw_backup = raw.copy()    
     
+    #%% FILTERING
+    
     # filter data
     raw_filt = raw.filter( # apply high-pass filter
         l_freq = cutoff_low,
@@ -133,10 +135,15 @@ for ssj in subs[:1]:
     # create backup copy of filtered data
     raw_filt_backup = raw_filt.copy()   
 
+    #%% BAD CHANNEL DETECTION
+
     # detect noisy channels
     nd = NoisyChannels(
         raw_filt,
-        do_detrend = True, # apply 1 Hz high-pass filter before bad channel detection
+        # do not apply 1 Hz high-pass filter before bad channel detection:
+        # the data have already been high-pass filtered at 0.1 Hz
+        # and we don't want to miss channels with slow drifts
+        do_detrend = False,
         random_state = project_seed # RNG seed
         )
     
@@ -162,18 +169,49 @@ for ssj in subs[:1]:
         channel_wise = False
         )
     
+    # extract bad channels
     bads = nd.get_bads(verbose = True)
+       
+    # add bad channel info to filtered data 
+    raw_filt.info['bads'] = bads 
+        
+    # plot filtered data with bad channels in red
+    raw_filt.plot(
+        duration = 20, # time window (in seconds)
+        start = 20, # start time (in seconds)
+        n_channels = len(raw.ch_names), # number of channels to plot
+        color = 'darkblue', # line color
+        bad_color = 'red', # line color: bad channels
+        remove_dc = True, # remove DC component (visualization only)
+        proj = False, # apply projectors prior to plotting
+        group_by = 'type', # group by channel type
+        butterfly = False # butterfly mode        
+        )
     
+    #%% CHANNEL INTERPOLATION
     
+    # interpolate bad channels (spherical spline interpolation)    
+    raw_filt_interp = raw_filt.interpolate_bads(
+        reset_bads = True # remove bad channel list from info
+        )        
+        
+    # plot filtered data with interpolated channels
+    raw_filt_interp.plot(
+        duration = 20, # time window (in seconds)
+        start = 20, # start time (in seconds)
+        n_channels = len(raw.ch_names), # number of channels to plot
+        color = 'darkblue', # line color
+        bad_color = 'red', # line color: bad channels
+        remove_dc = True, # remove DC component (visualization only)
+        proj = False, # apply projectors prior to plotting
+        group_by = 'type', # group by channel type
+        butterfly = False # butterfly mode        
+        )
     
+    # create backup copy of interpolated data
+    raw_filt_interp_backup = raw_filt_interp.copy()  
     
-    
-    
-    
-    
-    
-    
-    
+    #%%
     
     
     
