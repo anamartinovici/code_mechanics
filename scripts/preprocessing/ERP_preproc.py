@@ -11,12 +11,8 @@ Preprocessing of raw data for ERP analysis
 import random
 import numpy as np
 import pandas as pd
-# import glob
-# import re
-import matplotlib.pyplot as plt
 import os
 import mne
-# import time
 
 from os.path import join as opj
 from mne_bids import BIDSPath
@@ -36,8 +32,6 @@ events_path = '/home/aschetti/Documents/Projects/code_mechanics/data/events/' # 
 
 datatype = 'eeg' # data type
 
-# sub_pattern = re.compile(r"\bsub-0\w*-\b") # regex pattern for plot titles 
-
 # define electrode montage
 montage = mne.channels.make_standard_montage("biosemi64")
 # montage.plot() # visualize montage
@@ -49,55 +43,56 @@ cutoff_high = 40
 # number of components for ICA decomposition
 ICA_n_comps = 20
 
-# # triggers (from TriggerTable.csv)
-# 'manmade/new/hit/forgotten': 1010
-# 'manmade/new/hit/remembered': 1011
-# 'manmade/new/hit/na': 1019
-# 'manmade/new/miss/forgotten': 1020
-# 'manmade/new/miss/remembered': 1021
-# 'manmade/new/miss/na': 1029
-# 'manmade/new/fa/forgotten': 1030
-# 'manmade/new/fa/remembered': 1031
-# 'manmade/new/fa/na': 1039,             
-# 'manmade/new/cr/forgotten': 1040
-# 'manmade/new/cr/remembered': 1041
-# 'manmade/new/cr/na': 1049
-# 'manmade/new/na/forgotten': 1090
-# 'manmade/new/na/remembered': 1091
-# 'manmade/new/na/na': 1099
-# 'manmade/old/hit/forgotten': 1110
-# 'manmade/old/hit/remembered': 1111
-# 'manmade/old/hit/na': 1119,
-# 'manmade/old/miss/forgotten': 1120
-# 'manmade/old/miss/remembered': 1121
-# 'manmade/old/miss/na': 1129
-# 'manmade/old/na/forgotten': 1190
-# 'manmade/old/na/remembered': 1191
-# 'manmade/old/na/na': 1199
-# 'natural/new/hit/forgotten': 2010
-# 'natural/new/hit/remembered': 2011
-# 'natural/new/hit/na': 2019
-# 'natural/new/miss/forgotten': 2020
-# 'natural/new/miss/remembered': 2021
-# 'natural/new/miss/na': 2029
-# 'natural/new/fa/forgotten': 2030
-# 'natural/new/fa/remembered': 2031
-# 'natural/new/fa/na': 2039
-# 'natural/new/cr/forgotten': 2040
-# 'natural/new/cr/remembered': 2041
-# 'natural/new/cr/na': 2049
-# 'natural/new/na/forgotten': 2090
-# 'natural/new/na/remembered': 2091
-# 'natural/new/na/na': 2099
-# 'natural/old/hit/forgotten': 2110
-# 'natural/old/hit/remembered': 2111
-# 'natural/old/hit/na': 2119
-# 'natural/old/miss/forgotten': 2120
-# 'natural/old/miss/remembered': 2121
-# 'natural/old/miss/na': 2129
-# 'natural/old/na/forgotten': 2190
-# 'natural/old/na/remembered': 2191
-# 'natural/old/na/na': 2199
+# triggers (from TriggerTable.csv)
+trigs = pd.read_csv(opj(events_path, 'TriggerTable.csv'))
+#     'manmade/new/hit/forgotten': 1010,
+#     'manmade/new/hit/remembered': 1011,
+#     'manmade/new/hit/na': 1019,
+#     'manmade/new/miss/forgotten': 1020,
+#     'manmade/new/miss/remembered': 1021,
+#     'manmade/new/miss/na': 1029,
+#     'manmade/new/fa/forgotten': 1030,
+#     'manmade/new/fa/remembered': 1031,
+#     'manmade/new/fa/na': 1039,             
+#     'manmade/new/cr/forgotten': 1040,
+#     'manmade/new/cr/remembered': 1041,
+#     'manmade/new/cr/na': 1049,
+#     'manmade/new/na/forgotten': 1090,
+#     'manmade/new/na/remembered': 1091,
+#     'manmade/new/na/na': 1099,
+#     'manmade/old/hit/forgotten': 1110,
+#     'manmade/old/hit/remembered': 1111,
+#     'manmade/old/hit/na': 1119,
+#     'manmade/old/miss/forgotten': 1120,
+#     'manmade/old/miss/remembered': 1121,
+#     'manmade/old/miss/na': 1129,
+#     'manmade/old/na/forgotten': 1190,
+#     'manmade/old/na/remembered': 1191,
+#     'manmade/old/na/na': 1199,
+#     'natural/new/hit/forgotten': 2010,
+#     'natural/new/hit/remembered': 2011,
+#     'natural/new/hit/na': 2019,
+#     'natural/new/miss/forgotten': 2020,
+#     'natural/new/miss/remembered': 2021,
+#     'natural/new/miss/na': 2029,
+#     'natural/new/fa/forgotten': 2030,
+#     'natural/new/fa/remembered': 2031,
+#     'natural/new/fa/na': 2039,
+#     'natural/new/cr/forgotten': 2040,
+#     'natural/new/cr/remembered': 2041,
+#     'natural/new/cr/na': 2049,
+#     'natural/new/na/forgotten': 2090,
+#     'natural/new/na/remembered': 2091,
+#     'natural/new/na/na': 2099,
+#     'natural/old/hit/forgotten': 2110,
+#     'natural/old/hit/remembered': 2111,
+#     'natural/old/hit/na': 2119,
+#     'natural/old/miss/forgotten': 2120,
+#     'natural/old/miss/remembered': 2121,
+#     'natural/old/miss/na': 2129,
+#     'natural/old/na/forgotten': 2190,
+#     'natural/old/na/remembered': 2191,
+#     'natural/old/na/na': 2199
 
 # combined triggers according to research questions
 # Q1
@@ -105,126 +100,65 @@ ICA_n_comps = 20
 # NOTE: 'manmade' excludes NAs in behavior: 
 # although scene category is independent from response, 
 # NAs may reflect drops in attention and, consequently, incomplete stimulus perception
-trigs_Q1_manmade = [
-    1010, # 'manmade/new/hit/forgotten'
-    1011, # 'manmade/new/hit/remembered'
-    1019, # 'manmade/new/hit/na'
-    1020, # 'manmade/new/miss/forgotten'
-    1021, # 'manmade/new/miss/remembered'
-    1029, # 'manmade/new/miss/na'
-    1030, # 'manmade/new/fa/forgotten'
-    1031, # 'manmade/new/fa/remembered'
-    1039, # 'manmade/new/fa/na'
-    1040, # 'manmade/new/cr/forgotten'
-    1041, # 'manmade/new/cr/remembered'
-    1049, # 'manmade/new/cr/na'
-    1110, # 'manmade/old/hit/forgotten'
-    1111, # 'manmade/old/hit/remembered'
-    1119, # 'manmade/old/hit/na'
-    1120, # 'manmade/old/miss/forgotten'
-    1121, # 'manmade/old/miss/remembered'
-    1129 # 'manmade/old/miss/na'
-    ]
+trigs_Q1_manmade = trigs[(trigs['scene_category'] == 'man-made') 
+                         & (trigs['behavior'] != 'na')
+                         ]['trigger']
 # 'natural' condition
 # NOTE: 'natural' excludes NAs in behavior: 
 # although scene category is independent from response, 
 # NAs may reflect drops in attention and, consequently, incomplete stimulus perception
-trigs_Q1_natural = [
-    2010, # 'natural/new/hit/forgotten'
-    2011, # 'natural/new/hit/remembered'
-    2019, # 'natural/new/hit/na'
-    2020, # 'natural/new/miss/forgotten'
-    2021, # 'natural/new/miss/remembered'
-    2029, # 'natural/new/miss/na'
-    2030, # 'natural/new/fa/forgotten'
-    2031, # 'natural/new/fa/remembered'
-    2039, # 'natural/new/fa/na'
-    2040, # 'natural/new/cr/forgotten'
-    2041, # 'natural/new/cr/remembered'
-    2049, # 'natural/new/cr/na'
-    2110, # 'natural/old/hit/forgotten'
-    2111, # 'natural/old/hit/remembered'
-    2119, # 'natural/old/hit/na'
-    2120, # 'natural/old/miss/forgotten'
-    2121, # 'natural/old/miss/remembered'
-    2129 # 'natural/old/miss/na'
-    ]
+trigs_Q1_natural = trigs[(trigs['scene_category'] == 'natural') 
+                         & (trigs['behavior'] != 'na')
+                         ]['trigger']
 # Q2
 # 'new' condition
 # NOTE: 'new' excludes NAs in behavior (possible drops in attention) 
 # but must include NAs in memory: 
 # by definition, a new picture cannot be successfully or unsuccessfully recognized as old
-trigs_Q2_new = [    
-    1019, # 'manmade/new/hit/na'
-    1029, # 'manmade/new/miss/na'
-    1039, # 'manmade/new/fa/na'
-    1049, # 'manmade/new/cr/na'
-    2019, # 'natural/new/hit/na'
-    2029, # 'natural/new/miss/na'
-    2039, # 'natural/new/fa/na'
-    2049 # 'natural/new/cr/na'
-    ]
+trigs_Q2_new = trigs[(trigs['old'] == 'new') 
+                         & (trigs['behavior'] != 'na')
+                         & (trigs['subsequent_correct'] == 'na')
+                         ]['trigger']
 # 'old' condition
 # NOTE: 'old' excludes NAs in behavior (possible drops in attention) 
 # but can include NAs in memory: 
 # the point is whether the image has been initially categorized as old, 
 # regardless of whether it's recognized as such in subsequent presentations
-trigs_Q2_old = [
-    1110, # 'manmade/old/hit/forgotten'
-    1111, # 'manmade/old/hit/remembered'
-    1119, # 'manmade/old/hit/na'
-    1120, # 'manmade/old/miss/forgotten'
-    1121, # 'manmade/old/miss/remembered'
-    1129, # 'manmade/old/miss/na'
-    2110, # 'natural/old/hit/forgotten'
-    2111, # 'natural/old/hit/remembered'
-    2119, # 'natural/old/hit/na'
-    2120, # 'natural/old/miss/forgotten'
-    2121, # 'natural/old/miss/remembered'
-    2129 # 'natural/old/miss/na'
-    ]
+trigs_Q2_old = trigs[(trigs['old'] == 'old') 
+                         & (trigs['behavior'] != 'na')
+                         ]['trigger']
 # Q3
 # 'old-hit'
 # NOTE: 'old-hit' must only include 
 # old in presentation and hit in behavior but can include NAs in memory: 
 # the point is whether the image has been initially successfully categorized as old, 
 # regardless of whether it's recognized as such in subsequent presentations
-trigs_Q3_old_hit = [    
-    1110, # 'manmade/old/hit/forgotten'
-    1111, # 'manmade/old/hit/remembered'
-    1119, # 'manmade/old/hit/na'
-    2110, # 'natural/old/hit/forgotten'
-    2111, # 'natural/old/hit/remembered'
-    2119 # 'natural/old/hit/na'
-    ]
+trigs_Q3_old_hit = trigs[(trigs['old'] == 'old') 
+                         & (trigs['behavior'] == 'hit')
+                         ]['trigger']
 # 'old-miss'
 # NOTE: 'old-miss' must only include 
 # old in presentation and misses in behavior but can include NAs in memory: 
 # the point is whether the image has been initially unsuccessfully categorized as old, 
 # regardless of whether it's recognized as such in subsequent presentations
-trigs_Q3_old_miss = [
-    1120, # 'manmade/old/miss/forgotten'
-    1121, # 'manmade/old/miss/remembered'
-    1129, # 'manmade/old/miss/na'
-    2120, # 'natural/old/miss/forgotten'
-    2121, # 'natural/old/miss/remembered'
-    2129 # 'natural/old/miss/na'
-    ]
+trigs_Q3_old_miss = trigs[(trigs['old'] == 'old') 
+                         & (trigs['behavior'] == 'miss/forgotten')
+                         ]['trigger']
 # Q4
 # 'remembered'
 # NOTE: 'remembered' must only include old in presentation and hits in behavior
 # and must not include NAs in memory
-trigs_Q4_remembered = [    
-    1111, # 'manmade/old/hit/remembered'
-    2111 # 'natural/old/hit/remembered'
-    ]
+trigs_Q4_remembered = trigs[(trigs['old'] == 'old') 
+                         & (trigs['behavior'] == 'hit')
+                         & (trigs['subsequent_correct'] == 'subsequent_remembered')
+                         ]['trigger']
 # 'forgotten'
 # NOTE: 'forgotten' must only include old in presentation and hits in behavior 
 # and must not include NAs in memory
-trigs_Q4_forgotten = [
-    1110, # 'manmade/old/hit/forgotten'
-    2110 # 'natural/old/hit/forgotten'    
-    ]
+trigs_Q4_forgotten = trigs[(trigs['old'] == 'old') 
+                         & (trigs['behavior'] == 'hit')
+                         & (trigs['subsequent_correct'] == 'subsequent_forgotten')
+                         ]['trigger']
 
 # epoch length (relative to stimulus)
 begin_epoch = -0.2
@@ -243,7 +177,7 @@ ar = AutoReject(
 # %% PREPROCESSING
 
 # get all subject numbers
-subs = [ name for name in os.listdir(raw_path) if name.startswith('sub') ] 
+subs = [name for name in os.listdir(raw_path) if name.startswith('sub')] 
 
 for ssj in subs[:1]:
     
@@ -495,30 +429,33 @@ for ssj in subs[:1]:
     #     preload = True
     #     )
 
-    # extract events and event_id from data structure
-    events, event_dict = mne.events_from_annotations(raw_filt_interp_ref_ICA)
+    # message in console
+    print("--- create epochs ---")
+
+    # load event file
+    events_csv = pd.read_csv(opj(events_path, 'EMP' + ssj[-2:] + '_events.csv'))    
+    events = events_csv[['latency','trial','trigger']].to_numpy(dtype = int)
+
+    # visualize events
+    mne.viz.plot_events(
+        events,
+        sfreq = raw_filt_interp_ref_ICA.info['sfreq'] # sample frequency (to display data in seconds)
+        )
     
-    # # visualize events
-    # mne.viz.plot_events(
-    #     events, 
-    #     event_id = event_dict, 
-    #     sfreq = raw_filt_interp_ref_ICA.info['sfreq'] # sample frequency (to display data in seconds)
-    #     )
-        
     # create epochs (all conditions)
+    # NOTE: epochs are subsampled (512 Hz --> 128 Hz),
+    # to lower the chances of Type II error in subsequent statistical analyses
     epochs = mne.Epochs(
         raw_filt_interp_ref_ICA, 
         events, # events
-        event_id = event_dict, # event labels
         tmin = begin_epoch, # start epoch
         tmax = end_epoch, #end epoch
         baseline = (begin_epoch, 0), # time window for baseline correction
         picks = None, # include all channels 
         preload = True,
         decim = 4, # subsample data by a factor of 4, i.e., 128 Hz (for more info, see https://mne.tools/stable/overview/faq.html#resampling-and-decimating)
-        detrend = None, # do not detrend before baseline correction
-        event_repeated = 'drop', # only retain the row occurring first in the events
-        reject_by_annotation = False # because annotations have already been converted to events
+        detrend = None, # do not detrend before baseline correction        
+        reject_by_annotation = False # do not reject based on annotations
         )
     
     # plot epochs
@@ -527,448 +464,63 @@ for ssj in subs[:1]:
         scalings = None,
         n_epochs = 5, 
         n_channels = 64, 
-        events = events,           
-        event_id = event_dict,
+        events = events,
         butterfly = False
         )
 
     # %% ARTIFACT REJECTION
-    # artifact rejection is run on all conditions simultenously, 
+    # artifact rejection is run on all conditions simultanously, 
     # to avoid bias due to condition-specific artifacts
       
+    # message in console
+    print("--- run AutoReject ---")
+    
     # run artifact rejection
     ar.fit(epochs)  # fit on all epochs
     epochs_clean, reject_log = ar.transform(epochs, return_log = True) 
     
-    # visualize rejected epochs
-    epochs[reject_log.bad_epochs].plot()
+    # # visualize rejected epochs
+    # epochs[reject_log.bad_epochs].plot()
     
     # visualize reject log
     reject_log.plot('horizontal')
     
-    # %% SAVE DATA
-    epochs_clean.save(opj(preproc_path, ssj + '_epochs_AutoReject.fif'), overwrite = True)
+    # list rejected epochs
+    dropped_epochs = list(np.where(reject_log.bad_epochs)[0])
     
-    # %% CREATE EPOCHS (Q1)
-    # create epochs to answer the first research question:
-    # effect of scene category (manmade vs. natural) 
-    # on the amplitude of the N1 component
-    
-    # load data (for debugging only)
-    epochs_clean = mne.read_epochs(
-        opj(preproc_path, ssj + '_epochs_AutoReject.fif'),
-        preload = True
-        )
-    
-   
-    # event_dict
-    
-    
-    trigs_Q1_manmade
-    
-    epochs.equalize_event_counts(trigs_Q1_manmade) 
-    
-    
-    {'New Segment/': 1,
-     'Stimulus/1030': 2,
-     'Stimulus/1031': 3,
-     'Stimulus/1039': 4,
-     'Stimulus/1040': 5,
-     'Stimulus/1041': 6,
-     'Stimulus/1049': 7,
-     'Stimulus/1110': 8,
-     'Stimulus/1111': 9,
-     'Stimulus/1119': 10,
-     'Stimulus/1120': 11,
-     'Stimulus/1121': 12,
-     'Stimulus/1129': 13,
-     'Stimulus/2030': 14,
-     'Stimulus/2031': 15,
-     'Stimulus/2039': 16,
-     'Stimulus/2040': 17,
-     'Stimulus/2041': 18,
-     'Stimulus/2049': 19,
-     'Stimulus/2110': 20,
-     'Stimulus/2111': 21,
-     'Stimulus/2119': 22,
-     'Stimulus/2120': 23,
-     'Stimulus/2121': 24,
-     'Stimulus/2129': 25,
-     'Time 0/': 26}
-    
-    
-    conds_we_care_about = {
-        'Stimulus/1010',
-        'Stimulus/1011',
-        'Stimulus/1019',
-        'Stimulus/1020',
-        'Stimulus/1021',
-        'Stimulus/1029',
-        'Stimulus/1030',
-        'Stimulus/1031',
-        'Stimulus/1039',
-        'Stimulus/1040',
-        'Stimulus/1041',
-        'Stimulus/1049',
-        'Stimulus/1110',
-        'Stimulus/1111',
-        'Stimulus/1119',
-        'Stimulus/1120',
-        'Stimulus/1121',
-        'Stimulus/1129
-        }
-    
-    
-    
-    
-    epochs.equalize_event_counts(conds_we_care_about)
-    
-    
-    conds_we_care_about = ['auditory/left', 'auditory/right',
-                       'visual/left', 'visual/right']
-epochs.equalize_event_counts(conds_we_care_about)  # this operates in-place
-aud_epochs = epochs['auditory']
-vis_epochs = epochs['visual']
-del raw, epochs  # free up memory
-    
-    
-    
-    
-    # combine events according to research questions
-    # 'manmade' condition
-    events_manmade = mne.merge_events(
-        events,
-        trigs_Q1_manmade,
-        1000, # recode 'manmade'
-        replace_events = True
-        )
-    
-    
-    
-    
-    
-    # create epochs ('manmade' condition)
-    epochs_manmade = mne.Epochs(
-        raw_filt_interp_ref_ICA, 
-        events, # events
-        event_id = event_dict, # event labels
-        tmin = begin_epoch, # start epoch
-        tmax = end_epoch, #end epoch
-        baseline = (begin_epoch, 0), # time window for baseline correction
-        picks = None, # include all channels 
-        preload = True,
-        decim = 4, # subsample data by a factor of 4, i.e., 128 Hz (for more info, see https://mne.tools/stable/overview/faq.html#resampling-and-decimating)
-        detrend = None, # do not detrend before baseline correction
-        event_repeated = 'drop', # only retain the row occurring first in the events
-        reject_by_annotation = False # because annotations have already been converted to events
-        )
-    
-    
-    
-    
-    
-    # 'natural' condition
-    events_natural = mne.merge_events(
-        events,
-        trigs_Q1_natural,
-        2000, # recode 'natural'
-        replace_events = True
-        )
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    # Q2
-    # 'new' condition
-    events_new = mne.merge_events(
-        events,
-        trigs_Q2_new,
-        3000, # recode 'new'
-        replace_events = True
-        )
-    # 'old' condition
-    events_old = mne.merge_events(
-        events,
-        trigs_Q2_old,
-        4000, # recode 'old'
-        replace_events = True
-        )
-    # Q3
-    # 'old-hit' condition
-    events_old_hit = mne.merge_events(
-        events,
-        trigs_Q3_old_hit,
-        5000, # recode 'old-hit'
-        replace_events = True
-        )
-    # 'old-miss' condition
-    events_old_miss = mne.merge_events(
-        events,
-        trigs_Q3_old_miss,
-        6000, # recode 'old-miss'
-        replace_events = True
-        )
-    # Q4
-    # 'remembered' condition
-    events_remembered = mne.merge_events(
-        events,
-        trigs_Q4_remembered,
-        7000, # recode 'remembered'
-        replace_events = True
-        )
-    # 'forgotten' condition
-    events_forgotten = mne.merge_events(
-        events,
-        trigs_Q4_forgotten,
-        8000, # recode 'forgotten'
-        replace_events = True
-        )
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    # create epochs
-    
-    
-    
-    
-    
-    
-    AutoReject(
-        n_interpolate = None, # (default) values to try for the number of channels for which to interpolate (default: np.array([1, 4, 32]))
-        consensus = None, # (default) values to try for percentage of channels that must agree as a fraction of the total number of channels (default: np.linspace(0, 1.0, 11))
-        cv = 10, # cross-validation object
-        picks = datatype,
-        thresh_method = 'bayesian_optimization',
-        random_state = project_seed # RNG seed
-        )
-    
-    
-    
-    epochs_clean = ar.fit_transform(epochs) 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    # Autoreject
-    # compute channel-level rejections
-    ar = autoreject.AutoReject(n_interpolate=[1, 2, 3, 4], random_state=11,
-                               n_jobs=1, verbose=True)
-    ar.fit(epochs[:20])  # fit on the first 20 epochs to save time
-    epochs_ar, reject_log = ar.transform(epochs, return_log=True)
-    epochs[reject_log.bad_epochs].plot(scalings=dict(eeg=100e-6))
-
-
-    
-    
-    
-
-
-    # read event file
-    events_csv = pd.read_csv(opj(events_path, 'EMP' + ssj[-2:] + '_events.csv'))
-    events = events_csv[['latency','trial','trigger']].to_numpy(dtype = int)
-
-    mne.viz.plot_events(events,
-                        event_id = event_dict, 
-                        sfreq = raw_filt_interp_ref_ICA.info['sfreq'],
-                        first_samp = raw_filt_interp_ref_ICA.first_samp)
-
-
-
-
-
-
-
-
-    # 
-    events_manmade = mne.merge_events(events, range(1000, 1999), 1000, replace_events = True)
-    events_natural = mne.merge_events(new_events, range(2000, 2999), 2000, replace_events = True)
-
-
-
-
-    
-
-    # resample
-    # for more info, see https://mne.tools/stable/overview/faq.html#resampling-and-decimating
-
-    
-    
-    # %% ARTIFACT REJECTION: AUTOREJECT
-    # https://autoreject.github.io/stable/auto_examples/plot_autoreject_workflow.html#plot-autoreject-workflow
-    
-    
-    
-    
-    # starting from a relative path /eeg_BIDS which you should also have
-bids_root = '../eeg_BIDS/'
-
-subs = [ name for name in os.listdir(bids_root) if name.startswith('sub') ]
-
-n_jobs = 10
-
-for subject in subs:
-    
-    print(subject)
-
-    prepro_dir = opj(bids_root,'Preprocessed',subject)
-    prepro_data = mne.io.read_raw_fif(glob(opj(prepro_dir, '*unf*'))[0], preload=True)
-
-
-
-    # # Filtering is needed before artefact rejection see: https://autoreject.github.io/stable/auto_examples/plot_autoreject_workflow.html#plot-autoreject-workflow
-    # cutoff_l = 0.1
-    # prepro_data_highpass = prepro_data.copy().filter(l_freq=cutoff_l, h_freq=None)
-
-    # events_dir = '/data04/Sebastian/EMP/events/'
-
-    # events_csv = pd.read_csv(glob(opj(events_dir,'EMP'+subject[-2:]+'*.csv'))[0])
-    # events = events_csv[['latency','trial','trigger']].to_numpy(dtype = int)
-
-    new_events=mne.merge_events(events,range(1000,1999),1000, replace_events=True)
-    new_events=mne.merge_events(new_events,range(2000,2999),2000, replace_events=True)
-
-    #---------- Epoching and Artefact Rejection -------------#
-
-    events_of_interest = {
-        'manmade': 1000,
-        'natural': 2000}
-
-    # epoching the data to -200ms before stimulus onset to 500 ms after stimulus onset when the pictures disappears
-    epoched_data = mne.Epochs(prepro_data_highpass, new_events, tmin=-0.2, tmax=0.5,baseline=None,
-                        event_id =events_of_interest,
-                        reject_by_annotation=False, preload=True)
-
-    epoch_dir = opj(bids_root,'Epoched')
-    ensure_dir(epoch_dir)
-    epoched_data.save(opj(epoch_dir,subject+'-epo-ERP_RQ1_'+str(cutoff_l)+'_HP_.fif'), overwrite=True)
-
-
-    ar = AutoReject(verbose='tqdm_notebook', n_jobs=n_jobs, random_state=234)
-    epoched_data_clean_ar, rejection_log_fix = ar.fit_transform(epoched_data, return_log=True)
-
-    autoreject_dir = opj(bids_root,'AutoReject')
-    ensure_dir(autoreject_dir)
-    epoched_data_clean_ar.save(opj(autoreject_dir,subject+'-epo-ERP_RQ1_autoreject_'+str(cutoff_l)+'_HP_.fif'), overwrite = True)
-    # extract the indices of the dropped epochs and save them to a txt file
-
-    dropped_epochs = list(np.where(rejection_log_fix.bad_epochs)[0])
-
-    with open(opj(autoreject_dir,subject+'_droppedEpochs.txt'), 'w') as file:
+    with open(opj(preproc_path, ssj + '_droppedEpochs.txt'), 'w') as file:
         for x in dropped_epochs:
             file.write("%i\n" % x)
     
+    # %% SAVE DATA
+    epochs_clean.save(opj(preproc_path, ssj + '_epochs_AutoReject.fif'), overwrite = True)
     
+    # %% CREATE EPOCHS
+    # create epochs for different research questions
     
+    # # load data (for debugging only)
+    # epochs_clean = mne.read_epochs(
+    #     opj(preproc_path, ssj + '_epochs_AutoReject.fif'),
+    #     preload = True
+    #     )    
     
+    # message in console
+    print("--- create condition-specific epochs ---")
     
-    
-    
-    
-    print(events[:5])  # show the first 5
-
-
-
-    epochs_RQ1 = mne.Epochs(
-        raw_filt_interp_ref_ICA,
-        events, 
-        event_id=None, 
-        tmin=- 0.2,
-        tmax=0.5,
-        baseline=(None, 0),
-        picks=None, 
-        preload=False, 
-        reject=None, 
-        flat=None, 
-        proj=True, 
-        decim=1, 
-        reject_tmin=None, 
-        reject_tmax=None,
-        detrend=None,
-        on_missing='raise',
-        reject_by_annotation=True, 
-        metadata=None, 
-        event_repeated='error', 
-        verbose=None
-        )
-
-
-
-# RESAMPLE with mne.Epochs.decimate()
-# https://mne.tools/stable/overview/faq.html#resampling-and-decimating
-    
-    
-# extract current sampling rate
-s_rate = raw.info["sfreq"]
-
-
-
-
-
-
-
-
-
-
-
+    # create epochs
+    # convert to string each trigger in the list,
+    # create epochs, and save them to file
+    epochs_manmade = epochs_clean[[str(i) for i in trigs_Q1_manmade]].save(opj(preproc_path, ssj + '_manmade_epo.fif'), overwrite = True) # 'manmade'
+    epochs_natural = epochs_clean[[str(i) for i in trigs_Q1_natural]].save(opj(preproc_path, ssj + '_natural_epo.fif'), overwrite = True) # 'natural'
+    epochs_new = epochs_clean[[str(i) for i in trigs_Q2_new]].save(opj(preproc_path, ssj + '_new_epo.fif'), overwrite = True) # 'new'
+    epochs_old = epochs_clean[[str(i) for i in trigs_Q2_old]].save(opj(preproc_path, ssj + '_old_epo.fif'), overwrite = True) # 'old'
+    epochs_old_hit = epochs_clean[[str(i) for i in trigs_Q3_old_hit]].save(opj(preproc_path, ssj + '_old_hit_epo.fif'), overwrite = True) # 'old-hit'
+    epochs_old_miss = epochs_clean[[str(i) for i in trigs_Q3_old_miss]].save(opj(preproc_path, ssj + '_old_miss_epo.fif'), overwrite = True) # 'old-miss'
+    epochs_remembered = epochs_clean[[str(i) for i in trigs_Q4_remembered]].save(opj(preproc_path, ssj + '_remembered_epo.fif'), overwrite = True) # 'remembered'
+    epochs_forgotten = epochs_clean[[str(i) for i in trigs_Q4_forgotten]].save(opj(preproc_path, ssj + '_forgotten_epo.fif'), overwrite = True) # 'forgotten'
 
     # %% END
-
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    # message in console
+    print("--- end ---")
     
