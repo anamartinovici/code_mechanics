@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import os
 import mne
+import pathlib
 
 from os.path import join as opj
 from mne_bids import BIDSPath
@@ -176,10 +177,13 @@ ar = AutoReject(
 
 # %% PREPROCESSING
 
-# get all subject numbers
+# get all participant names
 subs = [name for name in os.listdir(raw_path) if name.startswith('sub')] 
 
-for ssj in subs[:1]:
+for ssj in subs:
+    
+    # create subdirectory
+    pathlib.Path(opj(preproc_path + ssj)).mkdir(exist_ok = True) 
     
     # message in console
     print("--- load " + ssj + " ---")
@@ -200,7 +204,7 @@ for ssj in subs[:1]:
         datatype = datatype, # BIDS data type        
         root = raw_path, # directory of BIDS dataset
         check = True # check BIDS conformity
-        )    
+        )
     
     # load data
     raw = mne.io.read_raw_brainvision(
@@ -209,6 +213,19 @@ for ssj in subs[:1]:
         misc = ('M1','M2'), # mastoid channels
         preload = True
         )        
+    
+    # plot raw data
+    raw.plot(
+        duration = 20, # time window (in seconds)
+        start = 20, # start time (in seconds)
+        n_channels = len(raw.ch_names), # number of channels to plot
+        color = 'darkblue', # line color
+        bad_color = 'red', # line color: bad channels
+        remove_dc = True, # remove DC component (visualization only)
+        proj = False, # apply projectors prior to plotting
+        group_by = 'type', # group by channel type
+        butterfly = False # butterfly mode        
+        )
     
     # check data info    
     print(raw.info)
@@ -220,9 +237,6 @@ for ssj in subs[:1]:
     
     # assign electrode montage
     raw = raw.set_montage(montage)
-        
-    # # create backup copy of raw data
-    # raw_backup = raw.copy()    
     
     # %% FILTERING
     
@@ -239,19 +253,16 @@ for ssj in subs[:1]:
 
     # plot filtered data
     raw_filt.plot(
-        duration = 20, # time window (in seconds)
-        start = 20, # start time (in seconds)
-        n_channels = len(raw_filt.ch_names), # number of channels to plot
-        color = 'darkblue', # line color
-        bad_color = 'red', # line color: bad channels
-        remove_dc = True, # remove DC component (visualization only)
-        proj = False, # apply projectors prior to plotting
-        group_by = 'type', # group by channel type
-        butterfly = False # butterfly mode        
+        duration = 20,
+        start = 20,
+        n_channels = len(raw_filt.ch_names),
+        color = 'darkblue',
+        bad_color = 'red',
+        remove_dc = True,
+        proj = False,
+        group_by = 'type',
+        butterfly = False     
         )
-
-    # # create backup copy of filtered data
-    # raw_filt_backup = raw_filt.copy()   
 
     # %% BAD CHANNEL DETECTION
 
@@ -309,7 +320,7 @@ for ssj in subs[:1]:
         )
     
     # save bad channels to file
-    with open(opj(preproc_path, ssj + '_bad_channels.txt'), 'w') as f:
+    with open(opj(preproc_path + ssj, ssj + '_bad_channels.txt'), 'w') as f:
         for item in bads:
             f.write("%s\n" % item)
     
@@ -329,15 +340,12 @@ for ssj in subs[:1]:
         start = 20,
         n_channels = len(raw_filt_interp.ch_names),
         color = 'darkblue',
-        bad_color = 'red',
+        bad_color = 'red', # in case some bad channels are still in the data
         remove_dc = True,
         proj = False,
         group_by = 'type',
         butterfly = False
         )
-    
-    # # create backup copy of interpolated data
-    # raw_filt_interp_backup = raw_filt_interp.copy()  
     
     # %% REFERENCING
     
@@ -345,21 +353,18 @@ for ssj in subs[:1]:
     print("--- referencing ---")
      
     # average reference
-    raw_filt_interp_ref = raw_filt_interp.set_eeg_reference(ref_channels = 'average')
-    
-    # # create backup copy of referenced data
-    # raw_filt_interp_ref_backup = raw_filt_interp_ref.copy()  
+    raw_filt_interp_ref = raw_filt_interp.set_eeg_reference(ref_channels = 'average') 
 
     # %% SAVE DATA
     
-    raw_filt_interp_ref.save(opj(preproc_path, ssj + '_filt_interp_ref.fif'), overwrite = True)
+    raw_filt_interp_ref.save(opj(preproc_path + ssj, ssj + '_filt_interp_ref_eeg.fif'), overwrite = True)
     
     # %% ARTIFACT REJECTION: ICA
     # https://mne.tools/stable/auto_tutorials/preprocessing/40_artifact_correction_ica.html?highlight=ica
     
     # # load data (for debugging only)
     # raw_filt_interp_ref = mne.io.read_raw_fif(
-    #     opj(preproc_path, ssj + '_filt_interp_ref.fif'),
+    #     opj(preproc_path + ssj, ssj + '_filt_interp_ref_eeg.fif'),
     #     preload = True
     #     )
 
@@ -406,7 +411,7 @@ for ssj in subs[:1]:
         n_channels = len(raw_filt_interp_ref_ICA.ch_names),
         color = 'darkblue',
         bad_color = 'red',
-        remove_dc = True, # remove DC component (visualization only)
+        remove_dc = True,
         proj = False,
         group_by = 'type',
         butterfly = False
@@ -419,13 +424,13 @@ for ssj in subs[:1]:
     print("--- end ICA ---" )
 
     # %% SAVE DATA
-    raw_filt_interp_ref_ICA.save(opj(preproc_path, ssj + '_filt_interp_ref_ICA.fif'), overwrite = True)
+    raw_filt_interp_ref_ICA.save(opj(preproc_path + ssj, ssj + '_filt_interp_ref_ica_eeg.fif'), overwrite = True)
     
     # %% CREATE EPOCHS (ALL CONDITIONS)
 
     # # load data (for debugging only)
     # raw_filt_interp_ref_ICA = mne.io.read_raw_fif(
-    #     opj(preproc_path, ssj + '_filt_interp_ref_ICA.fif'),
+    #     opj(preproc_path + ssj, ssj + '_filt_interp_ref_ica_eeg.fif'),
     #     preload = True
     #     )
 
@@ -479,21 +484,18 @@ for ssj in subs[:1]:
     ar.fit(epochs)  # fit on all epochs
     epochs_clean, reject_log = ar.transform(epochs, return_log = True) 
     
-    # # visualize rejected epochs
-    # epochs[reject_log.bad_epochs].plot()
-    
     # visualize reject log
     reject_log.plot('horizontal')
     
     # list rejected epochs
     dropped_epochs = list(np.where(reject_log.bad_epochs)[0])
     
-    with open(opj(preproc_path, ssj + '_droppedEpochs.txt'), 'w') as file:
+    with open(opj(preproc_path + ssj, ssj + '_droppedEpochs.txt'), 'w') as file:
         for x in dropped_epochs:
             file.write("%i\n" % x)
     
     # %% SAVE DATA
-    epochs_clean.save(opj(preproc_path, ssj + '_epochs_AutoReject.fif'), overwrite = True)
+    epochs_clean.save(opj(preproc_path + ssj, ssj + '_AutoReject_epo.fif'), overwrite = True)
     
     # %% CREATE EPOCHS
     # create epochs for different research questions
@@ -510,14 +512,14 @@ for ssj in subs[:1]:
     # create epochs
     # convert to string each trigger in the list,
     # create epochs, and save them to file
-    epochs_manmade = epochs_clean[[str(i) for i in trigs_Q1_manmade]].save(opj(preproc_path, ssj + '_manmade_epo.fif'), overwrite = True) # 'manmade'
-    epochs_natural = epochs_clean[[str(i) for i in trigs_Q1_natural]].save(opj(preproc_path, ssj + '_natural_epo.fif'), overwrite = True) # 'natural'
-    epochs_new = epochs_clean[[str(i) for i in trigs_Q2_new]].save(opj(preproc_path, ssj + '_new_epo.fif'), overwrite = True) # 'new'
-    epochs_old = epochs_clean[[str(i) for i in trigs_Q2_old]].save(opj(preproc_path, ssj + '_old_epo.fif'), overwrite = True) # 'old'
-    epochs_old_hit = epochs_clean[[str(i) for i in trigs_Q3_old_hit]].save(opj(preproc_path, ssj + '_old_hit_epo.fif'), overwrite = True) # 'old-hit'
-    epochs_old_miss = epochs_clean[[str(i) for i in trigs_Q3_old_miss]].save(opj(preproc_path, ssj + '_old_miss_epo.fif'), overwrite = True) # 'old-miss'
-    epochs_remembered = epochs_clean[[str(i) for i in trigs_Q4_remembered]].save(opj(preproc_path, ssj + '_remembered_epo.fif'), overwrite = True) # 'remembered'
-    epochs_forgotten = epochs_clean[[str(i) for i in trigs_Q4_forgotten]].save(opj(preproc_path, ssj + '_forgotten_epo.fif'), overwrite = True) # 'forgotten'
+    epochs_manmade = epochs_clean[[str(i) for i in trigs_Q1_manmade]].save(opj(preproc_path + ssj, ssj + '_manmade_epo.fif'), overwrite = True) # 'manmade'
+    epochs_natural = epochs_clean[[str(i) for i in trigs_Q1_natural]].save(opj(preproc_path + ssj, ssj + '_natural_epo.fif'), overwrite = True) # 'natural'
+    epochs_new = epochs_clean[[str(i) for i in trigs_Q2_new]].save(opj(preproc_path + ssj, ssj + '_new_epo.fif'), overwrite = True) # 'new'
+    epochs_old = epochs_clean[[str(i) for i in trigs_Q2_old]].save(opj(preproc_path + ssj, ssj + '_old_epo.fif'), overwrite = True) # 'old'
+    epochs_old_hit = epochs_clean[[str(i) for i in trigs_Q3_old_hit]].save(opj(preproc_path + ssj, ssj + '_old_hit_epo.fif'), overwrite = True) # 'old-hit'
+    epochs_old_miss = epochs_clean[[str(i) for i in trigs_Q3_old_miss]].save(opj(preproc_path + ssj, ssj + '_old_miss_epo.fif'), overwrite = True) # 'old-miss'
+    epochs_remembered = epochs_clean[[str(i) for i in trigs_Q4_remembered]].save(opj(preproc_path + ssj, ssj + '_remembered_epo.fif'), overwrite = True) # 'remembered'
+    epochs_forgotten = epochs_clean[[str(i) for i in trigs_Q4_forgotten]].save(opj(preproc_path + ssj, ssj + '_forgotten_epo.fif'), overwrite = True) # 'forgotten'
 
     # %% END
     
