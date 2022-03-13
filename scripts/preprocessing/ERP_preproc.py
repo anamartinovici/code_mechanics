@@ -118,7 +118,6 @@ trigs_Q1_natural = trigs[(trigs['scene_category'] == 'natural')
 # by definition, a new picture cannot be successfully or unsuccessfully recognized as old
 trigs_Q2_new = trigs[(trigs['old'] == 'new') 
                          & (trigs['behavior'] != 'na')
-                         & (trigs['subsequent_correct'] == 'na')
                          ]['trigger']
 # 'old' condition
 # NOTE: 'old' excludes NAs in behavior (possible drops in attention) 
@@ -147,18 +146,18 @@ trigs_Q3_old_miss = trigs[(trigs['old'] == 'old')
                          ]['trigger']
 # Q4
 # 'remembered'
-# NOTE: 'remembered' must only include old in presentation and hits in behavior
+# NOTE: 'remembered' can be both 'new' and 'old', 
+# because by definition 'new' pictures shown only once cannot be subsequently remembered/forgotten
+# can include hits and misses and NAs 
 # and must not include NAs in memory
-trigs_Q4_remembered = trigs[(trigs['old'] == 'old') 
-                         & (trigs['behavior'] == 'hit')
-                         & (trigs['subsequent_correct'] == 'subsequent_remembered')
-                         ]['trigger']
+trigs_Q4_remembered = trigs[trigs['subsequent_correct'] == 'subsequent_remembered'
+                            ]['trigger']
 # 'forgotten'
-# NOTE: 'forgotten' must only include old in presentation and hits in behavior 
+# NOTE: 'forgotten' can be both 'new' and 'old', 
+# because by definition 'new' pictures shown only once cannot be subsequently remembered/forgotten
+# can include hits and misses and NAs 
 # and must not include NAs in memory
-trigs_Q4_forgotten = trigs[(trigs['old'] == 'old') 
-                         & (trigs['behavior'] == 'hit')
-                         & (trigs['subsequent_correct'] == 'subsequent_forgotten')
+trigs_Q4_forgotten = trigs[trigs['subsequent_correct'] == 'subsequent_forgotten'
                          ]['trigger']
 
 # epoch length (relative to stimulus)
@@ -283,7 +282,7 @@ for ssj in subs:
     # - missing signal (NaN)
     # - flat signal
     # - deviation
-    # - HF noise (frequency components > 50 Hz considerably higher than median channel noisiness )
+    # - HF noise (frequency components > 50 Hz considerably higher than median channel noisiness)
     # - correlation
     #   - bad correlation window if maximum correlation with another channel is below the provided correlation threshold (default: 0.4)
     #   - a channel is “bad-by-correlation” if its fraction of bad correlation windows is above the bad fraction threshold (default: 0.01)
@@ -359,7 +358,7 @@ for ssj in subs:
     
     raw_filt_interp_ref.save(opj(preproc_path + ssj, ssj + '_filt_interp_ref_eeg.fif'), overwrite = True)
     
-    # %% ARTIFACT REJECTION: ICA
+    # %% ARTIFACT CORRECTION: ICA
     # https://mne.tools/stable/auto_tutorials/preprocessing/40_artifact_correction_ica.html?highlight=ica
     
     # # load data (for debugging only)
