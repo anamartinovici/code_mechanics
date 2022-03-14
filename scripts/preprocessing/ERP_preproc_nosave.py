@@ -405,8 +405,8 @@ for ssj in subs:
     #     butterfly = False
     #     )
     
-    # plot components (topographies)    
-    ica.plot_components()
+    # # plot components (topographies)    
+    # ica.plot_components()
 
     # message in console
     print("--- end ICA ---" )
@@ -430,11 +430,11 @@ for ssj in subs:
     events_csv = pd.read_csv(opj(events_path, 'EMP' + ssj[-2:] + '_events.csv'))    
     events = events_csv[['latency','trial','trigger']].to_numpy(dtype = int)
 
-    # visualize events
-    mne.viz.plot_events(
-        events,
-        sfreq = raw.info['sfreq'] # sample frequency (to display data in seconds)
-        )
+    # # visualize events
+    # mne.viz.plot_events(
+    #     events,
+    #     sfreq = raw.info['sfreq'] # sample frequency (to display data in seconds)
+    #     )
     
     # create epochs (all conditions)
     # NOTE: epochs are subsampled (512 Hz --> 128 Hz),
