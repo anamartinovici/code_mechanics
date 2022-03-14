@@ -213,18 +213,18 @@ for ssj in subs:
         preload = True
         )        
     
-    # plot raw data
-    raw.plot(
-        duration = 20, # time window (in seconds)
-        start = 20, # start time (in seconds)
-        n_channels = len(raw.ch_names), # number of channels to plot
-        color = 'darkblue', # line color
-        bad_color = 'red', # line color: bad channels
-        remove_dc = True, # remove DC component (visualization only)
-        proj = False, # apply projectors prior to plotting
-        group_by = 'type', # group by channel type
-        butterfly = False # butterfly mode        
-        )
+    # # plot raw data
+    # raw.plot(
+    #     duration = 20, # time window (in seconds)
+    #     start = 20, # start time (in seconds)
+    #     n_channels = len(raw.ch_names), # number of channels to plot
+    #     color = 'darkblue', # line color
+    #     bad_color = 'red', # line color: bad channels
+    #     remove_dc = True, # remove DC component (visualization only)
+    #     proj = False, # apply projectors prior to plotting
+    #     group_by = 'type', # group by channel type
+    #     butterfly = False # butterfly mode        
+    #     )
     
     # check data info    
     print(raw.info)
@@ -250,18 +250,18 @@ for ssj in subs:
             h_freq = cutoff_high
             )
 
-    # plot filtered data
-    raw_filt.plot(
-        duration = 20,
-        start = 20,
-        n_channels = len(raw_filt.ch_names),
-        color = 'darkblue',
-        bad_color = 'red',
-        remove_dc = True,
-        proj = False,
-        group_by = 'type',
-        butterfly = False     
-        )
+    # # plot filtered data
+    # raw_filt.plot(
+    #     duration = 20,
+    #     start = 20,
+    #     n_channels = len(raw_filt.ch_names),
+    #     color = 'darkblue',
+    #     bad_color = 'red',
+    #     remove_dc = True,
+    #     proj = False,
+    #     group_by = 'type',
+    #     butterfly = False     
+    #     )
 
     # %% BAD CHANNEL DETECTION
 
@@ -305,18 +305,18 @@ for ssj in subs:
     # add bad channel info to filtered data 
     raw_filt.info['bads'] = bads 
         
-    # plot filtered data with bad channels in red
-    raw_filt.plot(
-        duration = 20,
-        start = 20,
-        n_channels = len(raw_filt.ch_names),
-        color = 'darkblue',
-        bad_color = 'red',
-        remove_dc = True,
-        proj = False,
-        group_by = 'type',
-        butterfly = False     
-        )
+    # # plot filtered data with bad channels in red
+    # raw_filt.plot(
+    #     duration = 20,
+    #     start = 20,
+    #     n_channels = len(raw_filt.ch_names),
+    #     color = 'darkblue',
+    #     bad_color = 'red',
+    #     remove_dc = True,
+    #     proj = False,
+    #     group_by = 'type',
+    #     butterfly = False     
+    #     )
     
     # save bad channels to file
     with open(opj(preproc_path + ssj, ssj + '_bad_channels.txt'), 'w') as f:
@@ -333,18 +333,18 @@ for ssj in subs:
         reset_bads = True # remove bad channel list from info
         )        
         
-    # plot filtered data with interpolated channels
-    raw_filt_interp.plot(
-        duration = 20,
-        start = 20,
-        n_channels = len(raw_filt_interp.ch_names),
-        color = 'darkblue',
-        bad_color = 'red', # in case some bad channels are still in the data
-        remove_dc = True,
-        proj = False,
-        group_by = 'type',
-        butterfly = False
-        )
+    # # plot filtered data with interpolated channels
+    # raw_filt_interp.plot(
+    #     duration = 20,
+    #     start = 20,
+    #     n_channels = len(raw_filt_interp.ch_names),
+    #     color = 'darkblue',
+    #     bad_color = 'red', # in case some bad channels are still in the data
+    #     remove_dc = True,
+    #     proj = False,
+    #     group_by = 'type',
+    #     butterfly = False
+    #     )
     
     # %% REFERENCING
     
@@ -403,18 +403,18 @@ for ssj in subs:
     # apply ICA to unfiltered data
     raw_filt_interp_ref_ICA = ica.apply(raw_filt_interp_ref)
     
-    # plot clean data
-    raw_filt_interp_ref_ICA.plot(
-        duration = 20,
-        start = 20,
-        n_channels = len(raw_filt_interp_ref_ICA.ch_names),
-        color = 'darkblue',
-        bad_color = 'red',
-        remove_dc = True,
-        proj = False,
-        group_by = 'type',
-        butterfly = False
-        )
+    # # plot clean data
+    # raw_filt_interp_ref_ICA.plot(
+    #     duration = 20,
+    #     start = 20,
+    #     n_channels = len(raw_filt_interp_ref_ICA.ch_names),
+    #     color = 'darkblue',
+    #     bad_color = 'red',
+    #     remove_dc = True,
+    #     proj = False,
+    #     group_by = 'type',
+    #     butterfly = False
+    #     )
     
     # plot components (topographies)    
     ica.plot_components()
@@ -462,15 +462,15 @@ for ssj in subs:
         reject_by_annotation = False # do not reject based on annotations
         )
     
-    # plot epochs
-    epochs.plot(
-        picks = datatype,
-        scalings = None,
-        n_epochs = 5, 
-        n_channels = 64, 
-        events = events,
-        butterfly = False
-        )
+    # # plot epochs
+    # epochs.plot(
+    #     picks = datatype,
+    #     scalings = None,
+    #     n_epochs = 5, 
+    #     n_channels = 64, 
+    #     events = events,
+    #     butterfly = False
+    #     )
 
     # %% ARTIFACT REJECTION
     # artifact rejection is run on all conditions simultanously, 
