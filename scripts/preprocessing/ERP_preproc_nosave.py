@@ -474,7 +474,7 @@ for ssj in subs:
     epochs_clean, reject_log = ar.transform(epochs, return_log = True) 
     
     # visualize reject log
-    reject_log.plot('horizontal')
+    # reject_log.plot('horizontal')
     
     # list rejected epochs
     dropped_epochs = list(np.where(reject_log.bad_epochs)[0])
