@@ -113,17 +113,12 @@ trigs_Q1_natural = trigs[(trigs['scene_category'] == 'natural')
                          ]['trigger']
 # Q2
 # 'new' condition
-# NOTE: 'new' excludes NAs in behavior (possible drops in attention) 
-# but must include NAs in memory: 
-# by definition, a new picture cannot be successfully or unsuccessfully recognized as old
+# NOTE: 'new' excludes NAs in behavior (possible drops in attention)
 trigs_Q2_new = trigs[(trigs['old'] == 'new') 
                          & (trigs['behavior'] != 'na')
                          ]['trigger']
 # 'old' condition
-# NOTE: 'old' excludes NAs in behavior (possible drops in attention) 
-# but can include NAs in memory: 
-# the point is whether the image has been initially categorized as old, 
-# regardless of whether it's recognized as such in subsequent presentations
+# NOTE: 'old' excludes NAs in behavior (possible drops in attention)
 trigs_Q2_old = trigs[(trigs['old'] == 'old') 
                          & (trigs['behavior'] != 'na')
                          ]['trigger']
@@ -146,17 +141,11 @@ trigs_Q3_old_miss = trigs[(trigs['old'] == 'old')
                          ]['trigger']
 # Q4
 # 'remembered'
-# NOTE: 'remembered' can be both 'new' and 'old', 
-# because by definition 'new' pictures shown only once cannot be subsequently remembered/forgotten
-# can include hits and misses and NAs 
-# and must not include NAs in memory
+# NOTE: 'remembered' can be both 'new' and 'old' and include all behavior
 trigs_Q4_remembered = trigs[trigs['subsequent_correct'] == 'subsequent_remembered'
                             ]['trigger']
-# 'forgotten'
-# NOTE: 'forgotten' can be both 'new' and 'old', 
-# because by definition 'new' pictures shown only once cannot be subsequently remembered/forgotten
-# can include hits and misses and NAs 
-# and must not include NAs in memory
+# 'forgotten' 
+# NOTE: 'forgotten' can be both 'new' and 'old' and include all behavior
 trigs_Q4_forgotten = trigs[trigs['subsequent_correct'] == 'subsequent_forgotten'
                          ]['trigger']
 
