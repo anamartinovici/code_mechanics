@@ -16,10 +16,12 @@ sources:
 import random
 import numpy as np
 # import glob
+import os
 import re
 import matplotlib.pyplot as plt
-
 import mne
+
+from os.path import join as opj
 # from mne.stats import permutation_t_test # only if using permutation test
 from mne.channels import find_ch_adjacency, make_1020_channel_selections # only if using TFCE
 from mne.stats import spatio_temporal_cluster_test # only if using TFCE
@@ -40,12 +42,8 @@ datatype = 'eeg' # data type
 montage = mne.channels.make_standard_montage("biosemi64")
 # montage.plot() # visualize montage
 
-# filter cutoffs
-cutoff_low = 0.1
-cutoff_high = 40
-
-# number of components for ICA decomposition
-ICA_n_comps = 20
+# get all participant names
+subs = [name for name in os.listdir(preproc_path) if name.startswith('sub')] 
 
 # filenames = glob.glob(preproc_path + '/*.fif') # list of .fif files in directory
 
@@ -63,6 +61,40 @@ color_dict = {'manmade':'blue', 'natural':'red'} # graph: line colors
 linestyle_dict = {'manmade':'-', 'natural':'--'} # graph: line type
 
 # %% data cleaning (one dataset)
+
+for ssj in subs:
+
+
+    # message in console
+    print("--- load epochs " + ssj + " ---")
+    
+    # load 'manmade' epochs
+    epochs_manmade = mne.read_epochs(
+        opj(preproc_path + ssj, ssj + '_manmade_epo.fif'), preload = True).pick_types(
+            eeg = True, 
+            exclude = ['M1', 'M2', 'VEOG', 'HEOG'] # select scalp electrodes only
+            )
+        
+    # load 'natural' epochs
+    epochs_natural = mne.read_epochs(
+        opj(preproc_path + ssj, ssj + '_natural_epo.fif'), preload = True).pick_types(
+            eeg = True, 
+            exclude = ['M1', 'M2', 'VEOG', 'HEOG'] # select scalp electrodes only
+            )
+    
+    # evoked responses
+    evoked_manmade = epochs_equal_manmade.average() # 'manmade' condition
+    evoked_natural = epochs_equal_natural.average() # 'natural' condition
+          
+    # check out how to do weighted averaging
+    # https://mne.tools/stable/generated/mne.Epochs.html?highlight=epochs%20average#mne.Epochs.average
+            
+            
+            
+            
+            
+            
+
 
 
 # load data, select scalp electrodes only
