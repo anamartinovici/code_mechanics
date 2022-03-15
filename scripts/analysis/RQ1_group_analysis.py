@@ -60,6 +60,10 @@ topo_times = np.arange(0, 0.5, 0.05) # time points for topographies
 color_dict = {'manmade':'blue', 'natural':'red'} # graph: line colors
 linestyle_dict = {'manmade':'-', 'natural':'--'} # graph: line type
 
+# time window for statistical analysis
+t_min = 0
+t_max = 0.3
+
 # %% data cleaning (one dataset)
 
 for ssj in subs:
@@ -67,7 +71,7 @@ for ssj in subs:
 
     # message in console
     print("--- load epochs " + ssj + " ---")
-    
+      
     # load 'manmade' epochs
     epochs_manmade = mne.read_epochs(
         opj(preproc_path + ssj, ssj + '_manmade_epo.fif'), preload = True).pick_types(
@@ -82,107 +86,92 @@ for ssj in subs:
             exclude = ['M1', 'M2', 'VEOG', 'HEOG'] # select scalp electrodes only
             )
     
-    # evoked responses
-    evoked_manmade = epochs_equal_manmade.average() # 'manmade' condition
-    evoked_natural = epochs_equal_natural.average() # 'natural' condition
+    # evoked responses (weighted average)
+    evoked_manmade = epochs_manmade.average() # 'manmade' condition
+    evoked_natural = epochs_natural.average() # 'natural' condition
           
-    # check out how to do weighted averaging
-    # https://mne.tools/stable/generated/mne.Epochs.html?highlight=epochs%20average#mne.Epochs.average
-            
-            
-            
-            
-            
-            
+    # trial-averaged evoked responses with confidence intervals
+    evokeds = dict(manmade = list(epochs_manmade.iter_evoked()), # 'manmade' condition
+                   natural = list(epochs_natural.iter_evoked())) # 'natural' condition
 
+    # %% data visualization (one dataset)
 
+    # plot electrode montage
+    epochs_manmade.plot_sensors(ch_type = 'eeg', show_names = True) 
 
-# load data, select scalp electrodes only
-epochs = mne.read_epochs(filenames[0], preload = True).pick_types(eeg = True, exclude = ['M1', 'M2', 'VEOG', 'HEOG'])
+    # joint plots (butterfly + topography)
+    evoked_manmade.plot_joint(times = topo_times, title = opj(ssj + '_manmade')) # 'manmade' condition
+    evoked_natural.plot_joint(times = topo_times, title = opj(ssj + '_natural')) # 'natural' condition
 
-# equalize epochs across conditions (drop epochs from condition with more data)
-epochs_equal, dropped_epochs = epochs.equalize_event_counts()
+    # comparing conditions
+    mne.viz.plot_compare_evokeds(evokeds, 
+                                 combine = 'median', # more robust to outliers
+                                 legend = 'lower left',
+                                 picks = electrodes_graph,
+                                 show_sensors = 'upper left',
+                                 colors = color_dict,
+                                 linestyles = linestyle_dict,
+                                 title = opj(ssj + '_manmade-minus-natural')
+                                 )
 
-# separate condition epochs
-epochs_equal_manmade = epochs_equal['manmade']
-epochs_equal_natural = epochs_equal['natural']
+    # # difference wave
+    # manmade_minus_natural = mne.combine_evoked([evoked_equal_manmade, evoked_equal_natural], weights = [1, -1])
+    # manmade_minus_natural.plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[0], flags = 0).group(0) + conditions[1])
 
-# evoked responses
-evoked_equal_manmade = epochs_equal_manmade.average() # 'manmade' condition
-evoked_equal_natural = epochs_equal_natural.average() # 'natural' condition
+    # # grand average
+    # evoked_grand_average = mne.grand_average([evoked_manmade, evoked_natural])        
+    
+    # %% stats (one dataset)
+    # TFCE (threshold-free cluster enhancement)
+    # https://mne.tools/stable/auto_tutorials/stats-sensor-space/20_erp_stats.html?highlight=cluster%20enhancement
 
-# trial-averaged evoked responses with confidence intervals
-evokeds = dict(manmade = list(epochs_equal['manmade'].iter_evoked()), # 'manmade' condition
-               natural = list(epochs_equal['natural'].iter_evoked())) # 'natural' condition
+    # calculate adjacency matrix between sensors from their locations
+    adjacency, _ = find_ch_adjacency(epochs_manmade.info, "eeg")
 
-# %% data visualization (one dataset)
+    # extract only time window of interest
+    epochs_manmade_stats = epochs_manmade.crop(t_min, t_max)#, include_tmax = False) # 'manmade' condition
+    epochs_natural_stats = epochs_natural.crop(t_min, t_max)#, include_tmax = False) # 'natural' condition
+    
+    # extract data from scalp electrodes and selected time window
+    # transpose because the cluster test requires channels to be last
+    # In this case, inference is done over items. In the same manner, we could
+    # also conduct the test over, e.g., subjects.
+    epochs_TFCE = [epochs_manmade_stats.get_data(picks = 'eeg').transpose(0, 2, 1),
+                   epochs_natural_stats.get_data(picks = 'eeg').transpose(0, 2, 1)]
 
-# plot electrode montage
-epochs_equal.plot_sensors(ch_type = 'eeg', show_names = True) 
+    # tfce = dict(start = .4, step = .4) # ideally start and step would be smaller
+    tfce = dict(start = .2, step = .2)
 
-# joint plots (butterfly + topography)
-evoked_equal_manmade.plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[0], flags = 0).group(0) + conditions[0]) # 'manmade' condition
-evoked_equal_natural.plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[0], flags = 0).group(0) + conditions[1]) # 'natural' condition
+    n_perm = 5000 # number of permutations (at least 1000)
 
-# comparing conditions
-mne.viz.plot_compare_evokeds(evokeds, 
-                             combine = 'mean',
-                             legend = 'lower left',
-                             picks = electrodes_graph,
-                             show_sensors = 'upper left',
-                             colors = color_dict,
-                             linestyles = linestyle_dict,
-                             title = re.search(sub_pattern, filenames[0], flags = 0).group(0) + conditions[0] + '-' + conditions[1]
-                             )
+    # Calculate statistical thresholds
+    t_obs, clusters, cluster_pv, h0 = spatio_temporal_cluster_test(
+        epochs_TFCE, 
+        threshold = tfce, 
+        n_permutations = n_perm, 
+        tail = 0, 
+        adjacency = adjacency,
+        seed = project_seed, 
+        out_type = 'indices', 
+        check_disjoint = False
+        )
 
-# # difference wave
-# manmade_minus_natural = mne.combine_evoked([evoked_equal_manmade, evoked_equal_natural], weights = [1, -1])
-# manmade_minus_natural.plot_joint(times = topo_times, title = re.search(sub_pattern, filenames[0], flags = 0).group(0) + conditions[1])
+    significant_points = cluster_pv.reshape(t_obs.shape).T < .05
+    # print(str(significant_points.sum()) + " points selected by TFCE ...")
 
-# # grand average
-# evoked_grand_average = mne.grand_average([evoked_equal_manmade, evoked_equal_natural])
+    # calculate difference wave on which to plot statistically different points
+    evoked = mne.combine_evoked(
+                                [epochs_manmade_stats.average(), 
+                                epochs_natural_stats.average()],
+                                weights = 'nave'
+                                )
 
-# %% stats: TFCE (threshold-free cluster enhancement)
-
-
-
-
-
-# Calculate adjacency matrix between sensors from their locations
-adjacency, _ = find_ch_adjacency(epochs_equal.info, "eeg")
-
-# Extract data: transpose because the cluster test requires channels to be last
-# In this case, inference is done over items. In the same manner, we could
-# also conduct the test over, e.g., subjects.
-epochs_TFCE = [epochs_equal_manmade.get_data().transpose(0, 2, 1), # transpose because the cluster test requires channels to be last
-     epochs_equal_natural.get_data().transpose(0, 2, 1)]
-
-# tfce = dict(start = .4, step = .4) # ideally start and step would be smaller
-tfce = dict(start = .2, step = .2)
-
-n_perm = 5000 # number of permutations (at least 1000)
-
-# Calculate statistical thresholds
-t_obs, clusters, cluster_pv, h0 = spatio_temporal_cluster_test(
-    epochs_TFCE, 
-    threshold = tfce, 
-    n_permutations = n_perm, 
-    tail = 0, 
-    adjacency = adjacency, 
-    n_jobs = 1, 
-    seed = project_seed, 
-    out_type = 'indices', 
-    check_disjoint = False
-    )
-
-significant_points = cluster_pv.reshape(t_obs.shape).T < .05
-# print(str(significant_points.sum()) + " points selected by TFCE ...")
-
-# calculate difference wave on which to plot statistically different points
-evoked = mne.combine_evoked([epochs_equal_manmade.average(), epochs_equal_natural.average()], weights = [1, -1])
-
-# Visualize the results
-evoked.plot_image(mask = significant_points, show_names = "all", titles = conditions[0] + '-' + conditions[1])
+    # Visualize the results
+    evoked.plot_image(
+        mask = significant_points, 
+        show_names = "all", 
+        titles =  opj(ssj + '_manmade-minus-natural')
+        )
 
 
 
