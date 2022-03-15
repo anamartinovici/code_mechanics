@@ -1,1 +1,11 @@
 success_test_make.txt
+data/raw/eeg_BIDS/README
+
+*.fif
+*.eeg
+*.vhdr
+*.vmrk
+*.json
+*.tsv
+
+data/chanlocs/
