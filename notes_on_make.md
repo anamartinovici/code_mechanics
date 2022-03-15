@@ -28,7 +28,7 @@ On my personal laptop (Ana) it works if I use `powershell` as a terminal or `rto
 
 Open a terminal -> make sure that the working directory is the local copy of the git repo -> type `make test_make` in the terminal.
 
-Typing `make test_make` in the terminal checks if make can be used. If `success_test_make.txt` is created in the root directory of the git repo, then open the file and enjoy the success :)
+Typing `make test_make` in the terminal checks if make can be used. If `success_test_make.txt` is created in the root directory of the git repo, then open the file and enjoy the success :) If `saved_from_test_make_py.txt` is created in the root directory of the git repo, then you can execute python from the Makefile, and the rest of the targets should be build without issue.
 
 
 
