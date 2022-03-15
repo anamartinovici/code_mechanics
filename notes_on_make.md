@@ -22,9 +22,13 @@ If you get a message that says "which: no make" and then a series of paths, then
 
 If you get a message that shows a path to "bin/make", then you have make installed and added to Path, and you can continue using make in this project.
 
-On my personal laptop (Ana) it works if I use `powershell` as a terminal.
+On my personal laptop (Ana) it works if I use `powershell` as a terminal or `rtools bash`. On the RSM PC, it works with `rtools bash`.
 
-Then, typing `make test_make` in the terminal checks if make can be used. If `success_test_make.txt` is created in the root directory of the git repo, then open the file and enjoy the success :)
+## test make within this repo
+
+Open a terminal -> make sure that the working directory is the local copy of the git repo -> type `make test_make` in the terminal.
+
+Typing `make test_make` in the terminal checks if make can be used. If `success_test_make.txt` is created in the root directory of the git repo, then open the file and enjoy the success :)
 
 
 
