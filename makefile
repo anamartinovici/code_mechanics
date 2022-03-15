@@ -10,5 +10,5 @@ test_make:
 # for now, this is a manual operation
 # in the future, this will be done by downloading from the Research Drive
 
-process_data_for_ERP: scripts/01_ERP_processing.py
-	python scripts/01_ERP_processing.py
+process_data_for_ERP: scripts/01_process_for_ERP_lowRAM.py
+	python scripts/01_process_for_ERP_lowRAM.py
