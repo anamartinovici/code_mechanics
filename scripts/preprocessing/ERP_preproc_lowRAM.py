@@ -44,6 +44,18 @@ cutoff_high = 40
 # number of components for ICA decomposition
 ICA_n_comps = 20
 
+# ICA parameters
+ica = ICA(
+    n_components = ICA_n_comps,
+    noise_cov = None, # channels are scaled to unit variance (“z-standardized”) prior to whitening by PCA
+    # 'picard': algorithm that converges faster than 'fastica' and 'infomax' 
+    # and is more robust when sources are not completely independent (typical for EEG signal)
+    method = 'picard',
+    fit_params = None, # use defaults of selected ICA method              
+    max_iter = 'auto',  # max number of iterations
+    random_state = project_seed # RNG seed
+    )
+
 # triggers (from TriggerTable.csv)
 trigs = pd.read_csv(opj(events_path, 'TriggerTable.csv'))
 #     'manmade/new/hit/forgotten': 1010,
@@ -376,18 +388,6 @@ for ssj in subs:
     # copy data and apply 1 Hz high-pass filter before ICA
     raw_ICA = raw.copy().filter(l_freq = 1, h_freq = None)
 
-    # ICA parameters
-    ica = ICA(
-        n_components = ICA_n_comps,
-        noise_cov = None, # channels are scaled to unit variance (“z-standardized”) prior to whitening by PCA
-        # 'picard': algorithm that converges faster than 'fastica' and 'infomax' 
-        # and is more robust when sources are not completely independent (typical for EEG signal)
-        method = 'picard',
-        fit_params = None, # use defaults of selected ICA method              
-        max_iter = 'auto',  # max number of iterations
-        random_state = project_seed # RNG seed
-        )
-
     # fit ICA to low-pass filtered data
     ica.fit(raw_ICA)
    
@@ -434,7 +434,7 @@ for ssj in subs:
     #     )
     
     # # plot components (topographies)    
-    # ica.plot_components()
+    # ica.plot_components()       
 
     # %% SAVE DATA
     
@@ -544,6 +544,12 @@ for ssj in subs:
     epochs_forgotten = epochs_clean[[str(i) for i in trigs_Q4_forgotten]].save(opj(preproc_path + ssj, ssj + '_forgotten_epo.fif'), overwrite = True) # 'forgotten'
 
     # %% END
+    
+    # delete as much  variables as possible, to free RAM and avoid crashing
+    del ar, bads, bids_path, dropped_epochs, eog_indices_heog, eog_indices_veog
+    del eog_scores_heog, eog_scores_veog, epochs, epochs_clean, epochs_forgotten, epochs_manmade 
+    del epochs_natural, epochs_new, epochs_old, epochs_old_hit, epochs_old_miss, epochs_remembered
+    del events, events_csv, nd, raw, raw_ICA, reject_log, union_indices_eog
     
     # message in console
     print("-----------")
