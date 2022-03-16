@@ -113,17 +113,12 @@ trigs_Q1_natural = trigs[(trigs['scene_category'] == 'natural')
                          ]['trigger']
 # Q2
 # 'new' condition
-# NOTE: 'new' excludes NAs in behavior (possible drops in attention) 
-# but must include NAs in memory: 
-# by definition, a new picture cannot be successfully or unsuccessfully recognized as old
+# NOTE: 'new' excludes NAs in behavior (possible drops in attention)
 trigs_Q2_new = trigs[(trigs['old'] == 'new') 
                          & (trigs['behavior'] != 'na')
                          ]['trigger']
 # 'old' condition
-# NOTE: 'old' excludes NAs in behavior (possible drops in attention) 
-# but can include NAs in memory: 
-# the point is whether the image has been initially categorized as old, 
-# regardless of whether it's recognized as such in subsequent presentations
+# NOTE: 'old' excludes NAs in behavior (possible drops in attention)
 trigs_Q2_old = trigs[(trigs['old'] == 'old') 
                          & (trigs['behavior'] != 'na')
                          ]['trigger']
@@ -146,17 +141,11 @@ trigs_Q3_old_miss = trigs[(trigs['old'] == 'old')
                          ]['trigger']
 # Q4
 # 'remembered'
-# NOTE: 'remembered' can be both 'new' and 'old', 
-# because by definition 'new' pictures shown only once cannot be subsequently remembered/forgotten
-# can include hits and misses and NAs 
-# and must not include NAs in memory
+# NOTE: 'remembered' can be both 'new' and 'old' and include all behavior
 trigs_Q4_remembered = trigs[trigs['subsequent_correct'] == 'subsequent_remembered'
                             ]['trigger']
-# 'forgotten'
-# NOTE: 'forgotten' can be both 'new' and 'old', 
-# because by definition 'new' pictures shown only once cannot be subsequently remembered/forgotten
-# can include hits and misses and NAs 
-# and must not include NAs in memory
+# 'forgotten' 
+# NOTE: 'forgotten' can be both 'new' and 'old' and include all behavior
 trigs_Q4_forgotten = trigs[trigs['subsequent_correct'] == 'subsequent_forgotten'
                          ]['trigger']
 
@@ -185,7 +174,9 @@ for ssj in subs:
     pathlib.Path(opj(preproc_path + ssj)).mkdir(exist_ok = True) 
     
     # message in console
+    print("--------------------")
     print("--- load " + ssj + " ---")
+    print("--------------------")
     
     # create BIDS path
     bids_path = BIDSPath(
@@ -232,7 +223,9 @@ for ssj in subs:
     # %% ELECTRODE MONTAGE
 
     # message in console
+    print("--------------------------------")
     print("--- assign electrode montage ---")
+    print("--------------------------------")
     
     # assign electrode montage
     raw = raw.set_montage(montage)
@@ -240,10 +233,12 @@ for ssj in subs:
     # %% FILTERING
     
     # message in console
+    print("--------------------------------------")
     print("--- high-pass and low-pass filters ---")
+    print("--------------------------------------")
     
     # filter data
-    raw_filt = raw.filter( # apply high-pass filter
+    raw = raw.filter( # apply high-pass filter
         l_freq = cutoff_low,
         h_freq = None).filter( # apply low-pass filter
             l_freq = None,
@@ -251,10 +246,10 @@ for ssj in subs:
             )
 
     # # plot filtered data
-    # raw_filt.plot(
+    # raw.plot(
     #     duration = 20,
     #     start = 20,
-    #     n_channels = len(raw_filt.ch_names),
+    #     n_channels = len(raw.ch_names),
     #     color = 'darkblue',
     #     bad_color = 'red',
     #     remove_dc = True,
@@ -266,11 +261,13 @@ for ssj in subs:
     # %% BAD CHANNEL DETECTION
 
     # message in console
+    print("-----------------------------")
     print("--- detect noisy channels ---")
+    print("-----------------------------")
 
     # detect noisy channels
     nd = NoisyChannels(
-        raw_filt,
+        raw,
         # do not apply 1 Hz high-pass filter before bad channel detection:
         # the data have already been high-pass filtered at 0.1 Hz
         # and we don't want to miss bad channels with slow drifts
@@ -303,13 +300,13 @@ for ssj in subs:
     bads = nd.get_bads(verbose = True)
        
     # add bad channel info to filtered data 
-    raw_filt.info['bads'] = bads 
+    raw.info['bads'] = bads 
         
     # # plot filtered data with bad channels in red
-    # raw_filt.plot(
+    # raw.plot(
     #     duration = 20,
     #     start = 20,
-    #     n_channels = len(raw_filt.ch_names),
+    #     n_channels = len(raw.ch_names),
     #     color = 'darkblue',
     #     bad_color = 'red',
     #     remove_dc = True,
@@ -326,18 +323,20 @@ for ssj in subs:
     # %% CHANNEL INTERPOLATION
     
     # message in console
+    print("----------------------------------")
     print("--- interpolate noisy channels ---")
+    print("----------------------------------")
     
     # interpolate bad channels (spherical spline interpolation)    
-    raw_filt_interp = raw_filt.interpolate_bads(
+    raw = raw.interpolate_bads(
         reset_bads = True # remove bad channel list from info
         )        
         
     # # plot filtered data with interpolated channels
-    # raw_filt_interp.plot(
+    # raw.plot(
     #     duration = 20,
     #     start = 20,
-    #     n_channels = len(raw_filt_interp.ch_names),
+    #     n_channels = len(raw.ch_names),
     #     color = 'darkblue',
     #     bad_color = 'red', # in case some bad channels are still in the data
     #     remove_dc = True,
@@ -349,29 +348,33 @@ for ssj in subs:
     # %% REFERENCING
     
     # message in console
+    print("-------------------")
     print("--- referencing ---")
+    print("-------------------")
      
     # average reference
-    raw_filt_interp_ref = raw_filt_interp.set_eeg_reference(ref_channels = 'average') 
+    raw = raw.set_eeg_reference(ref_channels = 'average')
 
     # %% SAVE DATA
     
-    raw_filt_interp_ref.save(opj(preproc_path + ssj, ssj + '_filt_interp_ref_eeg.fif'), overwrite = True)
+    # raw.save(opj(preproc_path + ssj, ssj + '_eeg.fif'), overwrite = True)
     
     # %% ARTIFACT CORRECTION: ICA
     # https://mne.tools/stable/auto_tutorials/preprocessing/40_artifact_correction_ica.html?highlight=ica
     
     # # load data (for debugging only)
-    # raw_filt_interp_ref = mne.io.read_raw_fif(
-    #     opj(preproc_path + ssj, ssj + '_filt_interp_ref_eeg.fif'),
+    # raw = mne.io.read_raw_fif(
+    #     opj(preproc_path + ssj, ssj + '_eeg.fif'),
     #     preload = True
     #     )
 
     # message in console
-    print("--- start ICA ---" )
-
-    # apply 1 Hz high-pass filter before ICA
-    raw_ICA_filt = raw_filt_interp_ref.filter(l_freq = 1, h_freq = None)
+    print("------------")
+    print("--- ICA ---" )
+    print("------------")
+    
+    # copy data and apply 1 Hz high-pass filter before ICA
+    raw_ICA = raw.copy().filter(l_freq = 1, h_freq = None)
 
     # ICA parameters
     ica = ICA(
@@ -386,28 +389,42 @@ for ssj in subs:
         )
 
     # fit ICA to low-pass filtered data
-    ica.fit(raw_ICA_filt)
-    
+    ica.fit(raw_ICA)
+   
     # find components that match the vertical EOG pattern
-    eog_indices_veog, eog_scores_veog = ica.find_bads_eog(raw_filt_interp_ref, ch_name = 'VEOG')
+    eog_indices_veog, eog_scores_veog = ica.find_bads_eog(raw, 
+                                                          ch_name = 'VEOG',
+                                                          measure = 'zscore',
+                                                          threshold = 'auto',
+                                                          reject_by_annotation = False,
+                                                          l_freq = 1,
+                                                          h_freq = 10
+                                                          )    
     
     # find components that match the horizontal EOG pattern
-    eog_indices_hoeg, eog_scores_heog = ica.find_bads_eog(raw_filt_interp_ref, ch_name = 'HEOG')
+    eog_indices_heog, eog_scores_heog = ica.find_bads_eog(raw, 
+                                                          ch_name = 'HEOG',
+                                                          measure = 'zscore',
+                                                          threshold = 'auto',
+                                                          reject_by_annotation = False,
+                                                          l_freq = 1,
+                                                          h_freq = 10 
+                                                          )
 
     # merge vEOG and hEOG components
-    union_indices_eog = list(set(eog_indices_veog).union(set(eog_indices_hoeg)))
+    union_indices_eog = list(set(eog_indices_veog).union(set(eog_indices_heog)))
     
     # assign artifactual ICA components to exclude from data
     ica.exclude = union_indices_eog
 
     # apply ICA to unfiltered data
-    raw_filt_interp_ref_ICA = ica.apply(raw_filt_interp_ref)
+    raw = ica.apply(raw)
     
     # # plot clean data
-    # raw_filt_interp_ref_ICA.plot(
+    # raw.plot(
     #     duration = 20,
     #     start = 20,
-    #     n_channels = len(raw_filt_interp_ref_ICA.ch_names),
+    #     n_channels = len(raw.ch_names),
     #     color = 'darkblue',
     #     bad_color = 'red',
     #     remove_dc = True,
@@ -416,41 +433,41 @@ for ssj in subs:
     #     butterfly = False
     #     )
     
-    # plot components (topographies)    
-    ica.plot_components()
-
-    # message in console
-    print("--- end ICA ---" )
+    # # plot components (topographies)    
+    # ica.plot_components()
 
     # %% SAVE DATA
-    raw_filt_interp_ref_ICA.save(opj(preproc_path + ssj, ssj + '_filt_interp_ref_ica_eeg.fif'), overwrite = True)
+    
+    # raw.save(opj(preproc_path + ssj, ssj + '_eeg.fif'), overwrite = True)
     
     # %% CREATE EPOCHS (ALL CONDITIONS)
 
     # # load data (for debugging only)
-    # raw_filt_interp_ref_ICA = mne.io.read_raw_fif(
-    #     opj(preproc_path + ssj, ssj + '_filt_interp_ref_ica_eeg.fif'),
+    # raw = mne.io.read_raw_fif(
+    #     opj(preproc_path + ssj, ssj + '_eeg.fif'),
     #     preload = True
     #     )
 
     # message in console
+    print("---------------------")
     print("--- create epochs ---")
+    print("---------------------")
 
     # load event file
     events_csv = pd.read_csv(opj(events_path, 'EMP' + ssj[-2:] + '_events.csv'))    
     events = events_csv[['latency','trial','trigger']].to_numpy(dtype = int)
 
-    # visualize events
-    mne.viz.plot_events(
-        events,
-        sfreq = raw_filt_interp_ref_ICA.info['sfreq'] # sample frequency (to display data in seconds)
-        )
+    # # visualize events
+    # mne.viz.plot_events(
+    #     events,
+    #     sfreq = raw.info['sfreq'] # sample frequency (to display data in seconds)
+    #     )
     
     # create epochs (all conditions)
     # NOTE: epochs are subsampled (512 Hz --> 128 Hz),
     # to lower the chances of Type II error in subsequent statistical analyses
     epochs = mne.Epochs(
-        raw_filt_interp_ref_ICA, 
+        raw, 
         events, # events
         tmin = begin_epoch, # start epoch
         tmax = end_epoch, #end epoch
@@ -477,23 +494,27 @@ for ssj in subs:
     # to avoid bias due to condition-specific artifacts
       
     # message in console
-    print("--- run AutoReject ---")
+    print("---------------------------")
+    print("--- reject noisy epochs ---")
+    print("---------------------------")
     
     # run artifact rejection
-    ar.fit(epochs)  # fit on all epochs
+    ar.fit(epochs)
     epochs_clean, reject_log = ar.transform(epochs, return_log = True) 
     
     # visualize reject log
-    reject_log.plot('horizontal')
+    # reject_log.plot('horizontal')
     
     # list rejected epochs
     dropped_epochs = list(np.where(reject_log.bad_epochs)[0])
     
+    # save rejected epochs to file
     with open(opj(preproc_path + ssj, ssj + '_droppedEpochs.txt'), 'w') as file:
         for x in dropped_epochs:
             file.write("%i\n" % x)
     
     # %% SAVE DATA
+    
     epochs_clean.save(opj(preproc_path + ssj, ssj + '_AutoReject_epo.fif'), overwrite = True)
     
     # %% CREATE EPOCHS
@@ -506,7 +527,9 @@ for ssj in subs:
     #     )    
     
     # message in console
+    print("----------------------------------------")
     print("--- create condition-specific epochs ---")
+    print("----------------------------------------")
     
     # create epochs
     # convert to string each trigger in the list,
@@ -523,5 +546,7 @@ for ssj in subs:
     # %% END
     
     # message in console
-    print("--- end ---")
+    print("-----------")
+    print("--- END ---")
+    print("-----------")
     
