@@ -17,7 +17,7 @@ import random
 import numpy as np
 # import glob
 import os
-import re
+# import re
 import matplotlib.pyplot as plt
 import mne
 
@@ -47,9 +47,6 @@ subs = [name for name in os.listdir(preproc_path) if name.startswith('sub')]
 
 # filenames = glob.glob(preproc_path + '/*.fif') # list of .fif files in directory
 
-# plot parameters
-sub_pattern = re.compile(r"\bsub-0\w*-\b") # regex pattern for plot titles 
-
 # region of interest for plots
 electrodes_graph = ['PO7', 'PO3', 'O1', 
                     'PO4', 'PO8', 'O2',
@@ -60,9 +57,18 @@ topo_times = np.arange(0, 0.5, 0.05) # time points for topographies
 color_dict = {'manmade':'blue', 'natural':'red'} # graph: line colors
 linestyle_dict = {'manmade':'-', 'natural':'--'} # graph: line type
 
-# time window for statistical analysis
+# time window for collapsed localizer
 t_min = 0
-t_max = 0.3
+t_max = 0.5
+
+# # time window for statistical analysis
+# t_min = 0
+# t_max = 0.3
+
+# TFCE (threshold-free cluster enhancement)
+# https://mne.tools/stable/auto_tutorials/stats-sensor-space/20_erp_stats.html?highlight=cluster%20enhancement
+tfce_params = dict(start = .2, step = .2) # parameter values
+n_perm = 5000 # number of permutations (at least 1000)
 
 # %% data cleaning (one dataset)
 
@@ -86,14 +92,151 @@ for ssj in subs:
             exclude = ['M1', 'M2', 'VEOG', 'HEOG'] # select scalp electrodes only
             )
     
+    # %% create condition-specific evoked responses
+            
     # evoked responses (weighted average)
     evoked_manmade = epochs_manmade.average() # 'manmade' condition
     evoked_natural = epochs_natural.average() # 'natural' condition
-          
+        
     # trial-averaged evoked responses with confidence intervals
     evokeds = dict(manmade = list(epochs_manmade.iter_evoked()), # 'manmade' condition
                    natural = list(epochs_natural.iter_evoked())) # 'natural' condition
+       
+    
+    # %% visualize condition-specific evoked responses
 
+    # # plot electrode montage
+    # epochs_manmade.plot_sensors(ch_type = 'eeg', show_names = True) 
+
+    # joint plots (butterfly + topography)
+    evoked_manmade.plot_joint(times = topo_times, title = opj(ssj + '_manmade')) # 'manmade' condition
+    evoked_natural.plot_joint(times = topo_times, title = opj(ssj + '_natural')) # 'natural' condition
+
+    # comparing conditions
+    mne.viz.plot_compare_evokeds(evokeds, 
+                                 combine = 'mean',
+                                 legend = 'lower left',
+                                 picks = electrodes_graph,
+                                 show_sensors = 'upper left',
+                                 colors = color_dict,
+                                 linestyles = linestyle_dict,
+                                 title = opj(ssj + '_manmade-minus-natural')
+                                 )
+
+    
+      
+    # %% create grand-averaged epochs (collapsed across conditions)
+    #    for data-driven identification of N1 electrodes and time window
+    #    (collapsed localizer)
+    
+    # grand average (weighted average)
+    evoked_grand_average = mne.combine_evoked([evoked_manmade, evoked_natural], weights = 'nave')
+        
+    # joint plots (butterfly + topography)
+    evoked_grand_average.plot_joint(times = topo_times, title = opj(ssj + '_localizer')) # collapsed localizer
+    
+    # show localizer
+    mne.viz.plot_compare_evokeds(evoked_grand_average, 
+                                 combine = 'mean',
+                                 legend = None,
+                                 picks = electrodes_graph,
+                                 show_sensors = 'upper left',                                
+                                 title = opj(ssj + '_localizer')
+                                 )
+
+
+##################################################################
+########################## FROM HERE #############################
+##################################################################
+
+
+
+    
+    # %% stats (one dataset)
+    # TFCE
+    
+    # calculate adjacency matrix between sensors from their locations
+    adjacency, _ = find_ch_adjacency(epochs_manmade.info, "eeg")
+
+    # # extract only time window of interest
+    # epochs_manmade_stats = epochs_manmade.crop(t_min, t_max)#, include_tmax = False) # 'manmade' condition
+    # epochs_natural_stats = epochs_natural.crop(t_min, t_max)#, include_tmax = False) # 'natural' condition
+    
+    # extract data from all scalp electrodes and time points (excluding baseline)
+    # transpose because the cluster test requires channels to be last
+    # In this case, inference is done over items. In the same manner, we could
+    # also conduct the test over, e.g., subjects.
+    localizer = evoked_grand_average.get_data(picks = 'eeg')
+    
+    
+    epochs_TFCE = [epochs_manmade_stats.get_data(picks = 'eeg').transpose(0, 2, 1),
+                   epochs_natural_stats.get_data(picks = 'eeg').transpose(0, 2, 1)]
+
+    
+
+    # Calculate statistical thresholds
+    t_obs, clusters, cluster_pv, h0 = spatio_temporal_cluster_test(
+        epochs_TFCE, 
+        threshold = tfce_params, 
+        n_permutations = n_perm, 
+        tail = 0, 
+        adjacency = adjacency,
+        seed = project_seed, 
+        out_type = 'indices', 
+        check_disjoint = False
+        )
+
+    significant_points = cluster_pv.reshape(t_obs.shape).T < .05
+    # print(str(significant_points.sum()) + " points selected by TFCE ...")
+
+    # calculate difference wave on which to plot statistically different points
+    evoked = mne.combine_evoked(
+                                [epochs_manmade_stats.average(), 
+                                epochs_natural_stats.average()],
+                                weights = 'nave'
+                                )
+
+    # Visualize the results
+    evoked.plot_image(
+        mask = significant_points, 
+        show_names = "all", 
+        titles =  opj(ssj + '_manmade-minus-natural')
+        )
+
+
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+    
     # %% data visualization (one dataset)
 
     # plot electrode montage
@@ -105,7 +248,7 @@ for ssj in subs:
 
     # comparing conditions
     mne.viz.plot_compare_evokeds(evokeds, 
-                                 combine = 'median', # more robust to outliers
+                                 combine = 'mean',
                                  legend = 'lower left',
                                  picks = electrodes_graph,
                                  show_sensors = 'upper left',
