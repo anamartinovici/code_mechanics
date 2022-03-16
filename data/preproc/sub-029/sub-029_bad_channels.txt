@@ -1,5 +1,5 @@
 CP5
-T8
-POz
 C5
+POz
+T8
 T7

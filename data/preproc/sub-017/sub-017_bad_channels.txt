@@ -1,6 +1,6 @@
 POz
-TP7
-PO3
-PO7
 AF7
+PO3
+TP7
 O1
+PO7

@@ -1,11 +1,11 @@
 Pz
-P2
-C4
 POz
-Iz
-P4
+AF7
+P2
 PO3
 CP3
+P4
+C4
 FC4
-AF7
+Iz
 P3

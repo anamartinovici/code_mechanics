@@ -1,8 +1,8 @@
-PO4
 POz
-P4
-PO3
+O1
 P8
 P5
+PO3
+P4
 P2
-O1
+PO4

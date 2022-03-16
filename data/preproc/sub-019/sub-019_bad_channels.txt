@@ -1,7 +1,7 @@
-POz
 P10
+POz
+P2
 PO3
 P9
-P2
 T7
 O1

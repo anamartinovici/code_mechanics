@@ -1,8 +1,8 @@
-CP4
 Oz
-T8
-POz
-P4
-Iz
 P5
+POz
+T8
 T7
+P4
+CP4
+Iz
