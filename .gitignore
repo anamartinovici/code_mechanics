@@ -3,6 +3,7 @@ data/original_data/eeg_BIDS
 
 # some of the .fif files in data/preproc are too large for GitHub
 data/preproc/*/*.fif
+data/preproc_highRAM/*/*.fif
 
 data/chanlocs/
 

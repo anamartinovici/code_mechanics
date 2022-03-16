@@ -24,3 +24,10 @@ receipts/process_data_for_ERP: scripts/01_process_for_ERP_lowRAM.py
 
 # check dropped epochs for 002 - the script now drops one extra compared to Antonio's results
 # check dropped for  007
+
+process_data_for_ERP_highRAM: receipts/process_data_for_ERP_highRAM
+
+receipts/process_data_for_ERP_highRAM: scripts/ERP_preproc.py
+	python scripts/ERP_preproc.py
+	date > $@
+	@echo "done with $@"
