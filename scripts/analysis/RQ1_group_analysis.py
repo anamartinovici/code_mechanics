@@ -54,9 +54,6 @@ electrodes_graph = ['PO7', 'PO3', 'O1',
                     
 topo_times = np.arange(0, 0.5, 0.05) # time points for topographies
 
-color_dict = {'manmade':'blue', 'natural':'red'} # graph: line colors
-linestyle_dict = {'manmade':'-', 'natural':'--'} # graph: line type
-
 # time window for collapsed localizer
 t_min = 0
 t_max = 0.5
@@ -76,7 +73,9 @@ for ssj in subs:
 
 
     # message in console
+    print("---------------------------")
     print("--- load epochs " + ssj + " ---")
+    print("---------------------------")
       
     # load 'manmade' epochs
     epochs_manmade = mne.read_epochs(
@@ -101,7 +100,6 @@ for ssj in subs:
     # trial-averaged evoked responses with confidence intervals
     evokeds = dict(manmade = list(epochs_manmade.iter_evoked()), # 'manmade' condition
                    natural = list(epochs_natural.iter_evoked())) # 'natural' condition
-       
     
     # %% visualize condition-specific evoked responses
 
@@ -118,12 +116,8 @@ for ssj in subs:
                                  legend = 'lower left',
                                  picks = electrodes_graph,
                                  show_sensors = 'upper left',
-                                 colors = color_dict,
-                                 linestyles = linestyle_dict,
                                  title = opj(ssj + '_manmade-minus-natural')
-                                 )
-
-    
+                                 )    
       
     # %% create grand-averaged epochs (collapsed across conditions)
     #    for data-driven identification of N1 electrodes and time window
@@ -131,7 +125,7 @@ for ssj in subs:
     
     # grand average (weighted average)
     evoked_grand_average = mne.combine_evoked([evoked_manmade, evoked_natural], weights = 'nave')
-        
+   
     # joint plots (butterfly + topography)
     evoked_grand_average.plot_joint(times = topo_times, title = opj(ssj + '_localizer')) # collapsed localizer
     
@@ -149,8 +143,7 @@ for ssj in subs:
 ########################## FROM HERE #############################
 ##################################################################
 
-
-
+    
     
     # %% stats (one dataset)
     # TFCE
@@ -166,17 +159,143 @@ for ssj in subs:
     # transpose because the cluster test requires channels to be last
     # In this case, inference is done over items. In the same manner, we could
     # also conduct the test over, e.g., subjects.
-    localizer = evoked_grand_average.get_data(picks = 'eeg')
-    
-    
-    epochs_TFCE = [epochs_manmade_stats.get_data(picks = 'eeg').transpose(0, 2, 1),
-                   epochs_natural_stats.get_data(picks = 'eeg').transpose(0, 2, 1)]
+    localizer_data = np.concatenate((epochs_manmade.get_data(picks = 'eeg'), epochs_natural.get_data(picks = 'eeg'))) # concatenate condition-specific epochs
+    localizer_zeros = np.zeros(localizer_data.shape) # array of zeros with same dimensions as localizer data
 
+    # transpose (each array dimension should be observations × time × space) and merge in one array
+    localizer_TFCE = [localizer_data.transpose(0, 2, 1), 
+                      localizer_zeros.transpose(0, 2, 1)]
     
-
+    
     # Calculate statistical thresholds
     t_obs, clusters, cluster_pv, h0 = spatio_temporal_cluster_test(
-        epochs_TFCE, 
+        localizer_TFCE, 
+        threshold = tfce_params, 
+        n_permutations = n_perm, 
+        tail = 0, 
+        adjacency = adjacency,
+        seed = project_seed, 
+        out_type = 'indices', 
+        check_disjoint = False
+        )
+    
+    
+    
+    significant_points = cluster_pv.reshape(t_obs.shape).T < .05
+    # print(str(significant_points.sum()) + " points selected by TFCE ...")
+
+
+    localizer_epochs = mne.EpochsArray(
+        localizer_data, 
+        mne.create_info(
+            evoked_grand_average.ch_names, 
+            128,
+            ch_types = ['eeg'] * 64
+            ), 
+        events = None,
+        tmin = 0, 
+        event_id = None,
+        reject = None,
+        flat = None,
+        reject_tmin = None, 
+        reject_tmax = None,
+        baseline = None,
+        proj = True,
+        on_missing = 'raise', 
+        metadata = None,
+        selection = None, 
+        verbose = None
+        )
+    
+    localizer_epochs.info.set_montage('biosemi64')
+    
+    
+    localizer_evoked = localizer_epochs.average()
+    
+    
+    # Visualize the results
+    localizer_evoked.plot_image(
+        mask = significant_points, 
+        show_names = "all", 
+        titles =  opj(ssj + '_collapsed_localizer')
+        )
+
+
+
+
+
+
+
+
+    time_unit = dict(time_unit="s")
+    localizer_evoked.plot_joint(title = opj(ssj + '_collapsed_localizer'), ts_args = time_unit,
+                      topomap_args = time_unit)  # show difference wave
+    
+    
+    
+    
+    
+    
+    
+    # Create ROIs by checking channel labels
+    selections = make_1020_channel_selections(evoked.info, midline="12z")
+    
+    # Visualize the results
+    fig, axes = plt.subplots(nrows=3, figsize=(8, 8))
+    axes = {sel: ax for sel, ax in zip(selections, axes.ravel())}
+    evoked.plot_image(axes=axes, group_by=selections, colorbar=False, show=False,
+                      mask=significant_points, show_names="all", titles=None,
+                      **time_unit)
+    plt.colorbar(axes["Left"].images[-1], ax=list(axes.values()), shrink=.3,
+                 label="µV")
+    
+    plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+    # We need an evoked object to plot the image to be masked
+    evoked = mne.combine_evoked([long_words.average(), short_words.average()],
+                                weights=[1, -1])  # calculate difference wave
+    time_unit = dict(time_unit="s")
+    evoked.plot_joint(title="Long vs. short words", ts_args=time_unit,
+                      topomap_args=time_unit)  # show difference wave
+
+    # Create ROIs by checking channel labels
+    selections = make_1020_channel_selections(evoked.info, midline="12z")
+    
+    # Visualize the results
+    fig, axes = plt.subplots(nrows=3, figsize=(8, 8))
+    axes = {sel: ax for sel, ax in zip(selections, axes.ravel())}
+    evoked.plot_image(axes=axes, group_by=selections, colorbar=False, show=False,
+                      mask=significant_points, show_names="all", titles=None,
+                      **time_unit)
+    plt.colorbar(axes["Left"].images[-1], ax=list(axes.values()), shrink=.3,
+                 label="µV")
+    
+    plt.show()
+
+
+
+
+    
+    # localizer_data = evoked_grand_average.get_data(picks = 'eeg').transpose(1, 0) # localizer
+    # localizer_zeros = np.zeros(localizer_data.shape) # array of zeros with same dimensions as localizer
+    
+    
+    # localizer_TFCE = [localizer_data, localizer_zeros]
+    
+    # Calculate statistical thresholds
+    t_obs, clusters, cluster_pv, h0 = spatio_temporal_cluster_test(
+        localizer_TFCE, 
         threshold = tfce_params, 
         n_permutations = n_perm, 
         tail = 0, 
@@ -188,6 +307,7 @@ for ssj in subs:
 
     significant_points = cluster_pv.reshape(t_obs.shape).T < .05
     # print(str(significant_points.sum()) + " points selected by TFCE ...")
+
 
     # calculate difference wave on which to plot statistically different points
     evoked = mne.combine_evoked(
