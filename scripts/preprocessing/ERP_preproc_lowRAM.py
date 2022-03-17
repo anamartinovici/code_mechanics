@@ -546,10 +546,11 @@ for ssj in subs:
     # %% END
     
     # delete as much  variables as possible, to free RAM and avoid crashing
-    del ar, bads, bids_path, dropped_epochs, eog_indices_heog, eog_indices_veog
-    del eog_scores_heog, eog_scores_veog, epochs, epochs_clean, epochs_forgotten, epochs_manmade 
-    del epochs_natural, epochs_new, epochs_old, epochs_old_hit, epochs_old_miss, epochs_remembered
-    del events, events_csv, nd, raw, raw_ICA, reject_log, union_indices_eog
+    # del ar, bads, bids_path, dropped_epochs, eog_indices_heog, eog_indices_veog
+    # del eog_scores_heog, eog_scores_veog, epochs, epochs_clean, epochs_forgotten, epochs_manmade 
+    # del epochs_natural, epochs_new, epochs_old, epochs_old_hit, epochs_old_miss, epochs_remembered
+    # del events, events_csv, nd, raw, raw_ICA, reject_log, union_indices_eog
+    del raw, raw_ICA
     
     # message in console
     print("-----------")
