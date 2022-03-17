@@ -1,9 +1,9 @@
-CP6
-C5
-Oz
 POz
-P9
-C6
-Iz
-O1
 TP8
+C6
+O1
+Oz
+CP6
+P9
+Iz
+C5

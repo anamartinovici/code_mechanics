@@ -1,6 +1,6 @@
-POz
 PO3
-CP3
-O2
 FT7
 PO4
+POz
+CP3
+O2

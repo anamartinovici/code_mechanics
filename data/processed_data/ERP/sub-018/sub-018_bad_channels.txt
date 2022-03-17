@@ -1,4 +1,4 @@
-PO4
-F6
 POz
 T7
+F6
+PO4

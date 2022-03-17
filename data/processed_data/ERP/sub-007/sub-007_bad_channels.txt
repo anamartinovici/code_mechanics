@@ -1,6 +1,6 @@
-CP5
 P5
 POz
-Fp1
 FT7
 PO4
+Fp1
+CP5

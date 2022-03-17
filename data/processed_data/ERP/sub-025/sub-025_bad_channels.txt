@@ -1,5 +1,5 @@
-AF8
-POz
 AF7
 PO3
 PO4
+POz
+AF8

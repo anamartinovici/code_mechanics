@@ -1,10 +1,10 @@
-Oz
-AF8
 POz
-P9
-Fp2
-FC5
 AF4
 F6
+P9
+FC5
+Oz
+Fp2
+AF8
 F5
 FC6
