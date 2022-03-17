@@ -27,9 +27,9 @@ project_seed = 999 # RNG seed
 random.seed(project_seed) # set seed to ensure computational reproducibility
 
 # directories
-raw_path = '/home/aschetti/Documents/Projects/code_mechanics/data/raw/eeg_BIDS/' # directory with raw data
-preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/data/preproc/' # directory with preprocessed files
-events_path = '/home/aschetti/Documents/Projects/code_mechanics/data/events/' # directory with event files
+raw_path = './data/original_data/eeg_BIDS/' # directory with eeg_BIDS data received from the EEG_manypipelines team
+preproc_path = './data/processed_data/ERP/' # directory where this script saves preprocessed files
+events_path = './data/original_data/events/' # directory where this script saves event files
 
 datatype = 'eeg' # data type
 
