@@ -7,7 +7,8 @@ sources:
     https://neuraldatascience.io/7-eeg/erp_group.html
     https://mne.tools/stable/auto_tutorials/evoked/30_eeg_erp.html#sphx-glr-auto-tutorials-evoked-30-eeg-erp-py
     https://mne.tools/stable/auto_tutorials/stats-sensor-space/20_erp_stats.html#sphx-glr-auto-tutorials-stats-sensor-space-20-erp-stats-py
-
+    https://neurokit2.readthedocs.io/en/dev/studies/erp_gam.html
+    
 @author: aschetti
 '''
 
@@ -15,39 +16,54 @@ sources:
 
 import random
 import numpy as np
-# import glob
+import glob
 import os
-# import re
-import matplotlib.pyplot as plt
+# import pathlib
+# import matplotlib.pyplot as plt
 import mne
 
 from os.path import join as opj
-# from mne.stats import permutation_t_test # only if using permutation test
-from mne.channels import find_ch_adjacency, make_1020_channel_selections # only if using TFCE
-from mne.stats import spatio_temporal_cluster_test # only if using TFCE
+from mne.channels import find_ch_adjacency
+from mne.stats import spatio_temporal_cluster_test
 
 # %% SETUP
 
 project_seed = 999 # RNG seed
 random.seed(project_seed) # set seed to ensure computational reproducibility
 
-# directories
-preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/data/processed_data/ERP/' # directory with preprocessed files
+# directory with preprocessed files
+preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/data/processed_data/ERP/'
+
+# extract file names
+filenames = glob.glob(preproc_path +  '/**/*.fif') # list of .fif files in directory and all subdirectories
+
+
+
+# # condition-specific file names
+# # 'manmade' condition
+# pattern_manmade = '_manmade_epo.fif' # include only 'manmade' epochs
+# filenames_manmade = [item for item in filenames if pattern_manmade in item] # list of all *_manmade_epo.fif files
+# # 'natural' condition
+# pattern_natural = '_natural_epo.fif' # include only 'natural' epochs
+# filenames_natural = [item for item in filenames if pattern_natural in item] # list of all *_natural_epo.fif files
+
+
+
+
+
 
 datatype = 'eeg' # data type
 
 # define electrode montage
 montage = mne.channels.make_standard_montage("biosemi64")
-# montage.plot() # visualize montage
 
-# filenames = glob.glob(preproc_path + '/*.fif') # list of .fif files in directory
-
-# region of interest for plots
+# electrode region of interest (for topographies)
 electrodes_graph = ['PO7', 'PO3', 'O1', 
                     'PO4', 'PO8', 'O2',
                     'POz', 'Oz', 'Iz']
                     
-topo_times = np.arange(0, 0.5, 0.05) # time points for topographies
+# time points (for topographies)
+topo_times = np.arange(0, 0.5, 0.05) 
 
 # time window for collapsed localizer
 t_min_localizer = 0
@@ -64,6 +80,292 @@ n_perm = 5000 # number of permutations (at least 1000)
 
 # plot parameters
 time_unit = dict(time_unit = "s") # time unit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# %% load data for TFCE
+
+# get all participant names
+subs = [name for name in os.listdir(preproc_path) if name.startswith('sub')]
+
+template_zeros = np.zeros((64, 90)) # template array of zeros with same dimensions as epochs (64 channels x 90 time points)
+# copy template into arrays that will contain all datasets (add extra dimension where participants will be stacked)
+all_manmade = template_zeros[None, :, :] # 'manmade' condition
+all_natural = template_zeros[None, :, :] # 'natural' condition
+
+for ssj in subs: # loop through participants
+        
+    # message in console
+    print("---------------------------")
+    print("--- load epochs " + ssj + " ---")
+    print("---------------------------")  
+    
+    # load 'manmade' epochs
+    manmade = mne.read_epochs(
+            opj(preproc_path + ssj, ssj + '_manmade_epo.fif'), preload = True).average( # average across trials (weighted average)
+                                                                                       ).get_data( # extract data
+                                                                                                  picks = 'eeg' # select scalp electrodes only
+                                                                                                  )
+
+    # load 'natural' epochs
+    natural = mne.read_epochs(
+            opj(preproc_path + ssj, ssj + '_natural_epo.fif'), preload = True).average(
+                                                                                       ).get_data(
+                                                                                                  picks = 'eeg'
+                                                                                                  )
+                                                                                                  
+    # concatenate current dataset with previous ones
+    all_manmade = np.concatenate((all_manmade, manmade[None, :, :]), axis = 0) # 'manmade' condition
+    all_natural = np.concatenate((all_natural, natural[None, :, :]), axis = 0) # 'natural' condition
+    
+# delete template array of zeros
+all_manmade = all_manmade[1:, :, :]
+all_natural = all_natural[1:, :, :]
+    
+# %% stats: TFCE
+        
+# calculate adjacency matrix between sensors from their locations
+adjacency, _ = find_ch_adjacency(
+    mne.read_epochs( 
+        opj(preproc_path + ssj, ssj + '_manmade_epo.fif'), # can be extracted from any epoch file
+        preload = False
+        ).info, 
+    "eeg"
+    )  
+
+# transpose data (each array dimension should be participants × time × space) and merge in one array
+data_TFCE = [all_manmade.transpose(0, 2, 1),
+             all_natural.transpose(0, 2, 1)] 
+
+# calculate statistical thresholds
+t_obs, clusters, cluster_pv, h0 = spatio_temporal_cluster_test(
+    data_TFCE, 
+    threshold = tfce_params, 
+    n_permutations = n_perm, 
+    tail = 0, 
+    adjacency = adjacency,
+    seed = project_seed, 
+    out_type = 'indices'
+    )
+
+# extract statistically significant time points
+significant_time_points = cluster_pv.reshape(t_obs.shape).T < .05
+
+# %% plots
+
+
+# condition file names
+
+pattern_manmade_natural = ['*_manmade_epo.fif', '*_natural_epo.fif'] # include 'manmade' and 'natural' epochs
+filenames_manmade_natural = [item for item in filenames if pattern_manmade_natural in item] # list of all '*_manmade_epo.fif' and '*_natural_epo.fif' files
+
+
+
+
+
+from fnmatch import fnmatch
+
+pattern_manmade_natural = ['*_manmade_epo.fif', '*_natural_epo.fif'] # include 'manmade' and 'natural' epochs
+
+
+
+
+some_dir = '/'
+ignore_list = ['*.tmp', 'tmp/', '*.py']
+for dirname, _, filenames in os.walk(some_dir):
+    for filename in filenames:
+        should_ignore = False
+        for pattern in ignore_list:
+            if fnmatch(filename, pattern):
+                should_ignore = True
+        if should_ignore:
+            print 'Ignore', filename
+            continue
+
+
+
+
+
+filenames_manmade
+
+conditions = ['manmade', 'natural']
+
+epochs = {}
+
+for idx in enumerate(filenames_manmade):
+    epochs[idx] = [mne.read_epochs(d)[idx] for d in filenames_manmade]
+
+epochs
+
+
+
+import os
+from fnmatch import fnmatch
+
+some_dir = '/'
+ignore_list = ['*.tmp', 'tmp/', '*.py']
+for dirname, _, filenames in os.walk(some_dir):
+    for filename in filenames:
+        should_ignore = False
+        for pattern in ignore_list:
+            if fnmatch(filename, pattern):
+                should_ignore = True
+        if should_ignore:
+            print 'Ignore', filename
+            continue
+
+
+
+
+
+
+
+
+        
+# We need an evoked object to plot the image to be masked
+evoked = mne.combine_evoked([long_words.average(), short_words.average()],
+                            weights=[1, -1])  # calculate difference wave
+time_unit = dict(time_unit="s")
+evoked.plot_joint(title="Long vs. short words", ts_args=time_unit,
+                  topomap_args=time_unit)  # show difference wave
+
+# Create ROIs by checking channel labels
+selections = make_1020_channel_selections(evoked.info, midline="12z")
+
+# Visualize the results
+fig, axes = plt.subplots(nrows=3, figsize=(8, 8))
+axes = {sel: ax for sel, ax in zip(selections, axes.ravel())}
+evoked.plot_image(axes=axes, group_by=selections, colorbar=False, show=False,
+                  mask=significant_points, show_names="all", titles=None,
+                  **time_unit)
+plt.colorbar(axes["Left"].images[-1], ax=list(axes.values()), shrink=.3,
+             label="µV")
+
+plt.show()
+        
+        
+        
+        
+        
+        
+        
+        # extract statistically significant electrodes
+        
+        
+        
+        
+        # artificially create epochs of localizer 
+        localizer_epochs = mne.EpochsArray(
+            localizer_data, 
+            mne.create_info( # create info structure
+                evoked_grand_average.ch_names, # use channel names of grand average
+                epochs_manmade.info['sfreq'], # sampling rate (can be extracted from any epoch file)
+                ch_types = ['eeg'] * len(evoked_grand_average.ch_names) # repeat 'eeg' for as many channels as available
+                )
+            )
+        
+        # add montage for topographies
+        localizer_epochs.info.set_montage('biosemi64')
+        
+        # evoked responses
+        localizer_evoked = localizer_epochs.average()
+            
+        # visualize the results
+        localizer_evoked.plot_image(
+            mask = significant_time_points, 
+            show_names = "all", 
+            titles =  opj(ssj + '_localizer')
+            )   
+        
+        # joint plot (butterfly + topography)
+        localizer_evoked.plot_joint(        
+            times = topo_times,
+            ts_args = time_unit,
+            topomap_args = time_unit,
+            title = opj(ssj + '_localizer')        
+            )
+        
+        
+        
+        
+        # Create ROIs by checking channel labels
+        selections = make_1020_channel_selections(localizer_evoked.info, midline="12z")
+
+        # Visualize the results
+        fig, axes = plt.subplots(nrows=3, figsize=(8, 8))
+        axes = {sel: ax for sel, ax in zip(selections, axes.ravel())}
+        localizer_evoked.plot_image(
+            axes = axes, 
+            group_by = selections, 
+            colorbar = False, 
+            show = False,
+            mask = significant_time_points, 
+            show_names = "all", 
+            titles = None,
+            **time_unit
+            )
+        plt.colorbar(axes["Left"].images[-1], ax=list(axes.values()), shrink=.3,
+                     label="µV")
+
+        plt.show()
+        
+    
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # %% data cleaning (one dataset)
 
@@ -147,7 +449,6 @@ for ssj in subs:
     adjacency, _ = find_ch_adjacency(epochs_manmade.info, "eeg")
 
     # extract data from all scalp electrodes and time points (excluding baseline)
-    # transpose because the cluster test requires channels to be last
     # here inference is done over items, but later it will be done over participants
     localizer_data = np.concatenate( # concatenate condition-specific epochs
         (epochs_manmade.get_data(picks = 'eeg', tmin = t_min_localizer, tmax = t_max_localizer), 
@@ -178,9 +479,6 @@ for ssj in subs:
     
     
     # extract statistically significant electrodes
-    
-    
-    
     
     
     
@@ -219,50 +517,69 @@ for ssj in subs:
     
     
     
+    # Create ROIs by checking channel labels
+    selections = make_1020_channel_selections(localizer_evoked.info, midline="12z")
+
+    # Visualize the results
+    fig, axes = plt.subplots(nrows=3, figsize=(8, 8))
+    axes = {sel: ax for sel, ax in zip(selections, axes.ravel())}
+    localizer_evoked.plot_image(
+        axes = axes, 
+        group_by = selections, 
+        colorbar = False, 
+        show = False,
+        mask = significant_time_points, 
+        show_names = "all", 
+        titles = None,
+        **time_unit
+        )
+    plt.colorbar(axes["Left"].images[-1], ax=list(axes.values()), shrink=.3,
+                 label="µV")
+
+    plt.show()
     
     
     
-    # Visualize
-    ## <string>:1: RuntimeWarning: Ignoring argument "tail", performing 1-tailed F-test
-    fig, (ax0, ax1, ax2) = plt.subplots(nrows=3, ncols=1, sharex=True)
     
-    times = epochs.times
-    ax0.axvline(x=0, linestyle="--", color="black")
-    ## <matplotlib.lines.Line2D object at 0x00000000BFAE7640>
-    ax0.plot(times, np.mean(condition1, axis=0), label="Audio")
-    ## [<matplotlib.lines.Line2D object at 0x00000000BFAF3D30>]
-    ax0.plot(times, np.mean(condition2, axis=0), label="Visual")
-    ## [<matplotlib.lines.Line2D object at 0x00000000BFAF3F40>]
-    ax0.legend(loc="upper right")
-    ## <matplotlib.legend.Legend object at 0x00000000BFAF3EE0>
-    ax0.set_ylabel("uV")
+    
+    
+    
+    
+    
+    
+    fig, (ax0, ax1) = plt.subplots(nrows = 2, ncols = 1, sharex = True) # set figure subplots
+    
+    times = epochs_manmade.times # time points (can be extracted from any epoch file)
+
+    
     
     # Difference
-    ax1.axvline(x=0, linestyle="--", color="black")
-    ax1.plot(times, condition1.mean(axis=0) - condition2.mean(axis=0))
-    ## [<matplotlib.lines.Line2D object at 0x00000000BFB07B20>]
-    ax1.axhline(y=0, linestyle="--", color="black")
-    ## <matplotlib.lines.Line2D object at 0x00000000BFB07CD0>
-    ax1.set_ylabel("Difference")
+    ax0.axvline(x = 0, linestyle = "--", color = "black")
+    
+    ax0.plot(times, condition1.mean(axis = 0) - condition2.mean(axis = 0))
+    
+    ax0.axhline(y = 0, linestyle = "-", color = "black")
+    
+    ax0.set_ylabel("Localizer")
     
     # T-values
-    ax2.axvline(x=0, linestyle="--", color="black")
+    ax1.axvline(x=0, linestyle="--", color="black")
     h = None
     for i, c in enumerate(clusters):
         c = c[0]
         if p_vals[i] <= 0.05:
-            h = ax2.axvspan(times[c.start],
+            h = ax1.axvspan(times[c.start],
                             times[c.stop - 1],
                             color='red',
                             alpha=0.5)
         else:
-            ax2.axvspan(times[c.start],
+            ax1.axvspan(times[c.start],
                         times[c.stop - 1],
                         color=(0.3, 0.3, 0.3),
                         alpha=0.3)
                 ## <matplotlib.patches.Polygon object at 0x00000000BFB16550>
                 ## <matplotlib.patches.Polygon object at 0x00000000BFB16BE0>
-        hf = ax2.plot(times, t_vals, 'g')
+        hf = ax1.plot(times, t_vals, 'g')
         if h is not None:
             plt.legend((h, ), ('cluster p-value < 0.05', ))
                     ## <matplotlib.legend.Legend object at 0x00000000BFB16D00>
@@ -525,7 +842,7 @@ evoked_equal_natural = {} # trial-averaged evoked data ('natural' condition)
 evoked_grand_average = {} # grand-averaged evoked data
 
 for i in range(len(filenames)): # loop through files
-    epochs[i] = mne.read_epochs(filenames[i], preload = False) # load data (preload  = False or python will crash on my coomputer)
+    epochs[i] = mne.read_epochs(filenames[i], preload = False) # load data (preload  = False or python will crash on my computer)
     epochs_equal[i], dropped_epochs[i] = epochs[i].equalize_event_counts() # equalize epochs across conditions (drop epochs from condition with more data)
     
     
