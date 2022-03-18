@@ -1,0 +1,5 @@
+`original_data` contains data files, as received from the EEG_manypipelines team
+
+`eeg_BIDS` is a directory that contains one folder per participant
+
+`events` contains the `EMP...` files and `TriggerTable.csv`
