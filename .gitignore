@@ -8,3 +8,5 @@ data/raw/eeg_BIDS/README
 *.tsv
 
 data/chanlocs/
+
+data/processed_data/ERP/data_frames/
