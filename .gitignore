@@ -11,3 +11,5 @@ data/chanlocs/
 
 data/processed_data/ERP/data_frames/
 .Rproj.user
+
+data/processed_data/ERP/RData/all_epochs.RData
