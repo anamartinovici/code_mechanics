@@ -10,3 +10,4 @@ data/raw/eeg_BIDS/README
 data/chanlocs/
 
 data/processed_data/ERP/data_frames/
+.Rproj.user
