@@ -122,11 +122,12 @@ for (i in list_csv) {
       `...1`,
       all_of(exclude_chans) # non-scalp channels
     )) %>%
-    # rename column
+    # rename columns
     rename("epoch_num" = "epoch") %>%
+    rename("trigger" = "condition") %>%
     # relocate columns
     relocate(time, .after = "epoch_num") %>%
-    relocate(condition, .after = "epoch_num") %>%
+    relocate(trigger, .after = "epoch_num") %>%
     # add participant column
     # (separate call from mutate() because the position must be different)
     add_column(
@@ -135,15 +136,15 @@ for (i in list_csv) {
     ) %>%
     # add condition-specific columns
     mutate(
-      manmade = if_else(condition %in% trigs_Q1_manmade, 1, 0),
-      natural = if_else(condition %in% trigs_Q1_natural, 1, 0),
-      new = if_else(condition %in% trigs_Q2_new, 1, 0),
-      old = if_else(condition %in% trigs_Q2_old, 1, 0),
-      old_hit = if_else(condition %in% trigs_Q3_old_hit, 1, 0),
-      old_miss = if_else(condition %in% trigs_Q3_old_miss, 1, 0),
-      remembered = if_else(condition %in% trigs_Q4_remembered, 1, 0),
-      forgotten = if_else(condition %in% trigs_Q4_forgotten, 1, 0),
-      .after = "condition"
+      manmade = if_else(trigger %in% trigs_Q1_manmade, 1, 0),
+      natural = if_else(trigger %in% trigs_Q1_natural, 1, 0),
+      new = if_else(trigger %in% trigs_Q2_new, 1, 0),
+      old = if_else(trigger %in% trigs_Q2_old, 1, 0),
+      old_hit = if_else(trigger %in% trigs_Q3_old_hit, 1, 0),
+      old_miss = if_else(trigger %in% trigs_Q3_old_miss, 1, 0),
+      remembered = if_else(trigger %in% trigs_Q4_remembered, 1, 0),
+      forgotten = if_else(trigger %in% trigs_Q4_forgotten, 1, 0),
+      .after = "trigger"
     )
 
   # merge current data with previous ones
