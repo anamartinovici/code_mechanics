@@ -6,7 +6,6 @@ set.seed(project_seed) # set seed
 
 # install packages --------------------------------------------------------------------
 
-# ## install packages
 # install.packages("here")
 # install.packages("tools")
 # install.packages("tidyverse")
