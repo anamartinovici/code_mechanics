@@ -8,51 +8,83 @@ set.seed(project_seed) # set seed
 
 # install.packages("here")
 # install.packages("tidyverse")
-# install.packages("Rmisc")
-# install.packages("viridis")
-# install.packages("remotes")
-# remotes::install_github("craddm/eegUtils")
 
 # load packages --------------------------------------------------------------------
 
-library(Rmisc) # load before tidyverse
 library(here)
 library(tidyverse)
-library(viridis)
-library(eegUtils)
 
 # setup --------------------------------------------------------------------
+# 
+# # region of interest
+# ROI <- c('PO7', 'PO3', 'O1',
+#          'PO4', 'PO8', 'O2',
+#          'POz', 'Oz', 'Iz')
 
-# region of interest for plots
-ROI <- c('PO7', 'PO3', 'O1',
-         'PO4', 'PO8', 'O2',
-         'POz', 'Oz', 'Iz')
-
-# custom color palettes for graphs (from "viridis")
-# viridis(5, alpha = 1, begin = 0, end = 1, option = "D")
-waveforms.palette <- c(
-  "#440154FF", # purple
-  "#3B528BFF", # blue
-  "#000000", # black
-  "#21908CFF", # aquamarine
-  "#FDE725FF" # yellow
-)
-
-# load and manipulate data --------------------------------------------------------------------
+# load and manipulate data for statistical analysis --------------------------------------------------------------------
 
 # load .RData file with all ERPs
 load(here("data", "processed_data", "ERP", "RData", "all_ERP.RData"))
 
-butterfly <- 
+# subset data for Q1
+Q1_ERP <- 
   all_ERP %>%
-  # condition differences are not needed for collapsed localizer
-  filter(`manmade` == 1 | `natural` == 1) %>% 
-  select(ssj, time, all_of(ROI)) %>% 
+  # create new columns
+  mutate(
+    condition = case_when( # manmade/natural conditions
+      manmade == 1 ~ "manmade",
+      natural == 1 ~ "natural"
+    ),
+    .after= "epoch_num"
+  ) %>% 
+  # filter rows according to conditions of interest
+  filter(!is.na(condition)) %>% 
+  # delete unnecessary columns
+  select(-c(epoch_num, trigger, manmade, natural, new, old, old_hit, old_miss, remembered, forgotten))
+
+
+rm(all_ERP) # free up RAM
+
+
+
+
+tempor <- 
+  Q1_ERP %>% 
+  group_by(condition) %>% 
+  summarize()
+
+
+
+
+
+
+rm(all_ERP)
+
+Q1_ERP <- 
+  Q1_ERP %>% 
+  # convert to long format
   pivot_longer(
-    !c(ssj, time), # keep participant number and time
+    !c(ssj, condition, time), # keep as columns participant number, condition, and time
     names_to = "electrode",
     values_to = "amplitude"
   )
+
+
+
+# summarized data from each time point (& within-subject 95% CI)
+Q1_ERP.pointsummary <-
+  Q1_ERP %>%
+  summarySEwithin(
+    data = .,
+    measurevar = "amplitude",
+    withinvars = c("electrode", "timepoint"),
+    idvar = "participant"
+  ) %>%
+  mutate(
+    timepoint = as.numeric(levels(timepoint))[timepoint] # re-convert time points to numeric
+  )
+
+
 
 # summarized data from each time point (& within-subject 95% CI)
 butterfly_pointsummary <- 
