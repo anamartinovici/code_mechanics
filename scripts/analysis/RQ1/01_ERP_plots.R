@@ -12,7 +12,7 @@ set.seed(project_seed) # set seed
 
 # load packages --------------------------------------------------------------------
 
-library(Rmisc) # must be loaded before tidyverse (beware some nasty function masking!)
+
 library(here)
 library(tidyverse)
 

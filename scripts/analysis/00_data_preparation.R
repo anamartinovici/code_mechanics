@@ -6,12 +6,14 @@ set.seed(project_seed) # set seed
 
 # install packages --------------------------------------------------------------------
 
+# install.packages("Rmisc")
 # install.packages("here")
 # install.packages("tools")
 # install.packages("tidyverse")
 
 # load packages --------------------------------------------------------------------
 
+library(Rmisc) # must be loaded before tidyverse (beware some nasty function masking!)
 library(here)
 library(tools)
 library(tidyverse)
@@ -95,7 +97,7 @@ trigs_Q4_forgotten <-
   filter(subsequent_correct == "subsequent_forgotten") %>%
   pull(trigger)
 
-# load MNE output and save as .RData --------------------------------------------------------
+# save MNE output as .RData --------------------------------------------------------
 
 # list of .csv files in directory
 list_csv <-
@@ -257,5 +259,65 @@ for (i in list_csv) {
   )
   
 }
+
+# save trial-averaged data (point summaries) as .RData -----------------------------------------------------------------------
+
+# list of .RData files in directory
+list_RData <-
+  list.files(
+    path = here("data", "processed_data", "ERP", "RData", "Q1"),
+    pattern = ".RData"
+  )
+
+# preallocate data frame with all trial-averaged data
+all_pointsummary = NULL
+
+# yes, I know I shouldn't use loops in R
+for (i in list_RData) {
+  
+  # load .RData
+  load(here("data", "processed_data", "ERP", "RData", "Q1", i))
+  
+  Q1_ERP_long <- 
+    Q1_ERP %>% 
+    select(-condition) %>%  # delete condition because we want a condition-agnostic localizer
+    # convert to long format
+    pivot_longer(
+      !c(ssj, time), # keep as columns participant number and time
+      names_to = "electrode",
+      values_to = "amplitude"
+    )
+  
+  # summarized data from each time point (& within-subject 95% CI)
+  Q1_ERP_long_pointsummary <-
+    Q1_ERP_long %>%
+    summarySEwithin(
+      data = .,
+      measurevar = "amplitude",
+      withinvars = c("electrode", "time"),
+      idvar = "ssj"
+    ) %>%
+    as_tibble() %>% # convert to tibble
+    mutate(
+      time = as.numeric(levels(time))[time] # re-convert time points to numeric
+    ) %>% 
+    rename(n_epochs = N, mean = amplitude) %>% 
+    add_column(
+      ssj = sub("_.*", "", i), # add column with participant number
+      .before = "electrode"
+    )
+  
+  # all trial-averaged data
+  all_pointsummary <- rbind(all_pointsummary, Q1_ERP_long_pointsummary)
+  
+}
+
+# save as .RData (compressed)
+save(
+  all_pointsummary,
+  file = here(
+    "data", "processed_data", "ERP", "RData", "Q1", "all_pointsummary.RData"
+  )
+)
 
 # END --------------------------------------------------------------------
