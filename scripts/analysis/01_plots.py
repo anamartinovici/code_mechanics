@@ -13,6 +13,7 @@ import random
 import numpy as np
 import glob
 import os
+import pandas as pd
 import matplotlib.pyplot as plt
 import mne
 
@@ -25,62 +26,227 @@ random.seed(project_seed) # set seed to ensure computational reproducibility
 
 # directories
 preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/data/processed_data/ERP/' # directory with preprocessed files
+events_path = '/home/aschetti/Documents/Projects/code_mechanics/data/original_data/events/' # directory with triggers
 
 # define electrode montage
 montage = mne.channels.make_standard_montage("biosemi64")
 
-filenames = glob.glob(preproc_path + '/**/*.fif') # list of .fif files in directory
-
 # region of interest for plots
-electrodes_graph = ['PO7', 'PO3', 'O1', 
-                    'PO4', 'PO8', 'O2',
-                    'POz', 'Oz', 'Iz']
+ROI = ['PO7', 'PO3', 'O1',
+       'PO4', 'PO8', 'O2',
+       'POz', 'Oz', 'Iz']
                     
 topo_times = np.arange(0, 0.5, 0.05) # time points for topographies
 
-# time window for collapsed localizer
-t_min_localizer = 0
-t_max_localizer = 0.5
+# # time window for collapsed localizer
+# t_min_localizer = 0
+# t_max_localizer = 0.5
 
-# time window for statistical analysis
-t_min = 0
-t_max = 0.3
+# # time window for statistical analysis
+# t_min = 0
+# t_max = 0.3
 
 # # TFCE (threshold-free cluster enhancement)
 # # https://mne.tools/stable/auto_tutorials/stats-sensor-space/20_erp_stats.html?highlight=cluster%20enhancement
 # tfce_params = dict(start = .2, step = .2) # parameter values
 # n_perm = 5000 # number of permutations (at least 1000)
 
-# plot parameters
-time_unit = dict(time_unit = "s") # time unit
+# # plot parameters
+# time_unit = dict(time_unit = "s") # time unit
 
-# %% data cleaning (one dataset)
 
-# get all participant names
+# participant names
 subs = [name for name in os.listdir(preproc_path) if name.startswith('sub')] 
 
 
-for ssj in subs:
+# triggers (from TriggerTable.csv)
+trigs = pd.read_csv(opj(events_path, 'TriggerTable.csv'))
+
+# combined triggers according to research questions
+# Q1
+# 'manmade' condition
+trigs_Q1_manmade = trigs[(trigs['scene_category'] == 'man-made') 
+                         & (trigs['behavior'] != 'na')
+                         ]['trigger']
+# 'natural' condition
+trigs_Q1_natural = trigs[(trigs['scene_category'] == 'natural') 
+                         & (trigs['behavior'] != 'na')
+                         ]['trigger']
 
 
-    # message in console
-    print("---------------------------")
-    print("--- load epochs " + ssj + " ---")
-    print("---------------------------")
-      
-    # load 'manmade' epochs
-    epochs_manmade = mne.read_epochs(
-        opj(preproc_path + ssj, ssj + '_manmade_epo.fif'), preload = True).pick_types(
-            eeg = True, 
-            exclude = ['M1', 'M2', 'VEOG', 'HEOG'] # select scalp electrodes only
-            )
-        
-    # load 'natural' epochs
-    epochs_natural = mne.read_epochs(
-        opj(preproc_path + ssj, ssj + '_natural_epo.fif'), preload = True).pick_types(
-            eeg = True, 
-            exclude = ['M1', 'M2', 'VEOG', 'HEOG'] # select scalp electrodes only
-            )
+
+
+
+
+
+
+
+
+
+
+
+# %% EPOCHS
+
+
+conditions = [trigs_Q1_manmade, trigs_Q1_natural]
+
+filenames_epochs = glob.glob(preproc_path + '/**/*_AutoReject_epo.fif') 
+
+epochs = {}
+
+for idx, c in enumerate(conditions):
+    epochs[c] = [mne.read_epochs(f)[idx] for f in filenames_epochs]
+
+
+
+
+
+evokeds = {}
+
+for idx, c in enumerate(conditions):
+    evokeds[c] = [mne.read_evokeds(d)[idx] for d in data_files]
+
+evokeds
+
+
+
+evokeds = {c:epochs_mastoidref[c].average() for c in conditions}
+
+evokeds 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+evokeds_manmade = {}
+evokeds_natural = {}
+evokeds_grand_average = {}
+
+# get file names
+filenames_manmade = glob.glob(preproc_path + '/**/*_manmade_epo.fif')
+filenames_natural = glob.glob(preproc_path + '/**/*_natural_epo.fif') 
+
+for i in range(len(subs)):
+    
+    epochs_manmade = mne.read_epochs(filenames_manmade[i], preload = True)
+    
+    epochs_natural = mne.read_epochs(filenames_natural[i], preload = True)
+    
+    evokeds_manmade[i] = epochs_manmade.average()
+    
+    evokeds_natural[i] = epochs_natural.average()
+
+    # grand average (weighted average)
+    evokeds_grand_average[i] = mne.combine_evoked([evokeds_manmade[i], evokeds_natural[i]], weights = 'nave')
+   
+
+
+evokeds_grand_average[i].plot_joint(
+    times = topo_times 
+    # title = opj(ssj + '_manmade')
+    )
+
+
+
+
+mne.viz.plot_compare_evokeds(evokeds_grand_average,
+                             combine='mean',
+                             legend='lower right',
+                             picks=ROI, 
+                             show_sensors='upper right',
+                             # colors=color_dict,
+                             # linestyles=linestyle_dict,
+                             title='Violation vs. Control Waveforms'
+                            )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# %% MANMADE
+
+evoked_manmade = {}
+
+# get file names
+filenames_manmade = glob.glob(preproc_path + '/**/*_manmade_epo.fif') 
+
+for i in range(len(subs)):
+    
+    epochs = mne.read_epochs(filenames_manmade[i], preload = True)
+    
+    evoked_manmade[i] = epochs.average()
+
+# %% NATURAL
+
+evoked_natural = {}
+
+# get file names
+filenames_natural = glob.glob(preproc_path + '/**/*_natural_epo.fif') 
+
+for i in range(len(subs)):
+    
+    epochs = mne.read_epochs(filenames_natural[i], preload = True)
+    
+    evoked_natural[i] = epochs.average()
+
+# %% PLOT
+
+
+
+
+mne.viz.plot_compare_evokeds(evokeds,
+                             combine='mean',
+                             legend='lower right',
+                             picks=roi, show_sensors='upper right',
+                             colors=color_dict,
+                             linestyles=linestyle_dict,
+                             title='Violation vs. Control Waveforms'
+                            )
+
+
+
+
+
+
+
+
+# %% create condition-specific evoked responses
+
+evoked_manmade = [epochs(f)['manmade'].average() for f in filenames] # 'manmade' condition
+
+
+
     
     # %% create condition-specific evoked responses
     
