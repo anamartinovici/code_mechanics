@@ -104,8 +104,8 @@ list_csv <-
     pattern = ".csv"
   )
 
-# preallocate variable with epochs of all participants
-all_ERP <- NULL
+# # preallocate variable with epochs of all participants
+# all_ERP <- NULL
 
 # yes, I know I shouldn't use loops in R
 for (i in list_csv) {
@@ -147,15 +147,115 @@ for (i in list_csv) {
       .after = "trigger"
     )
 
-  # merge current data with previous ones
-  all_ERP <- bind_rows(all_ERP, ERP)
+  # save as .RData (compressed)
+  save(
+    ERP,
+    file = here(
+      "data", "processed_data", "ERP", "RData",
+      paste0(file_path_sans_ext(i), "_ERP.RData")
+    )
+  )
+
+  # subset data for Q1
+  Q1_ERP <-
+    ERP %>%
+    # create new columns
+    mutate(
+      condition = case_when( # manmade/natural conditions
+        manmade == 1 ~ "manmade",
+        natural == 1 ~ "natural"
+      ),
+      .after = "epoch_num"
+    ) %>%
+    # filter rows according to conditions of interest
+    filter(!is.na(condition)) %>%
+    # delete unnecessary columns
+    select(-c(epoch_num, trigger, manmade, natural, new, old, old_hit, old_miss, remembered, forgotten))
+
+  # save as .RData (compressed)
+  save(
+    Q1_ERP,
+    file = here(
+      "data", "processed_data", "ERP", "RData", "Q1",
+      paste0(file_path_sans_ext(i), "_Q1_ERP.RData")
+    )
+  )
+
+  # subset data for Q2
+  Q2_ERP <-
+    ERP %>%
+    # create new columns
+    mutate(
+      condition = case_when( # new/old conditions
+        new == 1 ~ "new",
+        old == 1 ~ "old"
+      ),
+      .after = "epoch_num"
+    ) %>%
+    # filter rows according to conditions of interest
+    filter(!is.na(condition)) %>%
+    # delete unnecessary columns
+    select(-c(epoch_num, trigger, manmade, natural, new, old, old_hit, old_miss, remembered, forgotten))
+
+  # save as .RData (compressed)
+  save(
+    Q2_ERP,
+    file = here(
+      "data", "processed_data", "ERP", "RData", "Q2",
+      paste0(file_path_sans_ext(i), "_Q2_ERP.RData")
+    )
+  )
+
+  # subset data for Q3
+  Q3_ERP <-
+    ERP %>%
+    # create new columns
+    mutate(
+      condition = case_when( # old-hit/old-miss conditions
+        old_hit == 1 ~ "old_hit",
+        old_miss == 1 ~ "old_miss"
+      ),
+      .after = "epoch_num"
+    ) %>%
+    # filter rows according to conditions of interest
+    filter(!is.na(condition)) %>%
+    # delete unnecessary columns
+    select(-c(epoch_num, trigger, manmade, natural, new, old, old_hit, old_miss, remembered, forgotten))
+
+  # save as .RData (compressed)
+  save(
+    Q3_ERP,
+    file = here(
+      "data", "processed_data", "ERP", "RData", "Q3",
+      paste0(file_path_sans_ext(i), "_Q3_ERP.RData")
+    )
+  )
+
+  # subset data for Q4
+  Q4_ERP <-
+    ERP %>%
+    # create new columns
+    mutate(
+      condition = case_when( # remembered/forgotten conditions
+        remembered == 1 ~ "remembered",
+        forgotten == 1 ~ "forgotten"
+      ),
+      .after = "epoch_num"
+    ) %>%
+    # filter rows according to conditions of interest
+    filter(!is.na(condition)) %>%
+    # delete unnecessary columns
+    select(-c(epoch_num, trigger, manmade, natural, new, old, old_hit, old_miss, remembered, forgotten))
+
+  # save as .RData (compressed)
+  save(
+    Q4_ERP,
+    file = here(
+      "data", "processed_data", "ERP", "RData", "Q4",
+      paste0(file_path_sans_ext(i), "_Q4_ERP.RData")
+    )
+  )
   
 }
-
-# save as .RData (compressed)
-save(
-  all_ERP,
-  file = here("data", "processed_data", "ERP", "RData", "all_ERP.RData")
-)
 
 # END --------------------------------------------------------------------
