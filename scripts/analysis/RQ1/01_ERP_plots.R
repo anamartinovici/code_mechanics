@@ -6,11 +6,13 @@ set.seed(project_seed) # set seed
 
 # install packages --------------------------------------------------------------------
 
+# install.packages("Rmisc")
 # install.packages("here")
 # install.packages("tidyverse")
 
 # load packages --------------------------------------------------------------------
 
+library(Rmisc) # must be loaded before tidyverse (beware some nasty function masking!)
 library(here)
 library(tidyverse)
 
@@ -21,83 +23,72 @@ library(tidyverse)
 #          'PO4', 'PO8', 'O2',
 #          'POz', 'Oz', 'Iz')
 
-# load and manipulate data for statistical analysis --------------------------------------------------------------------
+# load data --------------------------------------------------------------------
 
-# load .RData file with all ERPs
-load(here("data", "processed_data", "ERP", "RData", "all_ERP.RData"))
+# list of .RData files in directory
+list_RData <-
+  list.files(
+    path = here("data", "processed_data", "ERP", "RData", "Q1"),
+    pattern = ".RData"
+  )
 
-# subset data for Q1
-Q1_ERP <- 
-  all_ERP %>%
-  # create new columns
-  mutate(
-    condition = case_when( # manmade/natural conditions
-      manmade == 1 ~ "manmade",
-      natural == 1 ~ "natural"
-    ),
-    .after= "epoch_num"
-  ) %>% 
-  # filter rows according to conditions of interest
-  filter(!is.na(condition)) %>% 
-  # delete unnecessary columns
-  select(-c(epoch_num, trigger, manmade, natural, new, old, old_hit, old_miss, remembered, forgotten))
+# preallocate data frame with all trial-averaged data
+all_pointsummary = NULL
 
+# yes, I know I shouldn't use loops in R
+for (i in list_RData) {
+  
+  # load .RData
+  load(here("data", "processed_data", "ERP", "RData", "Q1", i))
+  
+  Q1_ERP_long <- 
+    Q1_ERP %>% 
+    select(-condition) %>%  # delete condition because we want a condition-agnostic localizer
+    # convert to long format
+    pivot_longer(
+      !c(ssj, time), # keep as columns participant number and time
+      names_to = "electrode",
+      values_to = "amplitude"
+    )
+  
+  # summarized data from each time point (& within-subject 95% CI)
+  Q1_ERP_long_pointsummary <-
+    Q1_ERP_long %>%
+    summarySEwithin(
+      data = .,
+      measurevar = "amplitude",
+      withinvars = c("electrode", "time"),
+      idvar = "ssj"
+    ) %>%
+    as_tibble() %>% # convert to tibble
+    mutate(
+      time = as.numeric(levels(time))[time] # re-convert time points to numeric
+    ) %>% 
+    rename(n_epochs = N, mean = amplitude) %>% 
+    add_column(
+      ssj = sub("_.*", "", i), # add column with participant number
+      .before = "electrode"
+      )
+  
+  # all trial-averaged data
+  all_pointsummary <- rbind(all_pointsummary, Q1_ERP_long_pointsummary)
+  
+}
 
-rm(all_ERP) # free up RAM
-
-
-
-
-tempor <- 
-  Q1_ERP %>% 
-  group_by(condition) %>% 
-  summarize()
-
-
-
-
-
-
-rm(all_ERP)
-
-Q1_ERP <- 
-  Q1_ERP %>% 
-  # convert to long format
-  pivot_longer(
-    !c(ssj, condition, time), # keep as columns participant number, condition, and time
-    names_to = "electrode",
-    values_to = "amplitude"
+# save as .RData (compressed)
+save(
+  all_pointsummary,
+  file = here(
+    "data", "processed_data", "ERP", "RData", "Q1", "all_pointsummary.RData"
+    )
   )
 
 
 
-# summarized data from each time point (& within-subject 95% CI)
-Q1_ERP.pointsummary <-
-  Q1_ERP %>%
-  summarySEwithin(
-    data = .,
-    measurevar = "amplitude",
-    withinvars = c("electrode", "timepoint"),
-    idvar = "participant"
-  ) %>%
-  mutate(
-    timepoint = as.numeric(levels(timepoint))[timepoint] # re-convert time points to numeric
-  )
 
 
 
-# summarized data from each time point (& within-subject 95% CI)
-butterfly_pointsummary <- 
-  butterfly %>% 
-  summarySEwithin(
-    data = .,
-    measurevar = "amplitude",
-    withinvars = c("time", "electrode"),
-    idvar = "ssj"
-  ) %>%
-  mutate(
-    time = as.numeric(levels(time))[time] # re-convert time points to numeric
-  )
+
 
 
 # plot
