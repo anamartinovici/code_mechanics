@@ -23,10 +23,20 @@ library(brms)
 # electrodes in ROI
 ROI <- c('PO7', 'PO3', 'O1', 'PO4', 'PO8', 'O2', 'POz', 'Oz', 'Iz')
 
-num_chains <- 8 # number of chains = number of cores in processor of computer used for analysis
+# setup STAN
+num_chains <- 8 # number of chains = number of processor cores
 num_iter <- 2000 # number of samples per chain
 num_warmup <- 1000 # number of warm-up samples per chain
 num_thin <- 1 # thinning: extract one out of x samples per chain
+
+# priors  --------------------------------------------------------------------
+
+# informative priors
+priors <- c(
+  prior("normal(-4, 3)", class = "b", coef = "Intercept"),
+  prior("normal(0, 3)", class = "b"),
+  set_prior("student_t(3, 0, 2)", class = "sd")
+)
 
 # load and prepare data  --------------------------------------------------------------------
 
@@ -83,8 +93,30 @@ for (i in list_RData) {
   
 }
 
-# run model  --------------------------------------------------------------------
+# sampling  --------------------------------------------------------------------
 
+# model
+N1_brms <-
+  brm(
+    amplitude ~ 0 + Intercept + condition + (1 + condition | ssj),
+    # amplitude ~ 0 + Intercept + condition + (1 + condition | ssj) + (1 + condition  | epoch_num),
+    data = all_N1,
+    family = gaussian(),
+    prior = priors,
+    inits = "random",
+    control = list(
+      adapt_delta = .99,
+      max_treedepth = 15
+    ),
+    chains = num_chains,
+    iter = num_iter,
+    warmup = num_warmup,
+    thin = num_thin,
+    algorithm = "sampling",
+    cores = num_chains,
+    seed = project_seed,
+    file = here("data", "processed_data", "ERP", "models", "N1_brms.rds")
+  )
 
 
 
