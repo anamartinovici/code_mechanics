@@ -10,6 +10,8 @@ set.seed(project_seed) # set seed
 # install.packages("here")
 # install.packages("tidyverse")
 # install.packages("viridis")
+# install.packages("remotes")
+# remotes::install_github("craddm/eegUtils")
 
 # load packages --------------------------------------------------------------------
 
@@ -17,15 +19,45 @@ library(Rmisc) # must be loaded before tidyverse (beware some nasty function mas
 library(here)
 library(tidyverse)
 library(viridis)
+library(eegUtils)
 
 # setup --------------------------------------------------------------------
 
 source(here("scripts", "analysis", "functions", "custom_ggplot_theme.R"))
 
-# # region of interest
-# ROI <- c('PO7', 'PO3', 'O1',
-#          'PO4', 'PO8', 'O2',
-#          'POz', 'Oz', 'Iz')
+# list channels to exclude (non-scalp)
+exclude_chans <-
+  c(
+    "VEOG", "HEOG", "IO1", "IO2", "Afp9", "Afp10", # ocular channels
+    "M1", "M2" # mastoid channels
+  )
+
+# load electrode locations
+chan_locs <-
+  import_chans(
+    here("data", "original_data", "channel_locations", "chanlocs_ced.txt"),
+    format = "spherical",
+    file_format = "ced"
+    ) %>% 
+  filter(!electrode %in% exclude_chans) # exclude non-scalp channels
+
+# chan_locs <-
+#   read_delim(
+#     here("data", "original_data", "channel_locations", "chanlocs_ced.txt"),
+#     delim = "\t",
+#     show_col_types= FALSE
+#   ) %>% 
+#   select(electrode = labels, theta, radius) %>% 
+#   filter(!electrode %in% exclude_chans) %>% # exclude non-scalp channels
+#   mutate(
+#     theta = as.numeric(theta),
+#     radius = as.numeric(radius),
+#     radianTheta = pi / 180 * theta, # convert theta values from degrees to radians
+#     # Cartesian coordinates
+#     x = radius * sin(radianTheta),
+#     y = radius * cos(radianTheta)
+#   ) %>%
+#   .[order(.$electrode, decreasing = FALSE), ] # re-order according to topos
 
 # load and prepare data --------------------------------------------------------------------
 
@@ -44,16 +76,17 @@ grand_average <-
     ) %>% 
   as_tibble
 
-# plot --------------------------------------------------------------------
+# plot time series --------------------------------------------------------------------
 
-ggplot(
-  grand_average,
-  aes(
-    x = time,
-    y = mean,
-    group = electrode
-  )
-) +
+timeseries_grand_average <-
+  grand_average %>%
+  ggplot(
+    aes(
+      x = time,
+      y = mean,
+      group = electrode
+    )
+  ) +
   geom_vline( # vertical reference line
     xintercept = 0,
     linetype = "dashed",
@@ -96,11 +129,49 @@ ggplot(
   ) +
   theme_custom
 
+timeseries_grand_average
 
+# plot topography --------------------------------------------------------------------
 
+# By plotting the topography,
+# we will identify the electrodes from which we can prominently record the N1.
+# Based on the grand average above, we identify a time window for the N1
+# between 100 - 150 ms.
 
+topo_data <- 
+  all_pointsummary %>% 
+  filter(time >= 100 & time <= 150) %>% #keep only data in time window of interest
+  summarySE(
+    data = .,
+    measurevar = "mean",
+    groupvars = "electrode",
+    na.rm = FALSE,
+    conf.interval = .95
+  ) %>% 
+  as_tibble %>% 
+  select(electrode, amplitude = mean)
 
+# plot topography
+topo <- 
+  topo_data %>% 
+  topoplot(
+    .,
+    limits = c(-5, 5),
+    chanLocs = chan_locs,
+    method = "Biharmonic",
+    palette = "viridis",
+    interp_limit = "skirt",
+    contour = TRUE,
+    chan_marker = "point", # use "name" to see electrode label
+    quantity = "amplitude",
+    highlights = c('PO7', 'PO3', 'O1', 'PO4', 'PO8', 'O2', 'POz', 'Oz', 'Iz'),
+    scaling = 2 # scale labels and lines
+  ) +
+  ggtitle("N1 (localizer)")
+# +
+#   theme(plot.margin = unit(c(6, 0, 6, 0), "pt")) # decrease plot margins
 
+topo
 
 
 
