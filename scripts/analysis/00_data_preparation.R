@@ -147,6 +147,7 @@ for (i in list_csv) {
     )
 
   # save as .RData (compressed)
+  dir.create(path = here("data", "processed_data", "ERP", "RData"))
   save(
     ERP,
     file = here(
@@ -172,6 +173,7 @@ for (i in list_csv) {
     select(-c(epoch_num, trigger, manmade, natural, new, old, old_hit, old_miss, remembered, forgotten))
 
   # save as .RData (compressed)
+  dir.create(path = here("data", "processed_data", "ERP", "RData", "Q1"))
   save(
     Q1_ERP,
     file = here(
@@ -197,6 +199,7 @@ for (i in list_csv) {
     select(-c(epoch_num, trigger, manmade, natural, new, old, old_hit, old_miss, remembered, forgotten))
 
   # save as .RData (compressed)
+  dir.create(path = here("data", "processed_data", "ERP", "RData", "Q2"))
   save(
     Q2_ERP,
     file = here(
@@ -222,6 +225,7 @@ for (i in list_csv) {
     select(-c(epoch_num, trigger, manmade, natural, new, old, old_hit, old_miss, remembered, forgotten))
 
   # save as .RData (compressed)
+  dir.create(path = here("data", "processed_data", "ERP", "RData", "Q3"))
   save(
     Q3_ERP,
     file = here(
@@ -247,6 +251,7 @@ for (i in list_csv) {
     select(-c(epoch_num, trigger, manmade, natural, new, old, old_hit, old_miss, remembered, forgotten))
 
   # save as .RData (compressed)
+  dir.create(path = here("data", "processed_data", "ERP", "RData", "Q4"))
   save(
     Q4_ERP,
     file = here(
