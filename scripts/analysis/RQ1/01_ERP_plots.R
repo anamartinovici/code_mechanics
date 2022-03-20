@@ -9,94 +9,48 @@ set.seed(project_seed) # set seed
 # install.packages("Rmisc")
 # install.packages("here")
 # install.packages("tidyverse")
+# install.packages("viridis")
 
 # load packages --------------------------------------------------------------------
 
-
+library(Rmisc) # must be loaded before tidyverse (beware some nasty function masking!)
 library(here)
 library(tidyverse)
+library(viridis)
 
 # setup --------------------------------------------------------------------
-# 
+
+source(here("scripts", "analysis", "functions", "custom_ggplot_theme.R"))
+
 # # region of interest
 # ROI <- c('PO7', 'PO3', 'O1',
 #          'PO4', 'PO8', 'O2',
 #          'POz', 'Oz', 'Iz')
 
-# load data --------------------------------------------------------------------
+# load and prepare data --------------------------------------------------------------------
 
-# list of .RData files in directory
-list_RData <-
-  list.files(
-    path = here("data", "processed_data", "ERP", "RData", "Q1"),
-    pattern = ".RData"
-  )
+# load .RData
+load(here("data", "processed_data", "ERP", "RData", "Q1", "all_pointsummary.RData"))
 
-# preallocate data frame with all trial-averaged data
-all_pointsummary = NULL
-
-# yes, I know I shouldn't use loops in R
-for (i in list_RData) {
-  
-  # load .RData
-  load(here("data", "processed_data", "ERP", "RData", "Q1", i))
-  
-  Q1_ERP_long <- 
-    Q1_ERP %>% 
-    select(-condition) %>%  # delete condition because we want a condition-agnostic localizer
-    # convert to long format
-    pivot_longer(
-      !c(ssj, time), # keep as columns participant number and time
-      names_to = "electrode",
-      values_to = "amplitude"
-    )
-  
-  # summarized data from each time point (& within-subject 95% CI)
-  Q1_ERP_long_pointsummary <-
-    Q1_ERP_long %>%
-    summarySEwithin(
-      data = .,
-      measurevar = "amplitude",
-      withinvars = c("electrode", "time"),
-      idvar = "ssj"
-    ) %>%
-    as_tibble() %>% # convert to tibble
-    mutate(
-      time = as.numeric(levels(time))[time] # re-convert time points to numeric
+# grand average
+grand_average <- 
+  all_pointsummary %>% 
+  summarySE(
+    data = .,
+    measurevar = "mean",
+    groupvars = c("time", "electrode"),
+    na.rm = FALSE,
+    conf.interval = .95
     ) %>% 
-    rename(n_epochs = N, mean = amplitude) %>% 
-    add_column(
-      ssj = sub("_.*", "", i), # add column with participant number
-      .before = "electrode"
-      )
-  
-  # all trial-averaged data
-  all_pointsummary <- rbind(all_pointsummary, Q1_ERP_long_pointsummary)
-  
-}
+  as_tibble
 
-# save as .RData (compressed)
-save(
-  all_pointsummary,
-  file = here(
-    "data", "processed_data", "ERP", "RData", "Q1", "all_pointsummary.RData"
-    )
-  )
+# plot --------------------------------------------------------------------
 
-
-
-
-
-
-
-
-
-# plot
 ggplot(
-  butterfly_pointsummary,
+  grand_average,
   aes(
     x = time,
-    y = amplitude,
+    y = mean,
     group = electrode
   )
 ) +
@@ -114,55 +68,33 @@ ggplot(
     size = 1.2,
     alpha = .8
   ) +
-  geom_vline( # vertical reference lines
-    xintercept = seq(-200, 500, 50),
-    linetype = "dotted",
-    color = "#999999",
-    size = .8,
-    alpha = .5
-  ) +
-  geom_hline( # horizontal reference lines
-    yintercept = seq(-1, 8, 1),
-    linetype = "dotted",
-    color = "#999999",
-    size = .8,
-    alpha = .5
-  ) +
   geom_line( # one line per electrode
-    size = 1.2,
-    color = "#494847",
-    alpha = .8
+    size = 1,
+    color = "#3B528BFF", # blue
+    alpha = .6
   ) +
   geom_ribbon( # 95% CI
     aes(
-      ymin = amplitude - ci,
-      ymax = amplitude + ci
+      ymin = mean - ci,
+      ymax = mean + ci
     ),
-    linetype = "dotted",
+    # linetype = "dotted",
+    color = "#3B528BFF", # blue
     size = .1,
     alpha = .1,
     show.legend = FALSE
   ) +
   labs(
-    title = "", # title & axes labels
+    title = "grand average", # title & axes labels
     x = "time (ms)",
     y = expression(paste("amplitude (", mu, "V)"))
   ) +
-  scale_x_continuous(breaks = seq(-200, 500, 50)) + # x-axis: tick marks
+  scale_x_continuous(breaks = seq(-200, 500, 100)) + # x-axis: tick marks
   scale_y_reverse(
-    breaks = seq(-1, 8, 1), # y-axis: tick marks
-    limits = c(8, -1)
+    breaks = seq(-16, 16, 2), # y-axis: tick marks
+    limits = c(16, -16)
   ) +
-  theme_classic(base_size = 20) +
-  theme(
-    plot.title = element_text(
-      size = 28,
-      hjust = .5,
-      face = "bold"
-    ),
-    legend.position = "none"
-  )
-
+  theme_custom
 
 
 
