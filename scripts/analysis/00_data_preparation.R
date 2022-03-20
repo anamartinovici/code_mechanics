@@ -106,9 +106,6 @@ list_csv <-
     pattern = ".csv"
   )
 
-# # preallocate variable with epochs of all participants
-# all_ERP <- NULL
-
 # yes, I know I shouldn't use loops in R
 for (i in list_csv) {
   
@@ -280,10 +277,9 @@ for (i in list_RData) {
   
   Q1_ERP_long <- 
     Q1_ERP %>% 
-    select(-condition) %>%  # delete condition because we want a condition-agnostic localizer
     # convert to long format
     pivot_longer(
-      !c(ssj, time), # keep as columns participant number and time
+      !c(ssj, time, condition), # keep as columns participant number and time
       names_to = "electrode",
       values_to = "amplitude"
     )
@@ -294,8 +290,10 @@ for (i in list_RData) {
     summarySEwithin(
       data = .,
       measurevar = "amplitude",
-      withinvars = c("electrode", "time"),
-      idvar = "ssj"
+      withinvars = c("electrode", "time", "condition"),
+      idvar = "ssj",
+      na.rm = FALSE,
+      conf.interval = .95
     ) %>%
     as_tibble() %>% # convert to tibble
     mutate(
