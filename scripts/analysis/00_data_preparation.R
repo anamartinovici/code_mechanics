@@ -20,7 +20,7 @@ library(tidyverse)
 
 # pandas data frames
 orig_path <- here("data", "processed_data", "ERP", "data_frames")
-  
+
 # ERPs, all conditions
 data_path <- here("data", "processed_data", "ERP", "RData")
 # create directory if it doesn't exist
@@ -174,8 +174,8 @@ for (i in list_csv) {
   save(
     ERP,
     file = here(data_path, paste0(file_path_sans_ext(i), "_ERP.RData"))
-    )
-
+  )
+  
 }
 
 # END --------------------------------------------------------------------
