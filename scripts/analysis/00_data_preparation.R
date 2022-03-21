@@ -6,19 +6,74 @@ set.seed(project_seed) # set seed
 
 # install packages --------------------------------------------------------------------
 
-# install.packages("Rmisc")
 # install.packages("here")
 # install.packages("tools")
 # install.packages("tidyverse")
 
 # load packages --------------------------------------------------------------------
 
-library(Rmisc) # must be loaded before tidyverse (beware some nasty function masking!)
 library(here)
 library(tools)
 library(tidyverse)
 
-# setup --------------------------------------------------------------------
+# set directories for .RData files --------------------------------------------------------------------
+
+# ERPs, all conditions
+data_path <- here("data", "processed_data", "ERP", "RData")
+
+# create directory if it doesn't exist
+if (dir.exists(data_path)) {
+  print(paste0("The directory '", data_path, "' already exists."))
+} else {
+  dir.create(path = data_path)
+  print(paste0("Directory '", data_path, "' created."))
+}
+
+# ERPs, RQ1
+data_path_RQ1 <- here("data", "processed_data", "ERP", "RData", "RQ1")
+
+# create directory if it doesn't exist
+if (dir.exists(data_path_RQ1)) {
+  print(paste0("The directory '", data_path_RQ1, "' already exists."))
+} else {
+  dir.create(path = data_path_RQ1)
+  print(paste0("Directory '", data_path_RQ1, "' created."))
+}
+
+# ERPs, RQ2
+data_path_RQ2 <- here("data", "processed_data", "ERP", "RData", "RQ2")
+
+# create directory if it doesn't exist
+if (dir.exists(data_path_RQ2)) {
+  print(paste0("The directory '", data_path_RQ2, "' already exists."))
+} else {
+  dir.create(path = data_path_RQ2)
+  print(paste0("Directory '", data_path_RQ2, "' created."))
+}
+
+# ERPs, RQ3
+data_path_RQ3 <- here("data", "processed_data", "ERP", "RData", "RQ3")
+
+# create directory if it doesn't exist
+if (dir.exists(data_path_RQ3)) {
+  print(paste0("The directory '", data_path_RQ3, "' already exists."))
+} else {
+  dir.create(path = data_path_RQ3)
+  print(paste0("Directory '", data_path_RQ3, "' created."))
+}
+
+# ERPs, RQ4
+data_path_RQ4 <- here("data", "processed_data", "ERP", "RData", "RQ4")
+
+# create directory if it doesn't exist
+if (dir.exists(data_path_RQ4)) {
+  print(paste0("The directory '", data_path_RQ4, "' already exists."))
+} else {
+  dir.create(path = data_path_RQ4)
+  print(paste0("Directory '", data_path_RQ4, "' created."))
+}
+
+# channels --------------------------------------------------------------------
 
 # list channels to exclude (non-scalp)
 exclude_chans <-
@@ -26,6 +81,8 @@ exclude_chans <-
     "VEOG", "HEOG", "IO1", "IO2", "Afp9", "Afp10", # ocular channels
     "M1", "M2" # mastoid channels
   )
+
+# triggers --------------------------------------------------------------------
 
 # load triggers
 trigs <- read_csv(
@@ -42,7 +99,7 @@ trigs <- read_csv(
 trigs_Q1_manmade <-
   trigs %>%
   filter(scene_category == "man-made" & behavior != "na") %>%
-  pull(trigger)
+  pull(trigger) # extract as vector
 # 'natural' condition
 # NOTE: 'natural' excludes NAs in behavior:
 # although scene category is independent from response,
@@ -97,7 +154,7 @@ trigs_Q4_forgotten <-
   filter(subsequent_correct == "subsequent_forgotten") %>%
   pull(trigger)
 
-# save MNE output as .RData --------------------------------------------------------
+# save MNE output --------------------------------------------------------
 
 # list of .csv files in directory
 list_csv <-
@@ -128,7 +185,7 @@ for (i in list_csv) {
     relocate(time, .after = "epoch_num") %>%
     relocate(trigger, .after = "epoch_num") %>%
     # add participant column
-    # (separate call from mutate() because the position must be different)
+    # (separate call from mutate() because the position is different)
     add_column(
       ssj = as_factor(file_path_sans_ext(i)),
       .before = "epoch_num"
@@ -144,20 +201,17 @@ for (i in list_csv) {
       remembered = if_else(trigger %in% trigs_Q4_remembered, 1, 0),
       forgotten = if_else(trigger %in% trigs_Q4_forgotten, 1, 0),
       .after = "trigger"
-    )
+    ) %>% 
+    na.omit # drop NAs (if any)
 
   # save as .RData (compressed)
-  dir.create(path = here("data", "processed_data", "ERP", "RData"))
   save(
     ERP,
-    file = here(
-      "data", "processed_data", "ERP", "RData",
-      paste0(file_path_sans_ext(i), "_ERP.RData")
+    file = here(data_path, paste0(file_path_sans_ext(i), "_ERP.RData"))
     )
-  )
 
-  # subset data for Q1
-  Q1_ERP <-
+  # subset data for RQ1
+  RQ1_ERP <-
     ERP %>%
     # create new columns
     mutate(
@@ -167,25 +221,20 @@ for (i in list_csv) {
       ),
       .after = "epoch_num"
     ) %>%
-    # filter rows according to conditions of interest
+    # filter rows according to conditions of interest (also exclude NAs)
     filter(!is.na(condition)) %>%
     # delete unnecessary columns
     select(-c(epoch_num, trigger, manmade, natural, new, old, old_hit, old_miss, remembered, forgotten))
 
   # save as .RData (compressed)
-  dir.create(path = here("data", "processed_data", "ERP", "RData", "Q1"))
   save(
-    Q1_ERP,
-    file = here(
-      "data", "processed_data", "ERP", "RData", "Q1",
-      paste0(file_path_sans_ext(i), "_Q1_ERP.RData")
+    RQ1_ERP,
+    file = here(data_path_RQ1, paste0(file_path_sans_ext(i), "_RQ1_ERP.RData"))
     )
-  )
 
-  # subset data for Q2
-  Q2_ERP <-
+  # subset data for RQ2
+  RQ2_ERP <-
     ERP %>%
-    # create new columns
     mutate(
       condition = case_when( # new/old conditions
         new == 1 ~ "new",
@@ -193,25 +242,18 @@ for (i in list_csv) {
       ),
       .after = "epoch_num"
     ) %>%
-    # filter rows according to conditions of interest
     filter(!is.na(condition)) %>%
-    # delete unnecessary columns
     select(-c(epoch_num, trigger, manmade, natural, new, old, old_hit, old_miss, remembered, forgotten))
 
   # save as .RData (compressed)
-  dir.create(path = here("data", "processed_data", "ERP", "RData", "Q2"))
   save(
-    Q2_ERP,
-    file = here(
-      "data", "processed_data", "ERP", "RData", "Q2",
-      paste0(file_path_sans_ext(i), "_Q2_ERP.RData")
-    )
+    RQ2_ERP,
+    file = here(data_path_RQ2, paste0(file_path_sans_ext(i), "_RQ2_ERP.RData"))
   )
 
-  # subset data for Q3
-  Q3_ERP <-
+  # subset data for RQ3
+  RQ3_ERP <-
     ERP %>%
-    # create new columns
     mutate(
       condition = case_when( # old-hit/old-miss conditions
         old_hit == 1 ~ "old_hit",
@@ -219,25 +261,18 @@ for (i in list_csv) {
       ),
       .after = "epoch_num"
     ) %>%
-    # filter rows according to conditions of interest
     filter(!is.na(condition)) %>%
-    # delete unnecessary columns
     select(-c(epoch_num, trigger, manmade, natural, new, old, old_hit, old_miss, remembered, forgotten))
 
   # save as .RData (compressed)
-  dir.create(path = here("data", "processed_data", "ERP", "RData", "Q3"))
   save(
-    Q3_ERP,
-    file = here(
-      "data", "processed_data", "ERP", "RData", "Q3",
-      paste0(file_path_sans_ext(i), "_Q3_ERP.RData")
-    )
+    RQ3_ERP,
+    file = here(data_path_RQ3, paste0(file_path_sans_ext(i), "_RQ3_ERP.RData"))
   )
 
-  # subset data for Q4
-  Q4_ERP <-
+  # subset data for RQ4
+  RQ4_ERP <-
     ERP %>%
-    # create new columns
     mutate(
       condition = case_when( # remembered/forgotten conditions
         remembered == 1 ~ "remembered",
@@ -245,43 +280,37 @@ for (i in list_csv) {
       ),
       .after = "epoch_num"
     ) %>%
-    # filter rows according to conditions of interest
     filter(!is.na(condition)) %>%
-    # delete unnecessary columns
     select(-c(epoch_num, trigger, manmade, natural, new, old, old_hit, old_miss, remembered, forgotten))
 
   # save as .RData (compressed)
-  dir.create(path = here("data", "processed_data", "ERP", "RData", "Q4"))
   save(
-    Q4_ERP,
-    file = here(
-      "data", "processed_data", "ERP", "RData", "Q4",
-      paste0(file_path_sans_ext(i), "_Q4_ERP.RData")
-    )
+    RQ4_ERP,
+    file = here(data_path_RQ4, paste0(file_path_sans_ext(i), "_RQ4_ERP.RData"))
   )
   
 }
 
-# save trial-averaged data (point summaries) as .RData -----------------------------------------------------------------------
+# Q1, save trial-averaged data -----------------------------------------------------------------------
 
 # list of .RData files in directory
 list_RData <-
   list.files(
-    path = here("data", "processed_data", "ERP", "RData", "Q1"),
+    path = data_path_RQ1,
     pattern = ".RData"
   )
 
 # preallocate data frame with all trial-averaged data
-all_pointsummary = NULL
+all_pointsummary <- NULL
 
 # yes, I know I shouldn't use loops in R
 for (i in list_RData) {
   
   # load .RData
-  load(here("data", "processed_data", "ERP", "RData", "Q1", i))
+  load(here(data_path_RQ1, i))
   
-  Q1_ERP_long <- 
-    Q1_ERP %>% 
+  RQ1_ERP_long <- 
+    RQ1_ERP %>% 
     # convert to long format
     pivot_longer(
       !c(ssj, time, condition), # keep as columns participant number and time
@@ -289,38 +318,26 @@ for (i in list_RData) {
       values_to = "amplitude"
     )
   
-  # summarized data from each time point (& within-subject 95% CI)
-  Q1_ERP_long_pointsummary <-
-    Q1_ERP_long %>%
-    summarySEwithin(
-      data = .,
-      measurevar = "amplitude",
-      withinvars = c("electrode", "time", "condition"),
-      idvar = "ssj",
-      na.rm = FALSE,
-      conf.interval = .95
-    ) %>%
-    as_tibble() %>% # convert to tibble
-    mutate(
-      time = as.numeric(levels(time))[time] # re-convert time points to numeric
-    ) %>% 
-    rename(n_epochs = N, mean = amplitude) %>% 
+  # summarized data from each time point
+  RQ1_ERP_long_pointsummary <-
+    RQ1_ERP_long %>%
+    group_by(time, electrode, condition) %>% 
+    summarize(amplitude = mean(amplitude, na.rm = TRUE)) %>% 
+    ungroup() %>%
     add_column(
       ssj = sub("_.*", "", i), # add column with participant number
-      .before = "electrode"
+      .before = "time"
     )
   
   # all trial-averaged data
-  all_pointsummary <- rbind(all_pointsummary, Q1_ERP_long_pointsummary)
+  all_pointsummary <- rbind(all_pointsummary, RQ1_ERP_long_pointsummary)
   
 }
 
 # save as .RData (compressed)
 save(
   all_pointsummary,
-  file = here(
-    "data", "processed_data", "ERP", "RData", "Q1", "all_pointsummary.RData"
+  file = here(data_path_RQ1, "all_pointsummary.RData" )
   )
-)
 
 # END --------------------------------------------------------------------
