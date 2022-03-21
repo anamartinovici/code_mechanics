@@ -41,6 +41,13 @@ chan_locs <-
     ) %>% 
   filter(!electrode %in% exclude_chans) # exclude non-scalp channels
 
+# time window for mean N1
+time_window <- c(100, 150)
+# electrode ROI (region of interest)
+ROI <- c("PO7", "PO3", "O1", "PO4", "PO8", "O2")
+# these values are obtained by visual inspection, but
+# they are included at the beginning of the script for convenience
+
 # load and prepare data --------------------------------------------------------------------
 
 # load .RData
@@ -110,8 +117,8 @@ timeseries_grand_average <-
     limits = c(16, -16)
   ) +
   annotate("rect",
-           xmin = 100,
-           xmax = 150,
+           xmin = time_window[1],
+           xmax = time_window[2],
            ymin = -4,
            ymax = 8,
            linetype = "solid",
@@ -133,7 +140,7 @@ timeseries_grand_average
 
 topo_data <- 
   all_pointsummary %>% 
-  filter(time >= 100 & time <= 150) %>% # keep only data in time window of interest
+  filter(time >= time_window[1] & time <= time_window[2]) %>% # keep only data in time window of interest
   summarySE(
     data = .,
     measurevar = "mean",
@@ -157,14 +164,86 @@ topo <-
     contour = TRUE,
     chan_marker = "point", # use "name" to see electrode label
     quantity = "amplitude",
-    highlights = c('PO7', 'PO3', 'O1', 'PO4', 'PO8', 'O2', 'POz', 'Oz', 'Iz'),
+    highlights = ROI,
     scaling = 2 # scale labels and lines
   ) +
-  ggtitle("N1 (localizer)")
+  ggtitle("N1 (localizer)") +
+  theme(plot.title = element_text(size = 28, hjust = .5, face = "bold"))
 
 topo
 
 # the ROI (region of interest) comprises the following electrodes:
-ROI <- c('PO7', 'PO3', 'O1', 'PO4', 'PO8', 'O2', 'POz', 'Oz', 'Iz')
+# "PO7", "PO3", "O1", "PO4", "PO8", "O2"
+
+# plot time series (grand average, only ROI) --------------------------------------------------------------------
+
+
+
+
+
+
+timeseries_grand_average_ROI <-
+  grand_average %>%
+  filter(electrode %in% ROI) %>% 
+  ggplot(
+    aes(
+      x = time,
+      y = mean,
+      group = electrode
+    )
+  ) +
+  geom_vline( # vertical reference line
+    xintercept = 0,
+    linetype = "dashed",
+    color = "black",
+    size = 1.2,
+    alpha = .8
+  ) +
+  geom_hline( # horizontal reference line
+    yintercept = 0,
+    linetype = "dashed",
+    color = "black",
+    size = 1.2,
+    alpha = .8
+  ) +
+  geom_line( # one line per electrode
+    size = 1,
+    color = "#3B528BFF", # blue
+    alpha = .6
+  ) +
+  geom_ribbon( # 95% CI
+    aes(
+      ymin = mean - ci,
+      ymax = mean + ci
+    ),
+    # linetype = "dotted",
+    color = "#3B528BFF", # blue
+    size = .1,
+    alpha = .1,
+    show.legend = FALSE
+  ) +
+  labs(
+    title = "grand average", # title & axes labels
+    x = "time (ms)",
+    y = expression(paste("amplitude (", mu, "V)"))
+  ) +
+  scale_x_continuous(breaks = seq(-200, 500, 100)) + # x-axis: tick marks
+  scale_y_reverse(
+    breaks = seq(-2, 16, 2), # y-axis: tick marks
+    limits = c(16, -2)
+  ) +
+  annotate("rect",
+           xmin = time_window[1],
+           xmax = time_window[2],
+           ymin = -2,
+           ymax = 9,
+           linetype = "solid",
+           size = 2,
+           color = "#de1d1d",
+           alpha = 0
+  ) +
+  theme_custom
+
+timeseries_grand_average_ROI
 
 # END --------------------------------------------------------------------
