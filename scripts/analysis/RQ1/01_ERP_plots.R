@@ -51,7 +51,7 @@ topo_times <- c(0, 23, 55, 78, 102, 125, 148, 172, 203)
 # they are included at the beginning of the script for convenience
 
 # time window for mean N1
-time_window <- c(125, 175)
+time_window <- c(130, 180)
 
 # electrode ROI (region of interest)
 ROI <- c("PO7", "PO3", "O1", "PO4", "PO8", "O2")
@@ -59,7 +59,7 @@ ROI <- c("PO7", "PO3", "O1", "PO4", "PO8", "O2")
 # load and prepare data --------------------------------------------------------------------
 
 # load .RData
-load(here("data", "processed_data", "ERP", "RData", "RQ1", "all_pointsummary.RData"))
+load(here("data", "processed_data", "ERP", "RData", "RQ1", "RQ1_plot_all_data.RData"))
 
 # plot topographies --------------------------------------------------------------------
 
@@ -71,10 +71,11 @@ for (i in topo_times) {
   
   # plot topography
   topo <-
-    all_pointsummary %>%
+    plot_all_data %>%
     filter(time == i) %>% # keep only data in time window of interest
     group_by(electrode) %>% 
-    summarize(amplitude = mean(amplitude, na.rm = TRUE)) %>% # average across time
+    summarize(amplitude = mean(amplitude, na.rm = TRUE), # average across time
+              .groups = "keep") %>%
     ungroup() %>% 
     topoplot(
       limits = c(-4, 4),
@@ -100,11 +101,11 @@ for (i in topo_times) {
 # plot time series (grand average, only ROI) --------------------------------------------------------------------
 
 timeseries_grand_average_ROI <-
-  all_pointsummary %>% 
-  select(ssj, time, electrode, amplitude) %>% # select only columns of interest
+  plot_all_data %>% 
   filter(electrode %in% ROI) %>% # keep only electrodes in ROI
   group_by(ssj, electrode, time) %>% 
-  summarize(amplitude = mean(amplitude, na.rm = TRUE)) %>% # average across conditions
+  summarize(amplitude = mean(amplitude, na.rm = TRUE),# average across conditions
+            .groups = "keep") %>% 
   ungroup() %>% 
   pivot_wider(
     id_cols = c(ssj, time),
@@ -112,12 +113,9 @@ timeseries_grand_average_ROI <-
     values_from = amplitude
   ) %>% 
   mutate(ROI_amplitude = rowMeans(select(., all_of(ROI)), na.rm = TRUE)) %>% 
-  group_by(ssj, time) %>% 
-  summarize(amplitude = mean(ROI_amplitude, na.rm = TRUE)) %>% # average across conditions
-  ungroup() %>% 
   summarySE( # average across participants
     data = .,
-    measurevar = "amplitude",
+    measurevar = "ROI_amplitude",
     groupvars = "time",
     na.rm = FALSE,
     conf.interval = .95
@@ -128,7 +126,7 @@ timeseries_grand_average_ROI %>%
   ggplot(
     aes(
       x = time,
-      y = amplitude
+      y = ROI_amplitude
     )
   ) +
   geom_vline( # vertical reference line
@@ -152,8 +150,8 @@ timeseries_grand_average_ROI %>%
   ) +
   geom_ribbon( # 95% CI
     aes(
-      ymin = amplitude - ci,
-      ymax = amplitude + ci
+      ymin = ROI_amplitude - ci,
+      ymax = ROI_amplitude + ci
     ),
     # linetype = "dotted",
     color = "#3B528BFF", # blue
@@ -184,14 +182,15 @@ timeseries_grand_average_ROI %>%
   theme_custom
 
 # based on the grand average, we identify
-# a time window for the N1 between 125 - 175 ms
+# a time window for the N1 between 130 - 180 ms
 
 # topography in selected time window --------------------------------------------------------------------
 
-all_pointsummary %>%
+plot_all_data %>%
   filter(time >= time_window[1] & time <= time_window[2]) %>% # keep only data in time window of interest
   group_by(electrode) %>%
-  summarize(amplitude = mean(amplitude, na.rm = TRUE)) %>% # average across time
+  summarize(amplitude = mean(amplitude, na.rm = TRUE), # average across time
+            .groups = "keep") %>% 
   ungroup() %>%
   topoplot(
     chanLocs = chan_locs,
