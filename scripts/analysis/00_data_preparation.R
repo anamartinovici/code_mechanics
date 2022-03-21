@@ -73,7 +73,7 @@ if (dir.exists(data_path_RQ4)) {
   print(paste0("Directory '", data_path_RQ4, "' created."))
 }
 
-# channels --------------------------------------------------------------------
+# setup: channels --------------------------------------------------------------------
 
 # list channels to exclude (non-scalp)
 exclude_chans <-
@@ -82,7 +82,7 @@ exclude_chans <-
     "M1", "M2" # mastoid channels
   )
 
-# triggers --------------------------------------------------------------------
+# setup: triggers --------------------------------------------------------------------
 
 # load triggers
 trigs <- read_csv(
@@ -154,7 +154,7 @@ trigs_Q4_forgotten <-
   filter(subsequent_correct == "subsequent_forgotten") %>%
   pull(trigger)
 
-# save MNE output --------------------------------------------------------
+# save MNE output as.RData --------------------------------------------------------
 
 # list of .csv files in directory
 list_csv <-
