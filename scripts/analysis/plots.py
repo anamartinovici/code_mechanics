@@ -32,7 +32,7 @@ ROI = ['PO7', 'PO3', 'O1', 'PO4', 'PO8', 'O2']
 
 # time points for topographies
 # topo_times = [0, .05, .10, .15, .20, .25, .30, .35, .40, .45, .50]
-topo_times = [10, .125, .15, .175, .20]
+topo_times = [.10, .125, .15, .175, .20]
 
 # %% PLOTS
 
