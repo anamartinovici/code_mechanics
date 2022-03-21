@@ -21,9 +21,7 @@ library(tidyverse)
 library(viridis)
 library(eegUtils)
 
-# setup --------------------------------------------------------------------
-
-source(here("scripts", "analysis", "functions", "custom_ggplot_theme.R"))
+# setup: channels --------------------------------------------------------------------
 
 # list channels to exclude (non-scalp)
 exclude_chans <-
@@ -41,6 +39,11 @@ chan_locs <-
     ) %>% 
   filter(!electrode %in% exclude_chans) # exclude non-scalp channels
 
+# setup: plots --------------------------------------------------------------------
+
+# custom ggplot theme
+source(here("scripts", "analysis", "functions", "custom_ggplot_theme.R"))
+
 # time points for topographies
 topo_times <- c(0, 23, 55, 78, 102, 125, 148, 172, 203)
 
@@ -56,7 +59,7 @@ ROI <- c("PO7", "PO3", "O1", "PO4", "PO8", "O2")
 # load and prepare data --------------------------------------------------------------------
 
 # load .RData
-load(here("data", "processed_data", "ERP", "RData", "Q1", "all_pointsummary.RData"))
+load(here("data", "processed_data", "ERP", "RData", "RQ1", "all_pointsummary.RData"))
 
 # plot topographies --------------------------------------------------------------------
 
@@ -71,9 +74,10 @@ for (i in topo_times) {
     all_pointsummary %>%
     filter(time == i) %>% # keep only data in time window of interest
     group_by(electrode) %>% 
-    summarize(amplitude = mean(mean, na.rm = TRUE)) %>% # average across time
+    summarize(amplitude = mean(amplitude, na.rm = TRUE)) %>% # average across time
     ungroup() %>% 
     topoplot(
+      limits = c(-4, 4),
       chanLocs = chan_locs,
       method = "Biharmonic",
       palette = "viridis",
@@ -97,10 +101,10 @@ for (i in topo_times) {
 
 timeseries_grand_average_ROI <-
   all_pointsummary %>% 
-  select(ssj, time, electrode, mean) %>% # select only columns of interest
+  select(ssj, time, electrode, amplitude) %>% # select only columns of interest
   filter(electrode %in% ROI) %>% # keep only electrodes in ROI
   group_by(ssj, electrode, time) %>% 
-  summarize(amplitude = mean(mean, na.rm = TRUE)) %>% # average across conditions
+  summarize(amplitude = mean(amplitude, na.rm = TRUE)) %>% # average across conditions
   ungroup() %>% 
   pivot_wider(
     id_cols = c(ssj, time),
@@ -187,7 +191,7 @@ timeseries_grand_average_ROI %>%
 all_pointsummary %>%
   filter(time >= time_window[1] & time <= time_window[2]) %>% # keep only data in time window of interest
   group_by(electrode) %>%
-  summarize(amplitude = mean(mean, na.rm = TRUE)) %>% # average across time
+  summarize(amplitude = mean(amplitude, na.rm = TRUE)) %>% # average across time
   ungroup() %>%
   topoplot(
     chanLocs = chan_locs,
