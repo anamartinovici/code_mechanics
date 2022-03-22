@@ -7,7 +7,7 @@ Preprocessing of raw data for ERP analysis
 '''
 
 # %% IMPORT LIBRARIES
-# note that we also need picard and h5io
+# note that we also need python-picard and h5io
 
 import sys
 import random
@@ -183,7 +183,7 @@ ar = AutoReject(
 # get all participant names
 subs = [name for name in os.listdir(raw_path) if name.startswith('sub')] 
 
-for ssj in subs[:1]:
+for ssj in subs:
     
     # create subdirectory
     pathlib.Path(opj(preproc_path + ssj)).mkdir(exist_ok = True) 

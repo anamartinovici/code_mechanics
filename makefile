@@ -15,7 +15,7 @@ test_make:
 #################################################
 
 # to answer Q1, we first need to process data
-ERP_Q1: receipts/process_data_for_ERP
+ERP_Q1: receipts/ERP_process_data_step1
 
 # to process data, we need eeg_BIDS
 # the eeg_BIDS data we received for this project is too large for GitHub
@@ -32,11 +32,11 @@ ifeq "$(strip $(user_name))" "anama"
 endif
 
 # how receipts work:
-# if receipts/process_data_for_ERP exists, and the prerequisite
-# (scripts/01_process_for_ERP_lowRAM.py) is not newer than the target 
-# (receipts/process_data_for_ERP), then the 01... script is not executed
+# if receipts/ERP_process_data_step1 exists, and the prerequisite
+# (scripts/ERP_preproc_step1.py) is not newer than the target 
+# (receipts/ERP_process_data_step1), then the .py script is not executed
 # this is great because it means you only process data if you need it
-receipts/process_data_for_ERP: scripts/ERP_preproc_step1.py
+receipts/ERP_process_data_step1: scripts/ERP_preproc_step1.py
 	$(print-target-and-prereq-info)
 	python scripts/ERP_preproc_step1.py $(strip $(DIR_eeg_BIDS))
 	date > $@
@@ -52,7 +52,7 @@ receipts/process_data_for_ERP: scripts/ERP_preproc_step1.py
 ##############################################
 
 define print-target-and-prereq-info
-	@echo ""
+	@echo "---------"
 	@echo "Target is:"
 	echo $@
 	@echo ""
@@ -61,5 +61,5 @@ define print-target-and-prereq-info
 	@echo ""
 	@echo "The prerequisites newer than the target are:"
 	echo $?
-	@echo ""
+	@echo "---------"
 endef
