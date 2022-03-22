@@ -8,3 +8,10 @@ data/processed_data/ERP/RData/all_epochs.RData
 data/processed_data/ERP/RData/
 
 .Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# this file is created to signal that make can be used on the machine
+# each user needs to do the test, so this should never be pushed to the remote
+success_test_make.txt
