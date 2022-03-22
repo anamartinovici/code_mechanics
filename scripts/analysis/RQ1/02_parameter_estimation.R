@@ -63,8 +63,8 @@ load(here(N1_path, "RQ1_all_N1.RData"))
 
 N1_brms <-
   brm(
-    amplitude ~ 0 + Intercept + condition_RQ1 + (1 + condition_RQ1 | ssj),
-    # amplitude ~ 0 + Intercept + condition_RQ1 + (1 + condition_RQ1 | ssj) + (1 + condition_RQ1  | epoch_num),
+    # amplitude ~ 0 + Intercept + condition_RQ1 + (1 + condition_RQ1 | ssj),
+    amplitude ~ 0 + Intercept + condition_RQ1 + (1 + condition_RQ1 | ssj) + (1 + condition_RQ1  | epoch_num),
     data = all_N1,
     family = gaussian(),
     prior = priors,
