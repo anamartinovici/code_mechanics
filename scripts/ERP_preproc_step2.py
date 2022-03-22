@@ -21,7 +21,7 @@ project_seed = 999 # RNG seed
 random.seed(project_seed) # set seed to ensure computational reproducibility
 
 # directory with preprocessed files
-preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/data/processed_data/ERP/'
+preproc_path = './data/processed_data/ERP/'
 
 filenames = glob.glob(preproc_path +  '/**/*_AutoReject_epo.fif') # list of .fif files in directory and all subdirectories
 subs = [name for name in os.listdir(preproc_path) if name.startswith('sub')] # participant names

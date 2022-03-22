@@ -7,10 +7,9 @@ Preprocessing of raw data for ERP analysis
 '''
 
 # %% IMPORT LIBRARIES
+# note that we also need picard and h5io
 
 import sys
-print(sys.argv[1])
-
 import random
 import numpy as np
 import pandas as pd
@@ -33,6 +32,7 @@ random.seed(project_seed) # set seed to ensure computational reproducibility
 raw_path = sys.argv[1] # directory with eeg_BIDS data received from the EEG_manypipelines team
 preproc_path = './data/processed_data/ERP/' # directory where this script saves preprocessed files
 events_path = './data/original_data/events/' # directory where this script saves event files
+
 
 datatype = 'eeg' # data type
 
@@ -183,7 +183,7 @@ ar = AutoReject(
 # get all participant names
 subs = [name for name in os.listdir(raw_path) if name.startswith('sub')] 
 
-for ssj in subs[0]:
+for ssj in subs[:1]:
     
     # create subdirectory
     pathlib.Path(opj(preproc_path + ssj)).mkdir(exist_ok = True) 
