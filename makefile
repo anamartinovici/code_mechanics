@@ -23,7 +23,6 @@ ERP_Q1: receipts/ERP_process_data_step1
 
 # you can choose to copy the files manually into original_data/eeg_BIDS/
 DIR_eeg_BIDS = original_data/eeg_BIDS/
-
 # OR you can specify below the path to data for your user_name
 # if you do not specify the path for your user_name, then the code will search for the raw data in original_data/eeg_BIDS/
 user_name=$(shell whoami)

@@ -30,7 +30,7 @@ random.seed(project_seed) # set seed to ensure computational reproducibility
 
 # directories
 raw_path = sys.argv[1] # directory with eeg_BIDS data received from the EEG_manypipelines team
-preproc_path = './data/processed_data/ERP/' # directory where this script saves preprocessed files
+preproc_path = './data/processed_data/ERP/step1/' # directory where this script saves preprocessed files
 events_path = './data/original_data/events/' # directory where this script saves event files
 
 
