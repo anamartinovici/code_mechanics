@@ -3,3 +3,8 @@ data/original_data/eeg_BIDS
 
 # some of the .fif files in data/preproc are too large for GitHub
 data/processed_data/ERP/*/*.fif
+data/processed_data/ERP/data_frames/
+data/processed_data/ERP/RData/all_epochs.RData
+data/processed_data/ERP/RData/
+
+.Rproj.user
