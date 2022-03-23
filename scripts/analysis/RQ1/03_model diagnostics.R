@@ -54,7 +54,8 @@ posterior_predict_N1_brms <-
 # model diagnostics: trace plots of MCMC draws --------------------------------------------------------
 
 MCMC_N1_brms <-
-  plot(N1_brms, ask = FALSE)
+  plot(N1_brms, ask = FALSE) +
+  theme_custom
 
 # model diagnostics: posterior predictive checks --------------------------------------------------------
 
