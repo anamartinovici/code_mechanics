@@ -1,8 +1,8 @@
-P5
 POz
 CP4
 P4
-T8
-Oz
-T7
 Iz
+P5
+T8
+T7
+Oz

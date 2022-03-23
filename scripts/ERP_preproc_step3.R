@@ -19,10 +19,10 @@ library(tidyverse)
 # set directories for .RData files --------------------------------------------------------------------
 
 # pandas data frames
-orig_path <- here("data", "processed_data", "ERP", "data_frames")
+orig_path <- here("data", "processed_data", "ERP", "step2")
 
 # ERPs, all conditions
-data_path <- here("data", "processed_data", "ERP", "RData")
+data_path <- here("data", "processed_data", "ERP", "step3")
 # create directory if it doesn't exist
 if (dir.exists(data_path)) {
   print(paste0("The directory '", data_path, "' already exists."))

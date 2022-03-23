@@ -15,7 +15,17 @@ test_make:
 #################################################
 
 # to answer Q1, we first need to process data
-ERP_Q1: receipts/ERP_process_data_step1
+ERP_Q1: receipts/ERP_process_data_step2
+
+receipts/ERP_process_data_step2: receipts/ERP_process_data_step1 \
+								 scripts/ERP_preproc_step2.py
+	$(print-target-and-prereq-info)
+	mkdir -p data/processed_data/ERP/step2
+	python scripts/ERP_preproc_step2.py
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
 
 # to process data, we need eeg_BIDS
 # the eeg_BIDS data we received for this project is too large for GitHub

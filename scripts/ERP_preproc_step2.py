@@ -20,11 +20,12 @@ from os.path import join as opj
 project_seed = 999 # RNG seed
 random.seed(project_seed) # set seed to ensure computational reproducibility
 
-# directory with preprocessed files
-preproc_path = './data/processed_data/ERP/'
+# directory with preprocessed files from step1
+preproc_path_step1 = './data/processed_data/ERP/step1/'
+preproc_path_step2 = './data/processed_data/ERP/step2/'
 
-filenames = glob.glob(preproc_path +  '/**/*_AutoReject_epo.fif') # list of .fif files in directory and all subdirectories
-subs = [name for name in os.listdir(preproc_path) if name.startswith('sub')] # participant names
+filenames = glob.glob(preproc_path_step1 +  '/**/*_AutoReject_epo.fif') # list of .fif files in directory and all subdirectories
+subs = [name for name in os.listdir(preproc_path_step1) if name.startswith('sub')] # participant names
 
 # %% convert to df
 
@@ -43,7 +44,7 @@ for i in range(len(subs)):
     
     # save as .csv
     df.to_csv(
-        path_or_buf = opj(preproc_path + 'data_frames/' + subs[i] + '.csv'),
+        path_or_buf = opj(preproc_path_step2 + subs[i] + '.csv'),
         sep = ','
         )
 

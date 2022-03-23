@@ -1,8 +1,8 @@
-P10
-C3
-PO3
-T8
 POz
-P3
+C3
 PO8
 CP5
+P3
+T8
+PO3
+P10

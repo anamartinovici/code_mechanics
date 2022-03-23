@@ -1,11 +1,11 @@
-POz
-P1
 CP3
-P9
-P3
+POz
 O2
 C3
-CP5
 TP7
 Iz
+P9
 P7
+CP5
+P3
+P1

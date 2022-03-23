@@ -1,7 +1,7 @@
 POz
 P4
-PO4
+O2
+FT8
 F4
 T8
-FT8
-O2
+PO4
