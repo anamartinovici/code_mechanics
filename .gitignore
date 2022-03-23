@@ -15,3 +15,5 @@ data/processed_data/ERP/data_frames/
 data/processed_data/ERP/RData/all_epochs.RData
 
 data/processed_data/ERP/RData/
+
+*.rds
