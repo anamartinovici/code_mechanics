@@ -6,6 +6,7 @@ data/processed_data/ERP/step1/*/*.fif
 data/processed_data/ERP/step2
 data/processed_data/ERP/step3
 
+data/processed_data/TFR/step1/*/*.fif
 
 .Rproj.user
 .Rhistory
