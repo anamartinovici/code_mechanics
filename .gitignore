@@ -15,4 +15,5 @@ data/processed_data/TFR/step1/*/*.fif
 
 # this file is created to signal that make can be used on the machine
 # each user needs to do the test, so this should never be pushed to the remote
-success_test_make.txt
+zzz_receipts/success_test_make.txt
+zzz_receipts/saved_from_test_make_py.txt

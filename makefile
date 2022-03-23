@@ -27,7 +27,7 @@ test_make:
 	@echo "Check if success_test_make.txt is created in DIR_RECEIPT"
 	$(file > $(strip $(DIR_RECEIPT))/success_test_make.txt, 'make works just fine')
 	@echo "Check if saved_from_test_make_py.txt is created in DIR_RECEIPT"
-	python test_make.py $(strip $(DIR_RECEIPT))
+	python scripts/test_make.py $(strip $(DIR_RECEIPT))
 
 #################################################
 ##
