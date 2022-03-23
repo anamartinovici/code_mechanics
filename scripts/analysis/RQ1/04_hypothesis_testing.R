@@ -31,24 +31,6 @@ model_path <- here("data", "processed_data", "ERP", "models", "RQ1")
 # results of model fit
 N1_brms <- readRDS(here(model_path, "N1_brms_2022-03-22.rds"))
 
-# hypothesis testing via Region of Practical Equivalence (ROPE): single ROPE --------------------------------------------------------
-
-# ROPE is arbitrarily set at ±0.05 µV, 
-# 10 times smaller than the minimum expected 
-# amplitude difference between conditions (0.5 µV)
-ropeHDI <- c(-.05, .05) 
-
-equivalence_test_N1_brms <-
-  N1_brms %>%
-  emmeans(~ condition_RQ1) %>% # estimated marginal means
-  pairs() %>% # posterior distributions of differences
-  equivalence_test(
-    range = ropeHDI, # ROPE
-    ci = .95 # HDI
-  )
-
-equivalence_test_N1_brms
-
 # hypothesis testing via Region of Practical Equivalence (ROPE): range of ROPEs --------------------------------------------------------
 
 # range of plausible ROPE values
@@ -66,11 +48,11 @@ for (i in 1:nrow(range_ropeHDI)) {
   
   res <-
     N1_brms %>%
-    emmeans(~ condition_RQ1) %>%
-    pairs() %>%
+    emmeans(~ condition_RQ1) %>% # estimated marginal means
+    pairs() %>% # posterior distributions of difference
     equivalence_test(
-      range = c(pull(range_ropeHDI[i, "low_ROPE"]), pull(range_ropeHDI[i, "high_ROPE"])),
-      ci = .95
+      range = c(pull(range_ropeHDI[i, "low_ROPE"]), pull(range_ropeHDI[i, "high_ROPE"])), # ROPE
+      ci = 1 # percentage of the **whole posterior distribution** that falls within the ROPE (for details, see https://doi.org/10.3389/fpsyg.2019.02767)
     )
   
   # extract values from results
