@@ -42,7 +42,7 @@ time_window <- c(130, 180)
 # setup: STAN --------------------------------------------------------------------
 
 num_chains <- 8 # number of chains = number of processor cores
-num_iter <- 2000 # number of samples per chain
+num_iter <- 4000 # number of samples per chain
 num_warmup <- 1000 # number of warm-up samples per chain
 num_thin <- 1 # thinning: extract one out of x samples per chain
 
@@ -63,7 +63,6 @@ load(here(N1_path, "RQ1_all_N1.RData"))
 
 N1_brms <-
   brm(
-    # amplitude ~ 0 + Intercept + condition_RQ1 + (1 + condition_RQ1 | ssj),
     amplitude ~ 0 + Intercept + condition_RQ1 + (1 + condition_RQ1 | ssj) + (1 + condition_RQ1  | epoch_num),
     data = all_N1,
     family = gaussian(),
