@@ -84,10 +84,10 @@ for (i in 1:nrow(range_ropeHDI)) {
   
 all_equivalence_test_N1_brms
 
-# Results: 100% of the posterior distribution 
+# Results: 95% of the posterior distribution 
 # of the N1 amplitude difference between manmade and natural scenes
 # is outside of a region of practical equivalence up until ±0.09 µV.
-# In other words, manmade scenes elicit an N1 whose amplitude is at most 
+# More specifically, manmade scenes elicit an N1 whose amplitude is at least 
 # 0.09 µV larger than the N1 elicited by natural scenes.
 
 # END --------------------------------------------------------------------
