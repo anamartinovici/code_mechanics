@@ -33,6 +33,15 @@ N1_brms <- readRDS(here(model_path, "N1_brms_2022-03-22.rds"))
 
 # hypothesis testing via Region of Practical Equivalence (ROPE): range of ROPEs --------------------------------------------------------
 
+# If the HDI is completely outside the ROPE, the “null hypothesis” for this parameter is “rejected”.
+# If the ROPE completely covers the HDI, i.e., all most credible values of a parameter are inside the region of practical equivalence, the null hypothesis is "accepted". 
+# Else, it’s unclear whether the null hypothesis should be accepted or rejected ("undecided").
+
+# We use the full ROPE, i.e., 100% of the HDI (for details, see https://doi.org/10.3389/fpsyg.2019.02767).
+# The null hypothesis is rejected or accepted if the percentage of the posterior within the ROPE 
+# is smaller than to 2.5% or greater than 97.5%. 
+# Desirable results are low proportions inside the ROPE (the closer to zero the better).
+
 # range of plausible ROPE values
 # (between ±0.05 and ±0.5 µV in steps of 0.01 µV)
 range_ropeHDI <- tibble(
@@ -52,7 +61,7 @@ for (i in 1:nrow(range_ropeHDI)) {
     pairs() %>% # posterior distributions of difference
     equivalence_test(
       range = c(pull(range_ropeHDI[i, "low_ROPE"]), pull(range_ropeHDI[i, "high_ROPE"])), # ROPE
-      ci = 1 # percentage of the **whole posterior distribution** that falls within the ROPE (for details, see https://doi.org/10.3389/fpsyg.2019.02767)
+      ci = 1 # proportion of the **whole posterior distribution** that falls within the ROPE
     )
   
   # extract values from results
