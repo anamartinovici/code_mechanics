@@ -1,6 +1,6 @@
 # for now, all has only test_make, to avoid everything building built by accident
 # to build the analysis, you need to write 'make name_of_target' explicitly in the terminal
-all: test_make zzz_receipts/ERP_process_data_step1
+all: test_make ERP_Q1
 
 test_make:
 	@echo "Check if success_test_make.txt is created"
@@ -14,11 +14,13 @@ test_make:
 #
 #################################################
 
-DIR_RECEIPT = receipts
+DIR_RECEIPT = zzz_receipts
 
 # to answer Q1, we first need to process data
+ERP_Q1: $(strip $(DIR_RECEIPT))/RQ1_process_data
 
-$(strip $(DIR_RECEIPT))/RQ1_process_data: scripts/RQ1/00_RQ1_data_preparation.R
+$(strip $(DIR_RECEIPT))/RQ1_process_data: $(strip $(DIR_RECEIPT))/ERP_process_data_step3 \
+										  scripts/RQ1/00_RQ1_data_preparation.R
 	$(print-target-and-prereq-info)
 	mkdir -p data/processed_data/ERP/RQ1
 	Rscript scripts/RQ1/00_RQ1_data_preparation.R
@@ -26,7 +28,8 @@ $(strip $(DIR_RECEIPT))/RQ1_process_data: scripts/RQ1/00_RQ1_data_preparation.R
 	@echo "done with $@"
 	@echo "---------"
 
-receipts/ERP_process_data_step3: scripts/ERP_preproc_step3.R
+$(strip $(DIR_RECEIPT))/ERP_process_data_step3: $(strip $(DIR_RECEIPT))/ERP_process_data_step2 \
+												scripts/ERP_preproc_step3.R
 	$(print-target-and-prereq-info)
 	mkdir -p data/processed_data/ERP/step3
 	Rscript scripts/ERP_preproc_step3.R
@@ -34,8 +37,8 @@ receipts/ERP_process_data_step3: scripts/ERP_preproc_step3.R
 	@echo "done with $@"
 	@echo "---------"
 
-receipts/ERP_process_data_step2: receipts/ERP_process_data_step1 \
-								 scripts/ERP_preproc_step2.py
+$(strip $(DIR_RECEIPT))/ERP_process_data_step2: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
+												scripts/ERP_preproc_step2.py
 	$(print-target-and-prereq-info)
 	mkdir -p data/processed_data/ERP/step2
 	python scripts/ERP_preproc_step2.py
@@ -62,7 +65,8 @@ endif
 # (scripts/ERP_preproc_step1.py) is not newer than the target 
 # (receipts/ERP_process_data_step1), then the .py script is not executed
 # this is great because it means you only process data if you need it
-zzz_receipts/ERP_process_data_step1: scripts/ERP_preproc_step1.py
+
+$(strip $(DIR_RECEIPT))/ERP_process_data_step1: scripts/ERP_preproc_step1.py
 	$(print-target-and-prereq-info)
 	python scripts/ERP_preproc_step1.py $(strip $(DIR_eeg_BIDS))
 	date > $@
