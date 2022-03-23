@@ -4,6 +4,7 @@ data/original_data/eeg_BIDS
 # some of the .fif files in data/preproc are too large for GitHub
 data/processed_data/ERP/step1/*/*.fif
 data/processed_data/ERP/step2
+data/processed_data/ERP/step3
 
 
 .Rproj.user

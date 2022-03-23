@@ -15,7 +15,16 @@ test_make:
 #################################################
 
 # to answer Q1, we first need to process data
-ERP_Q1: receipts/ERP_process_data_step2
+ERP_Q1: receipts/ERP_process_data_step3
+
+receipts/ERP_process_data_step3: receipts/ERP_process_data_step2 \
+								 scripts/ERP_preproc_step3.R
+	$(print-target-and-prereq-info)
+	mkdir -p data/processed_data/ERP/step3
+	Rscript scripts/ERP_preproc_step3.R
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
 
 receipts/ERP_process_data_step2: receipts/ERP_process_data_step1 \
 								 scripts/ERP_preproc_step2.py
