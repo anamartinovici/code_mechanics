@@ -17,17 +17,9 @@ library(tidyverse)
 # set directories for .RData files --------------------------------------------------------------------
 
 # ERPs, all conditions
-data_path <- here("data", "processed_data", "ERP", "RData")
-
+data_path <- here("data", "processed_data", "ERP", "step3")
 # ERPs, RQ1
-data_path_RQ1 <- here("data", "processed_data", "ERP", "RData", "RQ1")
-# create directory if it doesn't exist
-if (dir.exists(data_path_RQ1)) {
-  print(paste0("The directory '", data_path_RQ1, "' already exists."))
-} else {
-  dir.create(path = data_path_RQ1)
-  print(paste0("Directory '", data_path_RQ1, "' created."))
-}
+data_path_RQ1 <- here("data", "processed_data", "ERP", "RQ1")
 
 # setup: N1 --------------------------------------------------------------------
 

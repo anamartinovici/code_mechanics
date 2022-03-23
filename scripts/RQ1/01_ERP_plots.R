@@ -59,7 +59,7 @@ ROI <- c("PO7", "PO3", "O1", "PO4", "PO8", "O2")
 # load and prepare data --------------------------------------------------------------------
 
 # load .RData
-load(here("data", "processed_data", "ERP", "RData", "RQ1", "RQ1_plot_all_data.RData"))
+load(here("data", "processed_data", "ERP", "RQ1", "RQ1_plot_all_data.RData"))
 
 # plot topographies --------------------------------------------------------------------
 
