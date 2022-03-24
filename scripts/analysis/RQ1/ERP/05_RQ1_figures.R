@@ -47,6 +47,11 @@ source(here("scripts", "analysis", "functions", "geom_flat_violin.R"))
 # cividis color palette for bayesplot
 color_scheme_set("viridisE")
 
+# setup: N1 --------------------------------------------------------------------
+
+# largest ROPE identified during hypothesis testing
+range_ropeHDI <- c(-.08, .08)
+
 # load and prepare data --------------------------------------------------------------------
 
 # N1 data
@@ -192,7 +197,7 @@ halfeye_emm_N1_brms <-
     slab_size = .5
   ) +
   scale_fill_viridis_d(option = "cividis", alpha = .6) +
-  scale_x_continuous(breaks = seq(-6, -3, 0.5)) +
+  scale_x_continuous(breaks = seq(-6, -3, .5)) +
   labs(
     y = "",
     x = ""
@@ -209,7 +214,7 @@ halfeye_emm_diff_N1_brms <-
     aes(
       y = contrast,
       x = amplitude,
-      fill = stat(abs(x) < .08)
+      fill = stat(abs(x) < range_ropeHDI[2])
     )
   ) +
   stat_halfeye(
@@ -217,9 +222,9 @@ halfeye_emm_diff_N1_brms <-
     slab_colour = "black",
     slab_size = .5
   ) +
-  geom_vline(xintercept = c(-.08, .08), linetype = "dashed") + # largest ROPE
+  geom_vline(xintercept = range_ropeHDI, linetype = "dashed") + # largest ROPE
   scale_fill_viridis_d(option = "cividis", alpha = .6) +
-  scale_x_continuous(breaks = seq(-1, 2, 0.5)) +
+  scale_x_continuous(breaks = seq(-1, 2, .5)) +
   labs(
     y = "",
     x = expression(paste("amplitude (", mu, "V)"))
