@@ -15,12 +15,13 @@ DIR_RECEIPT = zzz_receipts
 # this means we need to tell the scripts where to find these files outside of the repo
 
 # you can choose to copy the files manually into original_data/eeg_BIDS/
-DIR_eeg_BIDS = original_data/eeg_BIDS/
+DIR_eeg_BIDS = original_data/eeg_BIDS
 # OR you can specify below the path to data for your user_name
 # if you do not specify the path for your user_name, then the code will search for the raw data in original_data/eeg_BIDS/
 user_name=$(shell whoami)
 ifeq "$(strip $(user_name))" "anama"
-	DIR_eeg_BIDS = "C:/Users/anama/Dropbox/Research/Data/code_mechanics/data/original_data/eeg_BIDS/"
+	DIR_local_files = C:/Users/anama/Dropbox/Research/Data/EEG_Many_Pipelines/local/files
+	DIR_eeg_BIDS = $(strip $(DIR_local_files))/data/original_data/eeg_BIDS
 endif
 
 test_make:
@@ -40,7 +41,9 @@ TFR_Q2: $(strip $(DIR_RECEIPT))/TFR_process_data_step1
 $(strip $(DIR_RECEIPT))/TFR_process_data_step1: scripts/TFR_preproc_step1.py \
 	$(print-target-and-prereq-info)
 	mkdir -p data/processed_data/TFR/step1
-	python scripts/TFR_preproc_step1.py $(strip $(DIR_eeg_BIDS))
+	python scripts/TFR_preproc_step1.py \
+			"$(strip $(DIR_eeg_BIDS))/" \
+			"$(strip $(DIR_local_files))/data/processed_data/TFP/step1"
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
@@ -78,7 +81,7 @@ $(strip $(DIR_RECEIPT))/ERP_process_data_step2: $(strip $(DIR_RECEIPT))/ERP_proc
 
 $(strip $(DIR_RECEIPT))/ERP_process_data_step1: scripts/ERP_preproc_step1.py
 	$(print-target-and-prereq-info)
-	python scripts/ERP_preproc_step1.py $(strip $(DIR_eeg_BIDS))
+	python scripts/ERP_preproc_step1.py $(strip $(DIR_eeg_BIDS))/
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
