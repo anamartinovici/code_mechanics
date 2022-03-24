@@ -43,7 +43,7 @@ time_window <- c(130, 180)
 
 num_chains <- 8 # number of chains = number of processor cores
 num_iter <- 4000 # number of samples per chain
-num_warmup <- 1000 # number of warm-up samples per chain
+num_warmup <- 2000 # number of warm-up samples per chain
 num_thin <- 1 # thinning: extract one out of x samples per chain
 
 # priors  --------------------------------------------------------------------
