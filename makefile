@@ -20,7 +20,7 @@ DIR_eeg_BIDS = original_data/eeg_BIDS
 # if you do not specify the path for your user_name, then the code will search for the raw data in original_data/eeg_BIDS/
 user_name=$(shell whoami)
 ifeq "$(strip $(user_name))" "anama"
-	DIR_local_files = C:/Users/anama/Dropbox/Research/Data/EEG_Many_Pipelines/local/files
+	DIR_local_files = C:/Users/anama/Dropbox/Research/Data/EEG_Many_Pipelines/local_files
 	DIR_eeg_BIDS = $(strip $(DIR_local_files))/data/original_data/eeg_BIDS
 endif
 
@@ -36,14 +36,26 @@ test_make:
 ##
 #################################################
 
-TFR_Q2: $(strip $(DIR_RECEIPT))/TFR_process_data_step1
+TFR_Q2: $(strip $(DIR_RECEIPT))/TFR_process_data_step2
+
+$(strip $(DIR_RECEIPT))/TFR_process_data_step2: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
+										        scripts/TFR_preproc_step2.py
+	$(print-target-and-prereq-info)
+	python scripts/TFR_preproc_step2.py \
+			"$(strip $(DIR_eeg_BIDS))/" \
+			"$(strip $(DIR_local_files))/data/processed_data/TFR/step1/" \
+			"$(strip $(DIR_local_files))/data/processed_data/TFR/step2/"
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
 
 $(strip $(DIR_RECEIPT))/TFR_process_data_step1: scripts/TFR_preproc_step1.py \
 	$(print-target-and-prereq-info)
 	mkdir -p data/processed_data/TFR/step1
 	python scripts/TFR_preproc_step1.py \
 			"$(strip $(DIR_eeg_BIDS))/" \
-			"$(strip $(DIR_local_files))/data/processed_data/TFP/step1"
+			"$(strip $(DIR_local_files))/data/processed_data/TFR/step1"
 	date > $@
 	@echo "done with $@"
 	@echo "---------"

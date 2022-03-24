@@ -18,7 +18,7 @@ random.seed(project_seed) # set seed to ensure computational reproducibility
 
 # directories
 path_to_eeg_BIDS = sys.argv[1] # directory with eeg_BIDS data received from the EEG_manypipelines team
-path_to_saved_output = sys.argv[2] # directory where this script saves preprocessed files
+path_to_TFR_step1_output = sys.argv[2] # directory where this script saves preprocessed files
 events_path = './data/original_data/events/' # directory where this script loads event files from
 
 datatype = 'eeg' # data type
@@ -172,7 +172,7 @@ subs = [name for name in os.listdir(path_to_eeg_BIDS) if name.startswith('sub')]
 for ssj in subs:
     
     # create subdirectory
-    pathlib.Path(opj(path_to_saved_output + ssj)).mkdir(exist_ok = True) 
+    pathlib.Path(opj(path_to_TFR_step1_output + ssj)).mkdir(exist_ok = True) 
     
     # message in console
     print("--------------------")
@@ -304,7 +304,7 @@ for ssj in subs:
     raw.info['bads'] = bads 
     
     # save bad channels to file
-    with open(opj(path_to_saved_output + ssj, ssj + '_bad_channels.txt'), 'w') as f:
+    with open(opj(path_to_TFR_step1_output + ssj, ssj + '_bad_channels.txt'), 'w') as f:
         for item in bads:
             f.write("%s\n" % item)
     
@@ -333,14 +333,14 @@ for ssj in subs:
 
     # %% SAVE DATA
     
-    # raw.save(opj(path_to_saved_output + ssj, ssj + '_eeg.fif'), overwrite = True)
+    # raw.save(opj(path_to_TFR_step1_output + ssj, ssj + '_eeg.fif'), overwrite = True)
     
     # %% ARTIFACT CORRECTION: ICA
     # https://mne.tools/stable/auto_tutorials/preprocessing/40_artifact_correction_ica.html?highlight=ica
     
     # # load data (for debugging only)
     # raw = mne.io.read_raw_fif(
-    #     opj(path_to_saved_output + ssj, ssj + '_eeg.fif'),
+    #     opj(path_to_TFR_step1_output + ssj, ssj + '_eeg.fif'),
     #     preload = True
     #     )
 
@@ -385,13 +385,13 @@ for ssj in subs:
 
     # %% SAVE DATA
     
-    # raw.save(opj(path_to_saved_output + ssj, ssj + '_eeg.fif'), overwrite = True)
+    # raw.save(opj(path_to_TFR_step1_output + ssj, ssj + '_eeg.fif'), overwrite = True)
     
     # %% CREATE EPOCHS (ALL CONDITIONS)
 
     # # load data (for debugging only)
     # raw = mne.io.read_raw_fif(
-    #     opj(path_to_saved_output + ssj, ssj + '_eeg.fif'),
+    #     opj(path_to_TFR_step1_output + ssj, ssj + '_eeg.fif'),
     #     preload = True
     #     )
 
@@ -456,20 +456,20 @@ for ssj in subs:
     dropped_epochs = list(np.where(reject_log.bad_epochs)[0])
     
     # save rejected epochs to file
-    with open(opj(path_to_saved_output + ssj, ssj + '_droppedEpochs.txt'), 'w') as file:
+    with open(opj(path_to_TFR_step1_output + ssj, ssj + '_droppedEpochs.txt'), 'w') as file:
         for x in dropped_epochs:
             file.write("%i\n" % x)
     
     # %% SAVE DATA
     
-    epochs_clean.save(opj(path_to_saved_output + ssj, ssj + '_AutoReject_epo.fif'), overwrite = True)
+    epochs_clean.save(opj(path_to_TFR_step1_output + ssj, ssj + '_AutoReject_epo.fif'), overwrite = True)
     
     # %% CREATE EPOCHS
     # create epochs for different research questions
     
     # # load data (for debugging only)
     # epochs_clean = mne.read_epochs(
-    #     opj(path_to_saved_output, ssj + '_epochs_AutoReject.fif'),
+    #     opj(path_to_TFR_step1_output, ssj + '_epochs_AutoReject.fif'),
     #     preload = True
     #     )    
     
@@ -481,14 +481,14 @@ for ssj in subs:
     # create epochs
     # convert to string each trigger in the list,
     # create epochs, and save them to file
-    epochs_manmade = epochs_clean[[str(i) for i in trigs_Q1_manmade]].save(opj(path_to_saved_output + ssj, ssj + '_manmade_epo.fif'), overwrite = True) # 'manmade'
-    epochs_natural = epochs_clean[[str(i) for i in trigs_Q1_natural]].save(opj(path_to_saved_output + ssj, ssj + '_natural_epo.fif'), overwrite = True) # 'natural'
-    epochs_new = epochs_clean[[str(i) for i in trigs_Q2_new]].save(opj(path_to_saved_output + ssj, ssj + '_new_epo.fif'), overwrite = True) # 'new'
-    epochs_old = epochs_clean[[str(i) for i in trigs_Q2_old]].save(opj(path_to_saved_output + ssj, ssj + '_old_epo.fif'), overwrite = True) # 'old'
-    epochs_old_hit = epochs_clean[[str(i) for i in trigs_Q3_old_hit]].save(opj(path_to_saved_output + ssj, ssj + '_old_hit_epo.fif'), overwrite = True) # 'old-hit'
-    epochs_old_miss = epochs_clean[[str(i) for i in trigs_Q3_old_miss]].save(opj(path_to_saved_output + ssj, ssj + '_old_miss_epo.fif'), overwrite = True) # 'old-miss'
-    epochs_remembered = epochs_clean[[str(i) for i in trigs_Q4_remembered]].save(opj(path_to_saved_output + ssj, ssj + '_remembered_epo.fif'), overwrite = True) # 'remembered'
-    epochs_forgotten = epochs_clean[[str(i) for i in trigs_Q4_forgotten]].save(opj(path_to_saved_output + ssj, ssj + '_forgotten_epo.fif'), overwrite = True) # 'forgotten'
+    epochs_manmade = epochs_clean[[str(i) for i in trigs_Q1_manmade]].save(opj(path_to_TFR_step1_output + ssj, ssj + '_manmade_epo.fif'), overwrite = True) # 'manmade'
+    epochs_natural = epochs_clean[[str(i) for i in trigs_Q1_natural]].save(opj(path_to_TFR_step1_output + ssj, ssj + '_natural_epo.fif'), overwrite = True) # 'natural'
+    epochs_new = epochs_clean[[str(i) for i in trigs_Q2_new]].save(opj(path_to_TFR_step1_output + ssj, ssj + '_new_epo.fif'), overwrite = True) # 'new'
+    epochs_old = epochs_clean[[str(i) for i in trigs_Q2_old]].save(opj(path_to_TFR_step1_output + ssj, ssj + '_old_epo.fif'), overwrite = True) # 'old'
+    epochs_old_hit = epochs_clean[[str(i) for i in trigs_Q3_old_hit]].save(opj(path_to_TFR_step1_output + ssj, ssj + '_old_hit_epo.fif'), overwrite = True) # 'old-hit'
+    epochs_old_miss = epochs_clean[[str(i) for i in trigs_Q3_old_miss]].save(opj(path_to_TFR_step1_output + ssj, ssj + '_old_miss_epo.fif'), overwrite = True) # 'old-miss'
+    epochs_remembered = epochs_clean[[str(i) for i in trigs_Q4_remembered]].save(opj(path_to_TFR_step1_output + ssj, ssj + '_remembered_epo.fif'), overwrite = True) # 'remembered'
+    epochs_forgotten = epochs_clean[[str(i) for i in trigs_Q4_forgotten]].save(opj(path_to_TFR_step1_output + ssj, ssj + '_forgotten_epo.fif'), overwrite = True) # 'forgotten'
 
     # %% END
     
