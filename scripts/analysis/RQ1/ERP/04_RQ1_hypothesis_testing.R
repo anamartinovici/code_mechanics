@@ -20,9 +20,6 @@ library(bayestestR)
 
 # set directories --------------------------------------------------------------------
 
-# # N1 data
-# N1_path <- here("data", "processed_data", "ERP", "RData", "RQ1")
-
 # results of model fit
 model_path <- here("data", "processed_data", "ERP", "models", "RQ1")
 

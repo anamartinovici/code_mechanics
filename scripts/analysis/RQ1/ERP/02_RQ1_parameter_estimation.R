@@ -31,14 +31,6 @@ if (dir.exists(model_path)) {
   print(paste0("Directory '", model_path, "' created."))
 }
 
-# setup: N1 --------------------------------------------------------------------
-
-# electrode ROI (region of interest)
-ROI <- c("PO7", "PO3", "O1", "PO4", "PO8", "O2")
-
-# time window for mean N1
-time_window <- c(130, 180)
-
 # setup: STAN --------------------------------------------------------------------
 
 num_chains <- 8 # number of chains = number of processor cores
