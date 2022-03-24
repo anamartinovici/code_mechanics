@@ -29,7 +29,7 @@ model_path <- here("data", "processed_data", "ERP", "models", "RQ1")
 # load data --------------------------------------------------------------------
 
 # results of model fit
-N1_brms <- readRDS(here(model_path, "N1_brms_2022-03-22.rds"))
+N1_brms <- readRDS(here(model_path, "N1_brms_4000draws.rds"))
 
 # hypothesis testing via Region of Practical Equivalence (ROPE): range of ROPEs --------------------------------------------------------
 
@@ -39,7 +39,7 @@ N1_brms <- readRDS(here(model_path, "N1_brms_2022-03-22.rds"))
 
 # We use the full ROPE, i.e., 100% of the HDI (for details, see https://doi.org/10.3389/fpsyg.2019.02767).
 # The null hypothesis is rejected or accepted if the percentage of the posterior within the ROPE 
-# is smaller than to 2.5% or greater than 97.5%. 
+# is smaller than 2.5% or greater than 97.5%. 
 # Desirable results are low proportions inside the ROPE (the closer to zero the better).
 
 # range of plausible ROPE values
@@ -86,8 +86,8 @@ all_equivalence_test_N1_brms
 
 # Results: 95% of the posterior distribution 
 # of the N1 amplitude difference between manmade and natural scenes
-# is outside of a region of practical equivalence up until ±0.09 µV.
+# is outside of a region of practical equivalence up until ±0.08 µV.
 # More specifically, manmade scenes elicit an N1 whose amplitude is at least 
-# 0.09 µV larger than the N1 elicited by natural scenes.
+# 0.08 µV larger than the N1 elicited by natural scenes.
 
 # END --------------------------------------------------------------------

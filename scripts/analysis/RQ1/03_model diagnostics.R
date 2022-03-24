@@ -44,7 +44,7 @@ color_scheme_set("viridisE")
 load(here(N1_path, "RQ1_all_N1.RData"))
 
 # results of model fit
-N1_brms <- readRDS(here(model_path, "N1_brms_2022-03-22.rds"))
+N1_brms <- readRDS(here(model_path, "N1_brms_4000draws.rds"))
   
 # posterior samples of the posterior predictive distribution
 posterior_predict_N1_brms <-
@@ -82,7 +82,7 @@ ESS_Rhat_PPC_N1_brms <-
     ci_method = "hdi",
     test = NULL,
     diagnostic = c("Rhat", "ESS"),
-    effects = c("fixed") # for varying effects, type "fixed" (summary for "all" posterior distributions is too long to be visualized properly)
+    effects = c("fixed") # for varying effects, type "random" (summary for "all" posterior distributions is too long to be visualized properly)
   )
 
 ESS_Rhat_PPC_N1_brms
