@@ -8,6 +8,7 @@ RQ1 - Convert epochs to data frames for analysis in R
 
 # %% IMPORT LIBRARIES
 
+import sys
 import random
 import glob
 import os
@@ -21,11 +22,11 @@ project_seed = 999 # RNG seed
 random.seed(project_seed) # set seed to ensure computational reproducibility
 
 # directory with preprocessed files from step1
-preproc_path_step1 = './data/processed_data/ERP/step1/'
-preproc_path_step2 = './data/processed_data/ERP/step2/'
+path_to_ERP_step1_output = sys.argv[1] # directory where the files were saved in the previous step
+path_to_ERP_step2_output = sys.argv[2] # directory where this script saves preprocessed files
 
-filenames = glob.glob(preproc_path_step1 +  '/**/*_AutoReject_epo.fif') # list of .fif files in directory and all subdirectories
-subs = [name for name in os.listdir(preproc_path_step1) if name.startswith('sub')] # participant names
+filenames = glob.glob(path_to_ERP_step1_output +  '/**/*_AutoReject_epo.fif') # list of .fif files in directory and all subdirectories
+subs = [name for name in os.listdir(path_to_ERP_step1_output) if name.startswith('sub')] # participant names
 
 # %% convert to df
 
@@ -44,7 +45,7 @@ for i in range(len(subs)):
     
     # save as .csv
     df.to_csv(
-        path_or_buf = opj(preproc_path_step2 + subs[i] + '.csv'),
+        path_or_buf = opj(path_to_ERP_step2_output + subs[i] + '.csv'),
         sep = ','
         )
 

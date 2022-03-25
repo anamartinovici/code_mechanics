@@ -1,13 +1,3 @@
-# eeg_BIDS has the original data. too large for GitHub
-data/original_data/eeg_BIDS
-
-# some of the .fif files in data/preproc are too large for GitHub
-data/processed_data/ERP/step1/*/*.fif
-data/processed_data/ERP/step2
-data/processed_data/ERP/step3
-
-data/processed_data/TFR/step1/*/*.fif
-
 .Rproj.user
 .Rhistory
 .RData

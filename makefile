@@ -1,6 +1,6 @@
 # for now, all has only test_make, to avoid everything building built by accident
 # to build the analysis, you need to write 'make name_of_target' explicitly in the terminal
-all: test_make ERP_Q1 TFR_Q2
+all: test_make ERP_process_data TFR_Q2
 
 #################################################
 ##
@@ -36,6 +36,13 @@ test_make:
 ##
 #################################################
 
+#################################################
+##
+## time-frequency analysis
+##
+#################################################
+
+
 TFR_Q2: $(strip $(DIR_RECEIPT))/TFR_process_data_step2
 
 $(strip $(DIR_RECEIPT))/TFR_process_data_step2: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
@@ -61,9 +68,13 @@ $(strip $(DIR_RECEIPT))/TFR_process_data_step1: scripts/TFR_preproc_step1.py \
 	@echo "done with $@"
 	@echo "---------"
 
+#################################################
+##
+## ERP
+##
+#################################################
 
-# to answer Q1, we first need to process data
-ERP_Q1: $(strip $(DIR_RECEIPT))/RQ1_process_data
+
 
 $(strip $(DIR_RECEIPT))/RQ1_process_data: $(strip $(DIR_RECEIPT))/ERP_process_data_step3 \
 										  scripts/RQ1/00_RQ1_data_preparation.R
@@ -83,18 +94,25 @@ $(strip $(DIR_RECEIPT))/ERP_process_data_step3: $(strip $(DIR_RECEIPT))/ERP_proc
 	@echo "done with $@"
 	@echo "---------"
 
+# to answer Q1, we first need to process data
+ERP_process_data: $(strip $(DIR_RECEIPT))/ERP_process_data_step2
 $(strip $(DIR_RECEIPT))/ERP_process_data_step2: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
 												scripts/ERP_preproc_step2.py
 	$(print-target-and-prereq-info)
-	mkdir -p data/processed_data/ERP/step2
-	python scripts/ERP_preproc_step2.py
+	mkdir -p $(strip $(DIR_local_files))/data/processed_data/ERP/step2
+	python scripts/ERP_preproc_step2.py \
+		   "$(strip $(DIR_local_files))/data/processed_data/ERP/step1/" \
+		   "$(strip $(DIR_local_files))/data/processed_data/ERP/step2/"
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
 
 $(strip $(DIR_RECEIPT))/ERP_process_data_step1: scripts/ERP_preproc_step1.py
 	$(print-target-and-prereq-info)
-	python scripts/ERP_preproc_step1.py $(strip $(DIR_eeg_BIDS))/
+	mkdir -p $(strip $(DIR_local_files))/data/processed_data/ERP/step1
+	python scripts/ERP_preproc_step1.py \
+		   "$(strip $(DIR_eeg_BIDS))/" \
+		   "$(strip $(DIR_local_files))/data/processed_data/ERP/step1/"
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
