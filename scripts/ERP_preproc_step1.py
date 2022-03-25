@@ -31,7 +31,7 @@ random.seed(project_seed) # set seed to ensure computational reproducibility
 # directories
 path_to_eeg_BIDS = sys.argv[1] # directory with eeg_BIDS data received from the EEG_manypipelines team
 path_to_ERP_step1_output = sys.argv[2] # directory where this script saves preprocessed files
-events_path = './data/original_data/events/' # directory where this script saves event files
+events_path = './data_in_repo/original_data/events/' # directory where this script saves event files
 
 datatype = 'eeg' # data type
 

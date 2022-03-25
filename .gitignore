@@ -7,3 +7,7 @@
 # each user needs to do the test, so this should never be pushed to the remote
 zzz_receipts/success_test_make.txt
 zzz_receipts/saved_from_test_make_py.txt
+
+data_in_repo/*.html
+
+local_files/
