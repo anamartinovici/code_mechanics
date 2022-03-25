@@ -35,7 +35,7 @@ if (dir.exists(data_path_RQ2)) {
 time_window <- c(300, 500)
 
 # electrode ROI (region of interest)
-ROI <- c("AF3", "AFz", "AF4", "F1", "Fz", "F2", "FC1", "FC2", "FCz")
+ROI <- c("FC1", "FC2", "FCz")
 
 # trial-averaged data for plotting -----------------------------------------------------------------------
 

@@ -55,7 +55,7 @@ topo_times <- c(305, 312, 320, 328, 336, 344, 352, 359, 367, 375, 383, 391, 398,
 time_window <- c(300, 500)
 
 # electrode ROI (region of interest)
-ROI <- c("AF3", "AFz", "AF4", "F1", "Fz", "F2", "FC1", "FC2", "FCz")
+ROI <- c("FC1", "FC2", "FCz")
 
 # load and prepare data --------------------------------------------------------------------
 
@@ -97,7 +97,7 @@ for (i in topo_times) {
 }
 
 # the ROI (region of interest) comprises the following electrodes:
-# "AF3", "AFz", "AF4", "F1", "Fz", "F2", "FC1", "FC2", "FCz"
+# "FC1", "FC2", "FCz"
 
 # plot time series (grand average, only ROI) --------------------------------------------------------------------
 
@@ -200,7 +200,7 @@ plot_all_data %>%
     contour = TRUE,
     chan_marker = "point", # use "name" to see electrode label
     quantity = "amplitude",
-    highlights = c("AF3", "AFZ", "AF4", "F1", "FZ", "F2", "FC1", "FC2", "FCZ"), # must be specified because some electrodes have different upper- and lower-case letters than ROI
+    highlights = c("FC1", "FC2", "FCZ"), # must be specified because some electrodes have different upper- and lower-case letters than ROI
     scaling = 2 # scale labels and lines
   ) +
   ggtitle(paste0(time_window[1], " - ", time_window[2], " ms")) +
