@@ -41,6 +41,7 @@ TFR_Q2: $(strip $(DIR_RECEIPT))/TFR_process_data_step2
 $(strip $(DIR_RECEIPT))/TFR_process_data_step2: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
 										        scripts/TFR_preproc_step2.py
 	$(print-target-and-prereq-info)
+	mkdir -p $(strip $(DIR_local_files))/data/processed_data/TFR/step2
 	python scripts/TFR_preproc_step2.py \
 			"$(strip $(DIR_eeg_BIDS))/" \
 			"$(strip $(DIR_local_files))/data/processed_data/TFR/step1/" \
@@ -52,10 +53,10 @@ $(strip $(DIR_RECEIPT))/TFR_process_data_step2: $(strip $(DIR_RECEIPT))/TFR_proc
 
 $(strip $(DIR_RECEIPT))/TFR_process_data_step1: scripts/TFR_preproc_step1.py \
 	$(print-target-and-prereq-info)
-	mkdir -p data/processed_data/TFR/step1
+	mkdir -p $(strip $(DIR_local_files))/data/processed_data/TFR/step1
 	python scripts/TFR_preproc_step1.py \
 			"$(strip $(DIR_eeg_BIDS))/" \
-			"$(strip $(DIR_local_files))/data/processed_data/TFR/step1"
+			"$(strip $(DIR_local_files))/data/processed_data/TFR/step1/"
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
