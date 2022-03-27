@@ -1,7 +1,21 @@
+args = commandArgs(TRUE)
+
+if (length(args) == 0) {
+	stop("You need to provide arguments", call. = FALSE)
+} else {
+	project_seed             <- as.numeric(args[1])
+	path_to_ERP_step3_output <- args[2]
+	path_to_ERP_RQ1_data     <- args[3]
+}
+
+cat(paste("\n", "\n", "\n", 
+		  "start 00_RQ1_data_preparation.R",
+		  "\n", "\n", "\n", sep = ""))
+
+print(args)
 
 # RNG --------------------------------------------------------
 
-project_seed <- 999 # RNG seed
 set.seed(project_seed) # set seed
 
 # install packages --------------------------------------------------------------------
@@ -13,13 +27,6 @@ set.seed(project_seed) # set seed
 
 library(here)
 library(tidyverse)
-
-# set directories for .RData files --------------------------------------------------------------------
-
-# ERPs, all conditions
-data_path <- here("data", "processed_data", "ERP", "step3")
-# ERPs, RQ1
-data_path_RQ1 <- here("data", "processed_data", "ERP", "RQ1")
 
 # setup: N1 --------------------------------------------------------------------
 
@@ -34,18 +41,21 @@ ROI <- c("PO7", "PO3", "O1", "PO4", "PO8", "O2")
 # list of .RData files in directory
 plot_list_RData <-
   list.files(
-    path = data_path,
+    path = path_to_ERP_step3_output,
     pattern = ".RData"
   )
 
 # preallocate data frame with all trial-averaged data
 plot_all_data <- NULL
 
+# preallocate data frame with all N1 data
+all_N1 <- NULL
+
 # yes, I know I shouldn't use loops in R
 for (i in plot_list_RData) {
   
-  # load .RData
-  load(here(data_path, i))
+  # load participant-specific .RData
+  load(here(path_to_ERP_step3_output, i))
   
   plot_ERP_long <- 
     ERP %>% 
@@ -67,56 +77,37 @@ for (i in plot_list_RData) {
   # all trial-averaged data
   plot_all_data <- rbind(plot_all_data, plot_ERP_long)
   
+  
+  # extract N1 amplitude from selected ROI and time window
+  N1 <-
+  	ERP %>%
+  	select(ssj, epoch_num, time, condition_RQ1, all_of(ROI)) %>% # keep only columns of interest
+  	filter(time >= time_window[1] & time <= time_window[2]) %>% # keep only data in selected time window
+  	na.omit %>% # delete NAs
+  	pivot_longer(
+  		all_of(ROI), 
+  		names_to = "electrode",
+  		values_to = "amplitude"
+  	) %>% 
+  	group_by(ssj, epoch_num, condition_RQ1) %>% 
+  	summarize(amplitude = mean(amplitude, na.rm = TRUE), # average activity in ROI and time window
+  			  .groups = "keep") %>% 
+  	ungroup()
+  
+  # all N1 data
+  all_N1 <- rbind(all_N1, N1)
 }
 
 # save as .RData (compressed)
 save(
   plot_all_data,
-  file = here(data_path_RQ1, "RQ1_plot_all_data.RData")
+  file = here(path_to_ERP_RQ1_data, "RQ1_plot_all_data.RData")
 )
-
-# N1 trial data for stats -----------------------------------------------------------------------
-
-stats_list_RData <-
-  list.files(
-    path = data_path,
-    pattern = ".RData"
-  )
-
-# preallocate data frame with all N1 data
-all_N1 <- NULL
-
-# yes, I know I shouldn't use loops in R
-for (i in stats_list_RData) {
-  
-  # load .RData
-  load(here(data_path, i))
-  
-  # extract N1 amplitude from selected ROI and time window
-  N1 <-
-    ERP %>%
-    select(ssj, epoch_num, time, condition_RQ1, all_of(ROI)) %>% # keep only columns of interest
-    filter(time >= time_window[1] & time <= time_window[2]) %>% # keep only data in selected time window
-    na.omit %>% # delete NAs
-    pivot_longer(
-      all_of(ROI), 
-      names_to = "electrode",
-      values_to = "amplitude"
-    ) %>% 
-    group_by(ssj, epoch_num, condition_RQ1) %>% 
-    summarize(amplitude = mean(amplitude, na.rm = TRUE), # average activity in ROI and time window
-              .groups = "keep") %>% 
-    ungroup()
-  
-  # all N1 data
-  all_N1 <- rbind(all_N1, N1)
-  
-}
 
 # save as .RData (compressed)
 save(
   all_N1,
-  file = here(data_path_RQ1, "RQ1_all_N1.RData" )
+  file = here(path_to_ERP_RQ1_data, "RQ1_all_N1.RData" )
 )
 
 # END --------------------------------------------------------------------

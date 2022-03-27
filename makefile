@@ -1,6 +1,6 @@
 # for now, all has only test_make, to avoid everything building built by accident
 # to build the analysis, you need to write 'make name_of_target' explicitly in the terminal
-all: test_make ERP_process_data TFR_process_data
+all: test_make RQ1 TFR_process_data
 
 #################################################
 ##
@@ -9,6 +9,8 @@ all: test_make ERP_process_data TFR_process_data
 #################################################
 
 DIR_RECEIPT = zzz_receipts
+# RNG seed
+PROJECT_SEED = 999
 
 # to process data, we need eeg_BIDS
 # the eeg_BIDS data we received for this project is too large for GitHub
@@ -79,8 +81,31 @@ $(strip $(DIR_RECEIPT))/TFR_process_data_step1: scripts/TFR_preproc_step1.py
 ##
 #################################################
 
-# to answer Q1, we first need to process data
-ERP_process_data: $(strip $(DIR_RECEIPT))/ERP_process_data_step2
+RQ1: $(strip $(DIR_RECEIPT))/RQ1_prep_data
+
+$(strip $(DIR_RECEIPT))/RQ1_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_step3 \
+								       scripts/RQ1/00_RQ1_data_preparation.R
+	$(print-target-and-prereq-info)
+	mkdir -p data_in_repo/processed_data/ERP/RQ1/
+	Rscript scripts/RQ1/00_RQ1_data_preparation.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step3/ \
+		    data_in_repo/processed_data/ERP/RQ1/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+ 
+$(strip $(DIR_RECEIPT))/ERP_process_data_step3: $(strip $(DIR_RECEIPT))/ERP_process_data_step2 \
+												scripts/ERP_preproc_step3.R
+	$(print-target-and-prereq-info)
+	mkdir -p $(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step3/
+	Rscript scripts/ERP_preproc_step3.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step2/ \
+		    $(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step3/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
 
 $(strip $(DIR_RECEIPT))/ERP_process_data_step2: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
 												scripts/ERP_preproc_step2.py

@@ -1,7 +1,21 @@
+args = commandArgs(TRUE)
+
+if (length(args) == 0) {
+	stop("You need to provide arguments", call. = FALSE)
+} else {
+	project_seed             <- as.numeric(args[1])
+	path_to_ERP_step2_output <- args[2]
+	path_to_ERP_step3_output <- args[3]
+}
+
+cat(paste("\n", "\n", "\n", 
+		  "start ERP_preproc_step3.R",
+		  "\n", "\n", "\n", sep = ""))
+
+print(args)
 
 # RNG --------------------------------------------------------
 
-project_seed <- 999 # RNG seed
 set.seed(project_seed) # set seed
 
 # install packages --------------------------------------------------------------------
@@ -16,21 +30,6 @@ library(here)
 library(tools)
 library(tidyverse)
 
-# set directories for .RData files --------------------------------------------------------------------
-
-# pandas data frames
-orig_path <- here("data", "processed_data", "ERP", "step2")
-
-# ERPs, all conditions
-data_path <- here("data", "processed_data", "ERP", "step3")
-# create directory if it doesn't exist
-if (dir.exists(data_path)) {
-  print(paste0("The directory '", data_path, "' already exists."))
-} else {
-  dir.create(path = data_path)
-  print(paste0("Directory '", data_path, "' created."))
-}
-
 # setup: channels --------------------------------------------------------------------
 
 # list channels to exclude (non-scalp)
@@ -44,7 +43,7 @@ exclude_chans <-
 
 # load triggers
 trigs <- read_csv(
-  here("data", "original_data", "events", "TriggerTable.csv"),
+  here("data_in_repo", "original_data", "events", "TriggerTable.csv"),
   show_col_types = FALSE
 )
 
@@ -117,7 +116,7 @@ trigs_Q4_forgotten <-
 # list of .csv files in directory
 list_csv <-
   list.files(
-    path = orig_path,
+    path = path_to_ERP_step2_output,
     pattern = ".csv"
   )
 
@@ -127,7 +126,7 @@ for (i in list_csv) {
   ERP <-
     # load data
     read_csv(
-      here(orig_path, i),
+      paste0(path_to_ERP_step2_output, i),
       show_col_types = FALSE,
       progress = FALSE
     ) %>%
@@ -173,7 +172,7 @@ for (i in list_csv) {
   # save as .RData (compressed)
   save(
     ERP,
-    file = here(data_path, paste0(file_path_sans_ext(i), "_ERP.RData"))
+    file = paste0(path_to_ERP_step3_output, file_path_sans_ext(i), "_ERP.RData")
   )
   
 }
