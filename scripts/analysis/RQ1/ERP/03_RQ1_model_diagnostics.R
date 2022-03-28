@@ -32,13 +32,6 @@ model_path <- here("data", "processed_data", "ERP", "models", "RQ1")
 
 # results
 results_path <- here("results", "RQ1", "ERP")
-# create directory if it doesn't exist
-if (dir.exists(results_path)) {
-  print(paste0("The directory '", results_path, "' already exists."))
-} else {
-  dir.create(path = results_path)
-  print(paste0("Directory '", results_path, "' created."))
-}
 
 # setup: plots --------------------------------------------------------------------
 
