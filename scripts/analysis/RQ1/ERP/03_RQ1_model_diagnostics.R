@@ -24,11 +24,21 @@ library(viridis)
 
 # set directories --------------------------------------------------------------------
 
-# N1 data
-N1_path <- here("data", "processed_data", "ERP", "RData", "RQ1")
+# ERP data
+ERP_path <- here("data", "processed_data", "ERP", "RData", "RQ1")
 
-# results of model fit
+# model
 model_path <- here("data", "processed_data", "ERP", "models", "RQ1")
+
+# results
+results_path <- here("results", "RQ1", "ERP")
+# create directory if it doesn't exist
+if (dir.exists(results_path)) {
+  print(paste0("The directory '", results_path, "' already exists."))
+} else {
+  dir.create(path = results_path)
+  print(paste0("Directory '", results_path, "' created."))
+}
 
 # setup: plots --------------------------------------------------------------------
 
@@ -40,42 +50,42 @@ color_scheme_set("viridisE")
 
 # load and prepare data --------------------------------------------------------------------
 
-# N1 data
-load(here(N1_path, "RQ1_all_N1.RData"))
+# ERP data
+load(here(ERP_path, "RQ1_stats_all_data.RData"))
 
 # results of model fit
-N1_brms <- readRDS(here(model_path, "N1_brms_4000draws.rds"))
+m <- readRDS(here(model_path, "RQ1.rds"))
   
 # posterior samples of the posterior predictive distribution
-posterior_predict_N1_brms <-
-  N1_brms %>%
+posterior_predict_m <-
+  m %>%
   posterior_predict(ndraws = 2000)
 
 # model diagnostics: trace plots of MCMC draws --------------------------------------------------------
 
-MCMC_N1_brms <-
-  plot(N1_brms, ask = FALSE) +
+MCMC_m <-
+  plot(m, ask = FALSE) +
   theme_custom
 
 # model diagnostics: posterior predictive checks --------------------------------------------------------
 
-PPC_N1_brms <-
-  posterior_predict_N1_brms %>%
+PPC_m <-
+  posterior_predict_m %>%
   ppc_stat_grouped(
-    y = pull(all_N1, amplitude),
-    group = pull(all_N1, condition_RQ1),
+    y = pull(stats_all_data, amplitude),
+    group = pull(stats_all_data, condition_RQ1),
     stat = "mean"
   ) +
   ggtitle("Posterior predictive samples") +
   theme_custom
 
-PPC_N1_brms
+PPC_m
 
 # model diagnostics: ESS and Rhat --------------------------------------------------------
 
-ESS_Rhat_PPC_N1_brms <-
+ESS_Rhat_PPC_m <-
   describe_posterior(
-    N1_brms,
+    m,
     centrality = "mean",
     dispersion = TRUE,
     ci = .95,
@@ -85,6 +95,12 @@ ESS_Rhat_PPC_N1_brms <-
     effects = c("fixed") # for varying effects, type "random" (summary for "all" posterior distributions is too long to be visualized properly)
   )
 
-ESS_Rhat_PPC_N1_brms
+ESS_Rhat_PPC_m
+
+# save as .rds
+saveRDS(
+  ESS_Rhat_PPC_m,
+  file = here(results_path, "summary_posteriors.rds")
+)
 
 # END --------------------------------------------------------
