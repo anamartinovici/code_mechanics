@@ -28,15 +28,13 @@ set.seed(project_seed) # set seed
 library(here)
 library(tidyverse)
 
-# setup: N1 --------------------------------------------------------------------
+# setup: RQ1 ERP --------------------------------------------------------------------
 
 # time window for mean N1
 time_window <- c(130, 180)
 
 # electrode ROI (region of interest)
 ROI <- c("PO7", "PO3", "O1", "PO4", "PO8", "O2")
-
-# trial-averaged data for plotting -----------------------------------------------------------------------
 
 # list of .RData files in directory
 plot_list_RData <-
@@ -49,7 +47,7 @@ plot_list_RData <-
 plot_all_data <- NULL
 
 # preallocate data frame with all N1 data
-all_N1 <- NULL
+stats_all_data <- NULL
 
 # yes, I know I shouldn't use loops in R
 for (i in plot_list_RData) {
@@ -78,8 +76,8 @@ for (i in plot_list_RData) {
   plot_all_data <- rbind(plot_all_data, plot_ERP_long)
   
   
-  # extract N1 amplitude from selected ROI and time window
-  N1 <-
+  # extract ERP amplitude from selected ROI and time window
+  ERP <-
   	ERP %>%
   	select(ssj, epoch_num, time, condition_RQ1, all_of(ROI)) %>% # keep only columns of interest
   	filter(time >= time_window[1] & time <= time_window[2]) %>% # keep only data in selected time window
@@ -95,7 +93,7 @@ for (i in plot_list_RData) {
   	ungroup()
   
   # all N1 data
-  all_N1 <- rbind(all_N1, N1)
+  stats_all_data <- rbind(stats_all_data, ERP)
 }
 
 # save as .RData (compressed)
@@ -106,8 +104,8 @@ save(
 
 # save as .RData (compressed)
 save(
-  all_N1,
-  file = here(path_to_ERP_RQ1_data, "RQ1_all_N1.RData" )
+  stats_all_data,
+  file = here(path_to_ERP_RQ1_data, "RQ1_stats_all_data.RData" )
 )
 
 # END --------------------------------------------------------------------

@@ -81,8 +81,28 @@ $(strip $(DIR_RECEIPT))/TFR_process_data_step1: scripts/TFR_preproc_step1.py
 ##
 #################################################
 
-RQ1: $(strip $(DIR_RECEIPT))/RQ1_prep_data
+RQ1: $(strip $(DIR_RECEIPT))/RQ1_estimate_model
 
+$(strip $(DIR_RECEIPT))/RQ1_estimate_model: $(strip $(DIR_RECEIPT))/RQ1_ERP_plots \
+											scripts/RQ1/01_RQ1_parameter_estimation.R
+	$(print-target-and-prereq-info)
+	# estimation results are too large for GitHub, so they are saved outside the repository
+	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ1/
+	Rscript scripts/RQ1/01_RQ1_parameter_estimation.R \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+ 
+$(strip $(DIR_RECEIPT))/RQ1_ERP_plots: $(strip $(DIR_RECEIPT))/RQ1_prep_data \
+									   scripts/RQ1/01_RQ1_ERP_plots.R
+	$(print-target-and-prereq-info)
+	mkdir -p results_in_repo/RQ1/
+	Rscript scripts/RQ1/01_RQ1_ERP_plots.R
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+ 
 $(strip $(DIR_RECEIPT))/RQ1_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_step3 \
 								       scripts/RQ1/00_RQ1_data_preparation.R
 	$(print-target-and-prereq-info)

@@ -1,7 +1,20 @@
+args = commandArgs(TRUE)
+
+if (length(args) == 0) {
+	stop("You need to provide arguments", call. = FALSE)
+} else {
+	project_seed       <- as.numeric(args[1])
+	path_to_output_dir <- args[2]
+}
+
+cat(paste("\n", "\n", "\n", 
+		  "start 00_RQ1_data_preparation.R",
+		  "\n", "\n", "\n", sep = ""))
+
+print(args)
 
 # RNG --------------------------------------------------------
 
-project_seed <- 999 # RNG seed
 set.seed(project_seed) # set seed
 
 # install packages --------------------------------------------------------------------
@@ -16,35 +29,16 @@ library(here)
 library(tidyverse)
 library(brms)
 
-# set directories --------------------------------------------------------------------
-
-# N1 data
-N1_path <- here("data", "processed_data", "ERP", "RData", "RQ1")
-
-# model fit
-model_path <- here("data", "processed_data", "ERP", "models", "RQ1")
-# create directory if it doesn't exist
-if (dir.exists(model_path)) {
-  print(paste0("The directory '", model_path, "' already exists."))
-} else {
-  dir.create(path = model_path)
-  print(paste0("Directory '", model_path, "' created."))
-}
-
-# setup: N1 --------------------------------------------------------------------
-
-# electrode ROI (region of interest)
-ROI <- c("PO7", "PO3", "O1", "PO4", "PO8", "O2")
-
-# time window for mean N1
-time_window <- c(130, 180)
+# load ERP data  --------------------------------------------------------------------
+ERP_path <- here("data_in_repo", "processed_data", "ERP", "RQ1")
+load(here(ERP_path, "RQ1_stats_all_data.RData"))
 
 # setup: STAN --------------------------------------------------------------------
 
-num_chains <- 8 # number of chains = number of processor cores
-num_iter <- 2000 # number of samples per chain
-num_warmup <- 1000 # number of warm-up samples per chain
-num_thin <- 1 # thinning: extract one out of x samples per chain
+num_chains <- 4 # number of chains = number of processor cores
+num_iter   <- 4000 # number of samples per chain
+num_warmup <- 2000 # number of warm-up samples per chain
+num_thin   <- 1 # thinning: extract one out of x samples per chain
 
 # priors  --------------------------------------------------------------------
 
@@ -55,17 +49,12 @@ priors <- c(
   prior("student_t(3, 0, 2)", class = "sd")
 )
 
-# load data  --------------------------------------------------------------------
-
-load(here(N1_path, "RQ1_all_N1.RData"))
-
 # sampling  --------------------------------------------------------------------
 
-N1_brms <-
+m <-
   brm(
-    # amplitude ~ 0 + Intercept + condition_RQ1 + (1 + condition_RQ1 | ssj),
     amplitude ~ 0 + Intercept + condition_RQ1 + (1 + condition_RQ1 | ssj) + (1 + condition_RQ1  | epoch_num),
-    data = all_N1,
+    data = stats_all_data,
     family = gaussian(),
     prior = priors,
     inits = "random",
@@ -80,8 +69,8 @@ N1_brms <-
     algorithm = "sampling",
     cores = num_chains,
     seed = project_seed,
-    file = here(model_path, "N1_brms.rds"),
-    file_refit = "on_change" # plausible options: "on_change" or "always"
+    file = paste0(path_to_output_dir, "RQ1.rds"),
+    file_refit = "always" # plausible options: "on_change" or "always"
   )
 
 # END  --------------------------------------------------------------------
