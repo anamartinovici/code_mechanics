@@ -307,6 +307,13 @@ halfeye_emm_diff_m <-
     slab_size = .5
   ) +
   geom_vline(xintercept = range_ropeHDI, linetype = "dashed") + # largest ROPE
+  annotate(
+    "label",
+    x = range_ropeHDI,
+    y = .8,
+    label = range_ropeHDI,
+    size = 5
+  ) +
   scale_fill_viridis_d(option = "cividis", alpha = .6) +
   scale_x_continuous(breaks = seq(-1, 2, .5)) +
   labs(
