@@ -21,6 +21,21 @@ library(tidyverse)
 library(viridis)
 library(eegUtils)
 
+# set directories --------------------------------------------------------------------
+
+# ERP data
+ERP_path <- here("data", "processed_data", "ERP", "RData", "RQ1")
+
+# results
+results_path <- here("results", "RQ1", "ERP")
+# create directory if it doesn't exist
+if (dir.exists(results_path)) {
+  print(paste0("The directory '", results_path, "' already exists."))
+} else {
+  dir.create(path = results_path)
+  print(paste0("Directory '", results_path, "' created."))
+}
+
 # setup: channels --------------------------------------------------------------------
 
 # list channels to exclude (non-scalp)
@@ -127,7 +142,8 @@ timeseries_grand_average_ROI <-
   ) %>% 
   as_tibble
 
-timeseries_grand_average_ROI %>%
+plot_timeseries_grand_average_ROI <-
+  timeseries_grand_average_ROI %>%
   ggplot(
     aes(
       x = time,
@@ -186,12 +202,28 @@ timeseries_grand_average_ROI %>%
   ) +
   theme_custom
 
+plot_timeseries_grand_average_ROI
+
+# save as.png
+ggsave(
+  filename = "timeseries_grand_average_ROI.png",
+  plot = plot_timeseries_grand_average_ROI,
+  device = "png",
+  path = results_path,
+  scale = 5,
+  width = 1024,
+  height = 768,
+  units = "px",
+  dpi = 600
+)
+
 # based on the grand average, we identify
 # the time window between 130 - 180 ms
 
 # topography in selected time window --------------------------------------------------------------------
 
-plot_all_data %>%
+topo_grand_average_ROI <- 
+  plot_all_data %>%
   filter(time >= time_window[1] & time <= time_window[2]) %>% # keep only data in time window of interest
   group_by(electrode) %>%
   summarize(amplitude = mean(amplitude, na.rm = TRUE), # average across time
@@ -211,5 +243,21 @@ plot_all_data %>%
   ) +
   ggtitle(paste0(time_window[1], " - ", time_window[2], " ms")) +
   theme(plot.title = element_text(size = 28, hjust = .5, face = "bold"))
+
+topo_grand_average_ROI
+
+# save as.png
+ggsave(
+  filename = "topo_grand_average_ROI.png",
+  plot = topo_grand_average_ROI,
+  device = "png",
+  path = results_path,
+  scale = 5,
+  width = 1024,
+  height = 768,
+  units = "px",
+  dpi = 600,
+  bg = "white"
+)
 
 # END --------------------------------------------------------------------
