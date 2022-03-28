@@ -36,96 +36,52 @@ preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/data/processed_
 
 # extract file names
 filenames = glob.glob(preproc_path +  '/**/*.fif') # list of .fif files in directory and all subdirectories
+# condition-specific file names
+# 'old' condition
+pattern_old = '_old_epo.fif' # include only 'old' epochs
+filenames_old = [item for item in filenames if pattern_old in item] # list of all *_old_epo.fif files
+# 'new' condition
+pattern_new = '_new_epo.fif' # include only 'new' epochs
+filenames_new = [item for item in filenames if pattern_new in item] # list of all *_new_epo.fif files
 
-
-
-# # condition-specific file names
-# # 'manmade' condition
-# pattern_manmade = '_manmade_epo.fif' # include only 'manmade' epochs
-# filenames_manmade = [item for item in filenames if pattern_manmade in item] # list of all *_manmade_epo.fif files
-# # 'natural' condition
-# pattern_natural = '_natural_epo.fif' # include only 'natural' epochs
-# filenames_natural = [item for item in filenames if pattern_natural in item] # list of all *_natural_epo.fif files
-
-
-
-
-
-
-datatype = 'eeg' # data type
+# datatype = 'eeg' # data type
 
 # define electrode montage
 montage = mne.channels.make_standard_montage("biosemi64")
 
-# electrode region of interest (for topographies)
-electrodes_graph = ['PO7', 'PO3', 'O1', 
-                    'PO4', 'PO8', 'O2',
-                    'POz', 'Oz', 'Iz']
+# # electrode region of interest (for topographies)
+# electrodes_graph = ['PO7', 'PO3', 'O1', 
+#                     'PO4', 'PO8', 'O2',
+#                     'POz', 'Oz', 'Iz']
                     
-# time points (for topographies)
-topo_times = np.arange(0, 0.5, 0.05) 
+# # time points (for topographies)
+# topo_times = np.arange(0, 0.5, 0.05) 
 
-# time window for collapsed localizer
-t_min_localizer = 0
-t_max_localizer = 0.5
+# # time window for collapsed localizer
+# t_min_localizer = 0
+# t_max_localizer = 0.5
 
-# time window for statistical analysis
-t_min = 0
-t_max = 0.3
+# # time window for statistical analysis
+# t_min = 0
+# t_max = 0.3
 
 # TFCE (threshold-free cluster enhancement)
 # https://mne.tools/stable/auto_tutorials/stats-sensor-space/20_erp_stats.html?highlight=cluster%20enhancement
-tfce_params = dict(start = .2, step = .2) # parameter values
-n_perm = 5000 # number of permutations (at least 1000)
+threshold_tfce = dict(start = 0, step = .2) # parameter values
+n_perm = 1000 # number of permutations (at least 1000)
 
-# plot parameters
-time_unit = dict(time_unit = "s") # time unit
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# # plot parameters
+# time_unit = dict(time_unit = "s") # time unit
 
 # %% load data for TFCE
 
 # get all participant names
 subs = [name for name in os.listdir(preproc_path) if name.startswith('sub')]
 
-template_zeros = np.zeros((64, 90)) # template array of zeros with same dimensions as epochs (64 channels x 90 time points)
-# copy template into arrays that will contain all datasets (add extra dimension where participants will be stacked)
-all_manmade = template_zeros[None, :, :] # 'manmade' condition
-all_natural = template_zeros[None, :, :] # 'natural' condition
+# template_zeros = np.zeros((64, 90)) # template array of zeros with same dimensions as epochs (64 channels x 90 time points)
+# # copy template into arrays that will contain all datasets (add extra dimension where participants will be stacked)
+# all_old = template_zeros[None, :, :, :] # 'old' condition
+# all_new = template_zeros[None, :, :, :] # 'new' condition
 
 for ssj in subs: # loop through participants
         
@@ -134,34 +90,36 @@ for ssj in subs: # loop through participants
     print("--- load epochs " + ssj + " ---")
     print("---------------------------")  
     
-    # load 'manmade' epochs
-    manmade = mne.read_epochs(
-            opj(preproc_path + ssj, ssj + '_manmade_epo.fif'), preload = True).average( # average across trials (weighted average)
-                                                                                       ).get_data( # extract data
-                                                                                                  picks = 'eeg' # select scalp electrodes only
-                                                                                                  )
+    # load 'old' epochs
+    old = mne.read_epochs(
+            opj(preproc_path + ssj, ssj + '_old_epo.fif'), preload = True)
+    # .average( # average across trials (weighted average)
+    #                                                                                    ).get_data( # extract data
+    #                                                                                               picks = 'eeg' # select scalp electrodes only
+    #                                                                                               )
 
-    # load 'natural' epochs
-    natural = mne.read_epochs(
-            opj(preproc_path + ssj, ssj + '_natural_epo.fif'), preload = True).average(
-                                                                                       ).get_data(
-                                                                                                  picks = 'eeg'
-                                                                                                  )
+    # load 'new' epochs
+    new = mne.read_epochs(
+            opj(preproc_path + ssj, ssj + '_new_epo.fif'), preload = True)
+    # .average(
+    #                                                                                    ).get_data(
+    #                                                                                               picks = 'eeg'
+    #                                                                                               )
                                                                                                   
     # concatenate current dataset with previous ones
-    all_manmade = np.concatenate((all_manmade, manmade[None, :, :]), axis = 0) # 'manmade' condition
-    all_natural = np.concatenate((all_natural, natural[None, :, :]), axis = 0) # 'natural' condition
+    all_old = np.concatenate((all_old, old[None, :, :]), axis = 0) # 'old' condition
+    all_new = np.concatenate((all_new, new[None, :, :]), axis = 0) # 'new' condition
     
 # delete template array of zeros
-all_manmade = all_manmade[1:, :, :]
-all_natural = all_natural[1:, :, :]
+all_old = all_old[1:, :, :]
+all_new = all_new[1:, :, :]
     
 # %% stats: TFCE
         
 # calculate adjacency matrix between sensors from their locations
 adjacency, _ = find_ch_adjacency(
     mne.read_epochs( 
-        opj(preproc_path + ssj, ssj + '_manmade_epo.fif'), # can be extracted from any epoch file
+        opj(preproc_path + ssj, ssj + '_old_epo.fif'), # can be extracted from any epoch file
         preload = False
         ).info, 
     "eeg"
