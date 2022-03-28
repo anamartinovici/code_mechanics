@@ -23,6 +23,7 @@ import os
 import mne
 
 from os.path import join as opj
+from mne.epochs import equalize_epoch_counts
 from mne.channels import find_ch_adjacency
 from mne.stats import spatio_temporal_cluster_test
 
@@ -36,15 +37,13 @@ preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/data/processed_
 
 # extract file names
 filenames = glob.glob(preproc_path +  '/**/*.fif') # list of .fif files in directory and all subdirectories
-# condition-specific file names
-# 'old' condition
-pattern_old = '_old_epo.fif' # include only 'old' epochs
-filenames_old = [item for item in filenames if pattern_old in item] # list of all *_old_epo.fif files
-# 'new' condition
-pattern_new = '_new_epo.fif' # include only 'new' epochs
-filenames_new = [item for item in filenames if pattern_new in item] # list of all *_new_epo.fif files
-
-# datatype = 'eeg' # data type
+# # condition-specific file names
+# # 'old' condition
+# pattern_old_hit = '_old_hit_epo.fif' # include only 'old_hit' epochs
+# filenames_old_hit = [item for item in filenames if pattern_old_hit in item] # list of all '*_old_hit_epo.fif files
+# # 'old_miss' condition
+# pattern_old_miss = '_old_miss_epo.fif' # include only 'old_miss' epochs
+# filenames_old_miss = [item for item in filenames if pattern_old_miss in item] # list of all '*_old_miss_epo.fif' files
 
 # define electrode montage
 montage = mne.channels.make_standard_montage("biosemi64")
@@ -57,9 +56,9 @@ montage = mne.channels.make_standard_montage("biosemi64")
 # # time points (for topographies)
 # topo_times = np.arange(0, 0.5, 0.05) 
 
-# # time window for collapsed localizer
-# t_min_localizer = 0
-# t_max_localizer = 0.5
+# time window for data
+t_min = 0
+t_max = 0.5
 
 # # time window for statistical analysis
 # t_min = 0
@@ -78,10 +77,12 @@ n_perm = 1000 # number of permutations (at least 1000)
 # get all participant names
 subs = [name for name in os.listdir(preproc_path) if name.startswith('sub')]
 
-# template_zeros = np.zeros((64, 90)) # template array of zeros with same dimensions as epochs (64 channels x 90 time points)
-# # copy template into arrays that will contain all datasets (add extra dimension where participants will be stacked)
-# all_old = template_zeros[None, :, :, :] # 'old' condition
-# all_new = template_zeros[None, :, :, :] # 'new' condition
+# template array of zeros with 64 channels x 64 time points
+template_zeros = np.zeros((64, 64)) 
+# copy template into arrays that will contain all datasets
+# (add extra dimensions where participants will be stacked)
+all_old_hit_data = template_zeros[None, :, :] # 'old_hit' condition
+all_old_miss_data = template_zeros[None, :, :] # 'old_miss' condition
 
 for ssj in subs: # loop through participants
         
@@ -90,29 +91,41 @@ for ssj in subs: # loop through participants
     print("--- load epochs " + ssj + " ---")
     print("---------------------------")  
     
-    # load 'old' epochs
-    old = mne.read_epochs(
-            opj(preproc_path + ssj, ssj + '_old_epo.fif'), preload = True)
-    # .average( # average across trials (weighted average)
-    #                                                                                    ).get_data( # extract data
-    #                                                                                               picks = 'eeg' # select scalp electrodes only
-    #                                                                                               )
-
-    # load 'new' epochs
-    new = mne.read_epochs(
-            opj(preproc_path + ssj, ssj + '_new_epo.fif'), preload = True)
-    # .average(
-    #                                                                                    ).get_data(
-    #                                                                                               picks = 'eeg'
-    #                                                                                               )
-                                                                                                  
+    # load 'old_hit' epochs
+    old_hit = mne.read_epochs(
+            opj(preproc_path + ssj, ssj + '_old_hit_epo.fif'), preload = True
+            )
+    
+    # load 'old_miss' epochs
+    old_miss = mne.read_epochs(
+            opj(preproc_path + ssj, ssj + '_old_miss_epo.fif'), preload = True
+            )
+    
+    # equalize epoch counts
+    equalize_epoch_counts([old_hit, old_miss]) 
+    
+    # 'old_hit': extract data
+    old_hit_data = old_hit.average( # average across trials
+        picks = 'eeg' # select scalp electrodes only
+        ).get_data( # extract data
+                   tmin = t_min, # exclude baseline
+                   tmax = t_max
+                   )
+    # 'old_miss': extract data
+    old_miss_data = old_miss.average(
+        picks = 'eeg'
+        ).get_data(
+                   tmin = t_min,
+                   tmax = t_max
+                   )
+                                     
     # concatenate current dataset with previous ones
-    all_old = np.concatenate((all_old, old[None, :, :]), axis = 0) # 'old' condition
-    all_new = np.concatenate((all_new, new[None, :, :]), axis = 0) # 'new' condition
+    all_old_hit_data = np.concatenate((all_old_hit_data, old_hit_data[None, :, :]), axis = 0) # 'old_hit' condition
+    all_old_miss_data = np.concatenate((all_old_miss_data, old_miss_data[None, :, :]), axis = 0) # 'old_miss' condition
     
 # delete template array of zeros
-all_old = all_old[1:, :, :]
-all_new = all_new[1:, :, :]
+all_old_hit_data = all_old_hit_data[1:, :, :]
+all_old_miss_data = all_old_miss_data[1:, :, :]
     
 # %% stats: TFCE
         
