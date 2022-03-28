@@ -117,5 +117,6 @@ t_obs, clusters, cluster_p_values, h0 = spatio_temporal_cluster_test(
 
 # extract statistically significant time points
 significant_time_points = cluster_p_values.reshape(t_obs.shape).T < .05
+print(str(significant_time_points.sum()) + " points selected by TFCE")
 
 # %% END
