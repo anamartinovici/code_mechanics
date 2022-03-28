@@ -36,7 +36,7 @@ random.seed(project_seed) # set seed to ensure computational reproducibility
 preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/data/processed_data/ERP/'
 
 # extract file names
-filenames = glob.glob(preproc_path +  '/**/*.fif') # list of .fif files in directory and all subdirectories
+# filenames = glob.glob(preproc_path +  '/**/*.fif') # list of .fif files in directory and all subdirectories
 # # condition-specific file names
 # # 'old' condition
 # pattern_old_hit = '_old_hit_epo.fif' # include only 'old_hit' epochs
@@ -77,7 +77,7 @@ n_perm = 1000 # number of permutations (at least 1000)
 # get all participant names
 subs = [name for name in os.listdir(preproc_path) if name.startswith('sub')]
 
-# template array of zeros with 64 channels x 64 time points
+# template array of zeros with 64 time points x 64 channels
 template_zeros = np.zeros((64, 64)) 
 # copy template into arrays that will contain all datasets
 # (add extra dimensions where participants will be stacked)
@@ -110,14 +110,15 @@ for ssj in subs: # loop through participants
         ).get_data( # extract data
                    tmin = t_min, # exclude baseline
                    tmax = t_max
-                   )
+                   ).transpose(1, 0) # transpose for stats (eelctrodes in last dimension)
+                   
     # 'old_miss': extract data
     old_miss_data = old_miss.average(
         picks = 'eeg'
         ).get_data(
                    tmin = t_min,
                    tmax = t_max
-                   )
+                   ).transpose(1, 0)                   
                                      
     # concatenate current dataset with previous ones
     all_old_hit_data = np.concatenate((all_old_hit_data, old_hit_data[None, :, :]), axis = 0) # 'old_hit' condition
@@ -136,16 +137,12 @@ adjacency, _ = find_ch_adjacency(
         preload = False
         ).info, 
     "eeg"
-    )  
-
-# transpose data (each array dimension should be participants × time × space) and merge in one array
-data_TFCE = [all_manmade.transpose(0, 2, 1),
-             all_natural.transpose(0, 2, 1)] 
+    )
 
 # calculate statistical thresholds
-t_obs, clusters, cluster_pv, h0 = spatio_temporal_cluster_test(
-    data_TFCE, 
-    threshold = tfce_params, 
+t_obs, clusters, cluster_p_values, h0 = spatio_temporal_cluster_test(
+    [all_old_hit_data, all_old_miss_data], 
+    threshold = threshold_tfce, 
     n_permutations = n_perm, 
     tail = 0, 
     adjacency = adjacency,
@@ -154,9 +151,17 @@ t_obs, clusters, cluster_pv, h0 = spatio_temporal_cluster_test(
     )
 
 # extract statistically significant time points
-significant_time_points = cluster_pv.reshape(t_obs.shape).T < .05
+significant_time_points = cluster_p_values.reshape(t_obs.shape).T < .05
 
 # %% plots
+
+
+
+
+
+
+
+
 
 
 # condition file names
