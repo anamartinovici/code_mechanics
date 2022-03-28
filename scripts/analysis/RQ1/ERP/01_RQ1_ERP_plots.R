@@ -44,27 +44,32 @@ chan_locs <-
 # custom ggplot theme
 source(here("scripts", "analysis", "functions", "custom_ggplot_theme.R"))
 
-# time points for topographies
-topo_times <- c(0, 23, 55, 78, 102, 125, 148, 172, 203)
-
 # the values below are obtained by visual inspection, but
 # they are included at the beginning of the script for convenience
 
-# time window for mean N1
+# time window for mean ERP
 time_window <- c(130, 180)
 
 # electrode ROI (region of interest)
 ROI <- c("PO7", "PO3", "O1", "PO4", "PO8", "O2")
 
-# load and prepare data --------------------------------------------------------------------
+# load data --------------------------------------------------------------------
 
 # load .RData
 load(here("data", "processed_data", "ERP", "RData", "RQ1", "RQ1_plot_all_data.RData"))
 
+# time points for topographies
+topo_times <- 
+  plot_all_data %>% 
+  select(time) %>% 
+  filter(time >= 0 & time <= 200) %>% 
+  distinct() %>% # extract unique values
+  pull(time) # convert as vector
+
 # plot topographies --------------------------------------------------------------------
 
 # by plotting topographies, we will identify 
-# the electrodes from which we can prominently record the N1
+# the electrodes from which we can prominently record the ERP component
 
 # yes, I know I shouldn't use loops in R
 for (i in topo_times) {
@@ -78,15 +83,15 @@ for (i in topo_times) {
               .groups = "keep") %>%
     ungroup() %>% 
     topoplot(
-      limits = c(-4, 4),
+      # limits = c(-4, 4),
       chanLocs = chan_locs,
       method = "Biharmonic",
       palette = "viridis",
       interp_limit = "skirt",
       contour = TRUE,
-      chan_marker = "point", # use "name" to see electrode label
+      chan_marker = "name", # use "point" to see points
       quantity = "amplitude",
-      scaling = 2 # scale labels and lines
+      scaling = 1.5 # scale labels and lines
     ) +
     ggtitle(paste0(i, " ms")) +
     theme(plot.title = element_text(size = 28, hjust = .5, face = "bold"))
@@ -131,19 +136,19 @@ timeseries_grand_average_ROI %>%
   ) +
   geom_vline( # vertical reference line
     xintercept = 0,
-    linetype = "dashed",
+    linetype = "solid",
     color = "black",
-    size = 1.2,
-    alpha = .8
+    size = .8,
+    alpha = .4
   ) +
   geom_hline( # horizontal reference line
     yintercept = 0,
-    linetype = "dashed",
+    linetype = "solid",
     color = "black",
-    size = 1.2,
-    alpha = .8
+    size = .8,
+    alpha = .4
   ) +
-  geom_line( # one line per electrode
+  geom_line( # ROI amplitude
     size = 1,
     color = "#3B528BFF", # blue
     alpha = .6
@@ -153,7 +158,7 @@ timeseries_grand_average_ROI %>%
       ymin = ROI_amplitude - ci,
       ymax = ROI_amplitude + ci
     ),
-    # linetype = "dotted",
+    linetype = "dotted",
     color = "#3B528BFF", # blue
     size = .1,
     alpha = .1,
@@ -164,7 +169,7 @@ timeseries_grand_average_ROI %>%
     x = "time (ms)",
     y = expression(paste("amplitude (", mu, "V)"))
   ) +
-  scale_x_continuous(breaks = seq(-200, 500, 100)) + # x-axis: tick marks
+  scale_x_continuous(breaks = seq(-200, 500, 50)) + # x-axis: tick marks
   scale_y_reverse(
     breaks = seq(-2, 14, 2), # y-axis: tick marks
     limits = c(14, -2)
@@ -182,7 +187,7 @@ timeseries_grand_average_ROI %>%
   theme_custom
 
 # based on the grand average, we identify
-# a time window for the N1 between 130 - 180 ms
+# the time window between 130 - 180 ms
 
 # topography in selected time window --------------------------------------------------------------------
 
@@ -193,6 +198,7 @@ plot_all_data %>%
             .groups = "keep") %>% 
   ungroup() %>%
   topoplot(
+    limits = c(-4, 4),
     chanLocs = chan_locs,
     method = "Biharmonic",
     palette = "viridis",
