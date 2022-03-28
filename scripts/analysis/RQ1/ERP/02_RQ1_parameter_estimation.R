@@ -18,10 +18,10 @@ library(brms)
 
 # set directories --------------------------------------------------------------------
 
-# N1 data
-N1_path <- here("data", "processed_data", "ERP", "RData", "RQ1")
+# ERP data
+ERP_path <- here("data", "processed_data", "ERP", "RData", "RQ1")
 
-# model fit
+# model
 model_path <- here("data", "processed_data", "ERP", "models", "RQ1")
 # create directory if it doesn't exist
 if (dir.exists(model_path)) {
@@ -49,14 +49,14 @@ priors <- c(
 
 # load data  --------------------------------------------------------------------
 
-load(here(N1_path, "RQ1_all_N1.RData"))
+load(here(ERP_path, "RQ1_stats_all_data.RData"))
 
 # sampling  --------------------------------------------------------------------
 
-N1_brms <-
+m <-
   brm(
     amplitude ~ 0 + Intercept + condition_RQ1 + (1 + condition_RQ1 | ssj) + (1 + condition_RQ1  | epoch_num),
-    data = all_N1,
+    data = stats_all_data,
     family = gaussian(),
     prior = priors,
     inits = "random",
@@ -71,7 +71,7 @@ N1_brms <-
     algorithm = "sampling",
     cores = num_chains,
     seed = project_seed,
-    file = here(model_path, "N1_brms.rds"),
+    file = here(model_path, "RQ1.rds"),
     file_refit = "on_change" # plausible options: "on_change" or "always"
   )
 
