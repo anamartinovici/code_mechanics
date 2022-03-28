@@ -21,12 +21,12 @@ library(bayestestR)
 # set directories --------------------------------------------------------------------
 
 # results of model fit
-model_path <- here("data", "processed_data", "ERP", "models", "RQ1")
+model_path <- here("data", "processed_data", "ERP", "models", "RQ2")
 
 # load data --------------------------------------------------------------------
 
 # results of model fit
-N1_brms <- readRDS(here(model_path, "N1_brms_4000draws.rds"))
+ERP_novelty_brms <- readRDS(here(model_path, "ERP_novelty_brms_2022-03-26.rds"))
 
 # hypothesis testing via Region of Practical Equivalence (ROPE): range of ROPEs --------------------------------------------------------
 
@@ -47,14 +47,14 @@ range_ropeHDI <- tibble(
   )
 
 # preallocate data frame with all ROPE results
-all_equivalence_test_N1_brms <- NULL
+all_equivalence_test_ERP_novelty_brms <- NULL
 
 # yes, I know I shouldn't use loops in R
 for (i in 1:nrow(range_ropeHDI)) {
   
   res <-
-    N1_brms %>%
-    emmeans(~ condition_RQ1) %>% # estimated marginal means
+    ERP_novelty_brms %>%
+    emmeans(~ condition_RQ2) %>% # estimated marginal means
     pairs() %>% # posterior distributions of difference
     equivalence_test(
       range = c(pull(range_ropeHDI[i, "low_ROPE"]), pull(range_ropeHDI[i, "high_ROPE"])), # ROPE
@@ -62,7 +62,7 @@ for (i in 1:nrow(range_ropeHDI)) {
     )
   
   # extract values from results
-  equivalence_test_N1_brms <- 
+  equivalence_test_ERP_novelty_brms <- 
     tibble(
       Parameter = res$Parameter,
       CI = res$CI,
@@ -75,16 +75,16 @@ for (i in 1:nrow(range_ropeHDI)) {
     )
   
   # merge results using all ROPEs
-  all_equivalence_test_N1_brms <- rbind(all_equivalence_test_N1_brms, equivalence_test_N1_brms) 
+  all_equivalence_test_ERP_novelty_brms <- rbind(all_equivalence_test_ERP_novelty_brms, equivalence_test_ERP_novelty_brms) 
   
 } 
   
-all_equivalence_test_N1_brms
+all_equivalence_test_ERP_novelty_brms
 
 # Results: 95% of the posterior distribution 
-# of the N1 amplitude difference between manmade and natural scenes
-# is outside of a region of practical equivalence up until ±0.08 µV.
-# More specifically, manmade scenes elicit an N1 whose amplitude is at least 
-# 0.08 µV larger than the N1 elicited by natural scenes.
+# of the amplitude difference between new and old scenes
+# is outside of a region of practical equivalence up until ±0.29 µV.
+# More specifically, new scenes elicit a novelty ERP component 
+# whose amplitude is at least 0.29 µV larger (more negative) than a novelty ERP component elicited by old scenes.
 
 # END --------------------------------------------------------------------

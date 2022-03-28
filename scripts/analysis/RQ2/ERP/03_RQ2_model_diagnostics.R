@@ -25,10 +25,10 @@ library(viridis)
 # set directories --------------------------------------------------------------------
 
 # N1 data
-N1_path <- here("data", "processed_data", "ERP", "RData", "RQ1")
+ERP_novelty_path <- here("data", "processed_data", "ERP", "RData", "RQ2")
 
 # results of model fit
-model_path <- here("data", "processed_data", "ERP", "models", "RQ1")
+model_path <- here("data", "processed_data", "ERP", "models", "RQ2")
 
 # setup: plots --------------------------------------------------------------------
 
@@ -40,42 +40,42 @@ color_scheme_set("viridisE")
 
 # load and prepare data --------------------------------------------------------------------
 
-# N1 data
-load(here(N1_path, "RQ1_all_N1.RData"))
+# ERP novelty data
+load(here(ERP_novelty_path, "RQ2_all_ERP_novelty.RData"))
 
 # results of model fit
-N1_brms <- readRDS(here(model_path, "N1_brms_4000draws.rds"))
-  
+ERP_novelty_brms <- readRDS(here(model_path, "ERP_novelty_brms_2022-03-26.rds"))
+
 # posterior samples of the posterior predictive distribution
-posterior_predict_N1_brms <-
-  N1_brms %>%
+posterior_predict_ERP_novelty_brms <-
+  ERP_novelty_brms %>%
   posterior_predict(ndraws = 2000)
 
 # model diagnostics: trace plots of MCMC draws --------------------------------------------------------
 
-MCMC_N1_brms <-
-  plot(N1_brms, ask = FALSE) +
+MCMC_ERP_novelty_brms <-
+  plot(ERP_novelty_brms, ask = FALSE) +
   theme_custom
 
 # model diagnostics: posterior predictive checks --------------------------------------------------------
 
-PPC_N1_brms <-
-  posterior_predict_N1_brms %>%
+PPC_ERP_novelty_brms <-
+  posterior_predict_ERP_novelty_brms %>%
   ppc_stat_grouped(
-    y = pull(all_N1, amplitude),
-    group = pull(all_N1, condition_RQ1),
+    y = pull(all_ERP_novelty, amplitude),
+    group = pull(all_ERP_novelty, condition_RQ2),
     stat = "mean"
   ) +
   ggtitle("Posterior predictive samples") +
   theme_custom
 
-PPC_N1_brms
+PPC_ERP_novelty_brms
 
 # model diagnostics: ESS and Rhat --------------------------------------------------------
 
-ESS_Rhat_PPC_N1_brms <-
+ESS_Rhat_PPC_ERP_novelty_brms <-
   describe_posterior(
-    N1_brms,
+    ERP_novelty_brms,
     centrality = "mean",
     dispersion = TRUE,
     ci = .95,
@@ -85,6 +85,6 @@ ESS_Rhat_PPC_N1_brms <-
     effects = c("fixed") # for varying effects, type "random" (summary for "all" posterior distributions is too long to be visualized properly)
   )
 
-ESS_Rhat_PPC_N1_brms
+ESS_Rhat_PPC_ERP_novelty_brms
 
 # END --------------------------------------------------------
