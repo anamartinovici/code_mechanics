@@ -1,6 +1,6 @@
 # for now, all has only test_make, to avoid everything building built by accident
 # to build the analysis, you need to write 'make name_of_target' explicitly in the terminal
-all: test_make RQ1 TFR_process_data
+all: RQ1 TFR_process_data
 
 #################################################
 ##
@@ -26,8 +26,14 @@ DIR_local_files = "Specify a PATH to your local_files directory"
 # the default value is set as such in order to force you to specify a path
 
 user_name=$(shell whoami)
+# this is Ana's personal laptop
 ifeq "$(strip $(user_name))" "anama"
 	DIR_local_files = C:/Users/anama/Dropbox/Research/Data/EEG_Many_Pipelines/local_files
+endif
+
+# this is Ana's RSM PC
+ifeq "$(strip $(user_name))" "STAFF+67003ama"
+	DIR_local_files = D:/Dropbox/Research/Data/EEG_Many_Pipelines/local_files
 endif
 
 test_make: create_receipt_directory
@@ -84,11 +90,12 @@ $(strip $(DIR_RECEIPT))/TFR_process_data_step1: scripts/TFR_preproc_step1.py
 RQ1: $(strip $(DIR_RECEIPT))/RQ1_estimate_model
 
 $(strip $(DIR_RECEIPT))/RQ1_estimate_model: $(strip $(DIR_RECEIPT))/RQ1_ERP_plots \
-											scripts/RQ1/01_RQ1_parameter_estimation.R
+											scripts/RQ1/02_RQ1_parameter_estimation.R
 	$(print-target-and-prereq-info)
 	# estimation results are too large for GitHub, so they are saved outside the repository
 	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ1/
-	Rscript scripts/RQ1/01_RQ1_parameter_estimation.R \
+	Rscript scripts/RQ1/02_RQ1_parameter_estimation.R \
+			$(strip $(PROJECT_SEED)) \
 			$(strip $(DIR_local_files))/results_outside_repo/RQ1/
 	date > $@
 	@echo "done with $@"
