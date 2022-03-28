@@ -31,7 +31,7 @@ if (dir.exists(data_path_RQ2)) {
 
 # setup: ERP_novelty --------------------------------------------------------------------
 
-# time window for mean ERP_novelty
+# time window
 time_window <- c(300, 500)
 
 # electrode ROI (region of interest)
@@ -83,7 +83,7 @@ save(
   file = here(data_path_RQ2, "RQ2_plot_all_data.RData")
 )
 
-# trial data for stats -----------------------------------------------------------------------
+# RQ1 ERP trial data for stats -----------------------------------------------------------------------
 
 stats_list_RData <-
   list.files(
@@ -91,8 +91,8 @@ stats_list_RData <-
     pattern = ".RData"
   )
 
-# preallocate data frame with all N1 data
-all_ERP_novelty <- NULL
+# preallocate data frame with all data
+stats_all_data <- NULL
 
 # yes, I know I shouldn't use loops in R
 for (i in stats_list_RData) {
@@ -101,7 +101,7 @@ for (i in stats_list_RData) {
   load(here(data_path, i))
   
   # extract amplitude from selected ROI and time window
-  ERP_novelty <-
+  ERP <-
     ERP %>%
     select(ssj, epoch_num, time, condition_RQ2, all_of(ROI)) %>% # keep only columns of interest
     filter(time >= time_window[1] & time <= time_window[2]) %>% # keep only data in selected time window
@@ -117,14 +117,14 @@ for (i in stats_list_RData) {
     ungroup()
   
   # all N1 data
-  all_ERP_novelty <- rbind(all_ERP_novelty, ERP_novelty)
+  stats_all_data <- rbind(stats_all_data, ERP)
   
 }
 
 # save as .RData (compressed)
 save(
-  all_ERP_novelty,
-  file = here(data_path_RQ2, "RQ2_all_ERP_novelty.RData")
+  stats_all_data,
+  file = here(data_path_RQ2, "RQ2_stats_all_data.RData")
 )
 
 # END --------------------------------------------------------------------
