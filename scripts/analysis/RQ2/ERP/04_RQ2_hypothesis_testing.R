@@ -20,15 +20,18 @@ library(bayestestR)
 
 # set directories --------------------------------------------------------------------
 
-# results of model fit
+# model
 model_path <- here("data", "processed_data", "ERP", "models", "RQ2")
+
+# results
+results_path <- here("results", "RQ2", "ERP")
 
 # load data --------------------------------------------------------------------
 
 # results of model fit
-ERP_novelty_brms <- readRDS(here(model_path, "ERP_novelty_brms_2022-03-26.rds"))
+m <- readRDS(here(model_path, "RQ2.rds"))
 
-# hypothesis testing via Region of Practical Equivalence (ROPE): range of ROPEs --------------------------------------------------------
+# hypothesis testing via Region of Practical Equivalence (ROPE) --------------------------------------------------------
 
 # If the HDI is completely outside the ROPE, the “null hypothesis” for this parameter is “rejected”.
 # If the ROPE completely covers the HDI, i.e., all most credible values of a parameter are inside the region of practical equivalence, the null hypothesis is "accepted". 
@@ -47,22 +50,22 @@ range_ropeHDI <- tibble(
   )
 
 # preallocate data frame with all ROPE results
-all_equivalence_test_ERP_novelty_brms <- NULL
+all_equivalence_test <- NULL
 
 # yes, I know I shouldn't use loops in R
 for (i in 1:nrow(range_ropeHDI)) {
   
   res <-
-    ERP_novelty_brms %>%
+    m %>%
     emmeans(~ condition_RQ2) %>% # estimated marginal means
     pairs() %>% # posterior distributions of difference
     equivalence_test(
       range = c(pull(range_ropeHDI[i, "low_ROPE"]), pull(range_ropeHDI[i, "high_ROPE"])), # ROPE
-      ci = 1 # proportion of the **whole posterior distribution** that falls within the ROPE
+      ci = 1 # proportion of the posterior distribution that falls within the ROPE
     )
   
   # extract values from results
-  equivalence_test_ERP_novelty_brms <- 
+  equivalence_test <- 
     tibble(
       Parameter = res$Parameter,
       CI = res$CI,
@@ -75,16 +78,22 @@ for (i in 1:nrow(range_ropeHDI)) {
     )
   
   # merge results using all ROPEs
-  all_equivalence_test_ERP_novelty_brms <- rbind(all_equivalence_test_ERP_novelty_brms, equivalence_test_ERP_novelty_brms) 
+  all_equivalence_test <- rbind(all_equivalence_test, equivalence_test) 
   
-} 
+}
   
-all_equivalence_test_ERP_novelty_brms
+all_equivalence_test
+
+# save as .rds
+saveRDS(
+  all_equivalence_test,
+  file = here(results_path, "equivalence_test.rds")
+)
 
 # Results: 95% of the posterior distribution 
-# of the amplitude difference between new and old scenes
-# is outside of a region of practical equivalence up until ±0.29 µV.
-# More specifically, new scenes elicit a novelty ERP component 
-# whose amplitude is at least 0.29 µV larger (more negative) than a novelty ERP component elicited by old scenes.
+# of the ERP amplitude difference between conditions
+# is outside of a region of practical equivalence up until ±0.08 µV.
+# Interpretation: we reject the null hypothesis that the two conditions
+# elicit similar ERP amplitudes within ±0.08 µV.
 
 # END --------------------------------------------------------------------
