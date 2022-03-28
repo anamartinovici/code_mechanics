@@ -92,8 +92,8 @@ saveRDS(
 
 # Results: 95% of the posterior distribution 
 # of the ERP amplitude difference between conditions
-# is outside of a region of practical equivalence up until ±0.08 µV.
+# is outside of a region of practical equivalence up until ±0.29 µV.
 # Interpretation: we reject the null hypothesis that the two conditions
-# elicit similar ERP amplitudes within ±0.08 µV.
+# elicit similar ERP amplitudes within ±0.29 µV.
 
 # END --------------------------------------------------------------------
