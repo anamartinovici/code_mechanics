@@ -7,13 +7,10 @@ data/raw/eeg_BIDS/README
 *.json
 *.tsv
 
-data/chanlocs/
-
-data/processed_data/ERP/data_frames/
 .Rproj.user
 
-data/processed_data/ERP/RData/all_epochs.RData
+data/chanlocs/
 
-data/processed_data/ERP/RData/
+data/processed_data/ERP/RData/ssj
 
 *.rds
