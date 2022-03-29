@@ -48,7 +48,7 @@ load(here(ERP_path, "RQ1_stats_all_data.RData"))
 
 # results of model fit
 m <- readRDS(here(model_path, "RQ1.rds"))
-  
+
 # posterior samples of the posterior predictive distribution
 posterior_predict_m <-
   m %>%

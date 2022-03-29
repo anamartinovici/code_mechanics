@@ -53,7 +53,7 @@ color_scheme_set("viridisE")
 # setup: results --------------------------------------------------------------------
 
 # largest ROPE identified during hypothesis testing
-range_ropeHDI <- c(-.08, .08)
+range_ropeHDI <- c(-.07, .07)
 
 # load and prepare data --------------------------------------------------------------------
 
