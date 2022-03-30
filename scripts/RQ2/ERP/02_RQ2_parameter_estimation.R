@@ -1,7 +1,20 @@
+args = commandArgs(TRUE)
+
+if (length(args) == 0) {
+	stop("You need to provide arguments", call. = FALSE)
+} else {
+	project_seed       <- as.numeric(args[1])
+	path_to_output_dir <- args[2]
+}
+
+cat(paste("\n", "\n", "\n", 
+		  "start 02_RQ2_parameter_estimation.R",
+		  "\n", "\n", "\n", sep = ""))
+
+print(args)
 
 # RNG --------------------------------------------------------
 
-project_seed <- 999 # RNG seed
 set.seed(project_seed) # set seed
 
 # install packages --------------------------------------------------------------------
@@ -19,24 +32,15 @@ library(brms)
 # set directories --------------------------------------------------------------------
 
 # ERP data
-ERP_path <- here("data", "processed_data", "ERP", "RData", "RQ2")
-
-# model
-model_path <- here("data", "processed_data", "ERP", "models", "RQ2")
-# create directory if it doesn't exist
-if (dir.exists(model_path)) {
-  print(paste0("The directory '", model_path, "' already exists."))
-} else {
-  dir.create(path = model_path)
-  print(paste0("Directory '", model_path, "' created."))
-}
+ERP_path <- here("data_in_repo", "processed_data", "ERP", "RQ2")
+load(here(ERP_path, "RQ2_stats_all_data.RData"))
 
 # setup: STAN --------------------------------------------------------------------
 
 num_chains <- 4 # number of chains = number of processor cores
-num_iter <- 8000 # number of samples per chain
+num_iter   <- 8000 # number of samples per chain
 num_warmup <- 4000 # number of warm-up samples per chain
-num_thin <- 1 # thinning: extract one out of x samples per chain
+num_thin   <- 1 # thinning: extract one out of x samples per chain
 
 # priors  --------------------------------------------------------------------
 
@@ -46,10 +50,6 @@ priors <- c(
   prior("normal(0, 3)", class = "b"),
   prior("student_t(3, 0, 2)", class = "sd")
 )
-
-# load data  --------------------------------------------------------------------
-
-load(here(ERP_path, "RQ2_stats_all_data.RData"))
 
 # sampling  --------------------------------------------------------------------
 
@@ -71,8 +71,8 @@ m <-
     algorithm = "sampling",
     cores = num_chains,
     seed = project_seed,
-    file = here(model_path, "RQ2.rds"),
-    file_refit = "on_change" # plausible options: "on_change" or "always"
+    file = paste0(path_to_output_dir, "RQ2.rds"),
+    file_refit = "always" # plausible options: "on_change" or "always"
   )
 
 # END  --------------------------------------------------------------------

@@ -23,11 +23,8 @@ library(eegUtils)
 
 # set directories --------------------------------------------------------------------
 
-# ERP data
-ERP_path <- here("data", "processed_data", "ERP", "RData", "RQ2")
-
 # results
-results_path <- here("results", "RQ2", "ERP")
+results_path <- here("results_in_repo", "RQ2", "ERP")
 # create directory if it doesn't exist
 if (dir.exists(results_path)) {
   print(paste0("The directory '", results_path, "' already exists."))
@@ -48,7 +45,7 @@ exclude_chans <-
 # load electrode locations
 chan_locs <-
   import_chans(
-    here("data", "original_data", "channel_locations", "chanlocs_ced.txt"),
+    here("data_in_repo", "original_data", "channel_locations", "chanlocs_ced.txt"),
     format = "spherical",
     file_format = "ced"
     ) %>% 
@@ -69,7 +66,7 @@ ROI <- c("FC1", "FC2", "FCz")
 
 # load data --------------------------------------------------------------------
 
-load(here("data", "processed_data", "ERP", "RData", "RQ2", "RQ2_plot_all_data.RData"))
+load(here("data_in_repo", "processed_data", "ERP", "RQ2", "RQ2_plot_all_data.RData"))
 
 # time points for topographies
 topo_times <- 

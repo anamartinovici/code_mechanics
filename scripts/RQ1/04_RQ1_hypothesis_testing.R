@@ -1,7 +1,20 @@
+args = commandArgs(TRUE)
+
+if (length(args) == 0) {
+	stop("You need to provide arguments", call. = FALSE)
+} else {
+	project_seed       <- as.numeric(args[1])
+	path_to_output_dir <- args[2]
+}
+
+cat(paste("\n", "\n", "\n", 
+		  "start 04_RQ1_hypothesis_testing.R",
+		  "\n", "\n", "\n", sep = ""))
+
+print(args)
 
 # RNG --------------------------------------------------------
 
-project_seed <- 999 # RNG seed
 set.seed(project_seed) # set seed
 
 # install packages --------------------------------------------------------------------
@@ -18,15 +31,10 @@ library(tidyverse)
 library(emmeans)
 library(bayestestR)
 
-# set directories --------------------------------------------------------------------
-
-# results of model fit
-model_path <- here("data", "processed_data", "ERP", "models", "RQ1")
-
 # load data --------------------------------------------------------------------
 
 # results of model fit
-N1_brms <- readRDS(here(model_path, "N1_brms_4000draws.rds"))
+N1_brms <- readRDS(paste0(path_to_output_dir, "RQ1.rds"))
 
 # hypothesis testing via Region of Practical Equivalence (ROPE): range of ROPEs --------------------------------------------------------
 

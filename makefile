@@ -1,6 +1,6 @@
 # for now, all has only test_make, to avoid everything building built by accident
 # to build the analysis, you need to write 'make name_of_target' explicitly in the terminal
-all: RQ1 TFR_process_data
+all: RQ1 RQ2 TFR_process_data
 
 #################################################
 ##
@@ -87,7 +87,66 @@ $(strip $(DIR_RECEIPT))/TFR_process_data_step1: scripts/TFR_preproc_step1.py
 ##
 #################################################
 
-RQ1: $(strip $(DIR_RECEIPT))/RQ1_estimate_model
+RQ2: $(strip $(DIR_RECEIPT))/RQ2_estimate_model
+
+$(strip $(DIR_RECEIPT))/RQ2_estimate_model: $(strip $(DIR_RECEIPT))/RQ2_prep_data \
+											scripts/RQ2/ERP/02_RQ2_parameter_estimation.R
+	$(print-target-and-prereq-info)
+	# estimation results are too large for GitHub, so they are saved outside the repository
+	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ2/
+	Rscript scripts/RQ2/ERP/02_RQ2_parameter_estimation.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/RQ2_ERP_plots: $(strip $(DIR_RECEIPT))/RQ2_prep_data \
+									   scripts/RQ2/ERP/01_RQ2_ERP_plots.R
+	$(print-target-and-prereq-info)
+	mkdir -p results_in_repo/RQ2/
+	Rscript scripts/RQ2/ERP/01_RQ2_ERP_plots.R
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/RQ2_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_step3 \
+								       scripts/RQ2/ERP/00_RQ2_data_preparation.R
+	$(print-target-and-prereq-info)
+	mkdir -p data_in_repo/processed_data/ERP/RQ2/
+	Rscript scripts/RQ2/ERP/00_RQ2_data_preparation.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step3/ \
+		    data_in_repo/processed_data/ERP/RQ2/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+##################################################
+
+RQ1: $(strip $(DIR_RECEIPT))/RQ1_results
+
+$(strip $(DIR_RECEIPT))/RQ1_results: $(strip $(DIR_RECEIPT))/RQ1_estimate_model \
+									 scripts/RQ1/03_RQ1_model_diagnostics.R \
+									 scripts/RQ1/04_RQ1_hypothesis_testing.R \
+									 scripts/RQ1/05_RQ1_figures.R
+	$(print-target-and-prereq-info)
+	# first, check model diagnostics
+	Rscript scripts/RQ1/03_RQ1_model_diagnostics.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/
+	# second, check support for hypothesis
+	Rscript scripts/RQ1/04_RQ1_hypothesis_testing.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/
+	# third, prepare plots
+	Rscript scripts/RQ1/05_RQ1_figures.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+ 
 
 $(strip $(DIR_RECEIPT))/RQ1_estimate_model: $(strip $(DIR_RECEIPT))/RQ1_ERP_plots \
 											scripts/RQ1/02_RQ1_parameter_estimation.R
@@ -121,7 +180,9 @@ $(strip $(DIR_RECEIPT))/RQ1_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
- 
+
+######################################################
+
 $(strip $(DIR_RECEIPT))/ERP_process_data_step3: $(strip $(DIR_RECEIPT))/ERP_process_data_step2 \
 												scripts/ERP_preproc_step3.R
 	$(print-target-and-prereq-info)
