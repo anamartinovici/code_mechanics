@@ -5,7 +5,6 @@ if (length(args) == 0) {
 } else {
 	project_seed             <- as.numeric(args[1])
 	path_to_ERP_step3_output <- args[2]
-	path_to_ERP_RQ2_data     <- args[3]
 }
 
 cat(paste("\n", "\n", "\n", 
@@ -54,7 +53,7 @@ stats_all_data <- NULL
 for (i in plot_list_RData) {
   
   # load .RData
-  load(here(path_to_ERP_step3_output, i))
+  load(paste0(path_to_ERP_step3_output, i))
 	
   plot_ERP_long <- 
     ERP %>% 
@@ -99,13 +98,13 @@ for (i in plot_list_RData) {
 # save as .RData (compressed)
 save(
   plot_all_data,
-  file = paste0(path_to_ERP_RQ2_data, "RQ2_plot_all_data.RData")
+  file = paste0("data_in_repo", "processed_data", "RQ2", "ERP", "RQ2_plot_all_data.RData")
 )
 
 # save as .RData (compressed)
 save(
   stats_all_data,
-  file = paste0(path_to_ERP_RQ2_data, "RQ2_stats_all_data.RData")
+  file = paste0("data_in_repo", "processed_data", "RQ2", "ERP", "RQ2_stats_all_data.RData")
 )
 
 # END --------------------------------------------------------------------

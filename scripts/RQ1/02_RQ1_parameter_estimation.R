@@ -8,7 +8,7 @@ if (length(args) == 0) {
 }
 
 cat(paste("\n", "\n", "\n", 
-		  "start 00_RQ1_data_preparation.R",
+		  "start 02_RQ1_parameter_estimation.R",
 		  "\n", "\n", "\n", sep = ""))
 
 print(args)
@@ -30,8 +30,8 @@ library(tidyverse)
 library(brms)
 
 # load ERP data  --------------------------------------------------------------------
-ERP_path <- here("data_in_repo", "processed_data", "ERP", "RQ1")
-load(here(ERP_path, "RQ1_stats_all_data.RData"))
+
+load(here("data_in_repo", "processed_data", "RQ1", "RQ1_stats_all_data.RData"))
 
 # setup: STAN --------------------------------------------------------------------
 

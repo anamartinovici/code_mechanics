@@ -1,7 +1,20 @@
+args = commandArgs(TRUE)
+
+if (length(args) == 0) {
+	stop("You need to provide arguments", call. = FALSE)
+} else {
+	project_seed       <- as.numeric(args[1])
+	path_to_output_dir <- args[2]
+}
+
+cat(paste("\n", "\n", "\n", 
+		  "start 04_RQ2_hypothesis_testing.R",
+		  "\n", "\n", "\n", sep = ""))
+
+print(args)
 
 # RNG --------------------------------------------------------
 
-project_seed <- 999 # RNG seed
 set.seed(project_seed) # set seed
 
 # install packages --------------------------------------------------------------------
@@ -18,18 +31,10 @@ library(tidyverse)
 library(emmeans)
 library(bayestestR)
 
-# set directories --------------------------------------------------------------------
-
-# model
-model_path <- here("data", "processed_data", "ERP", "models", "RQ2")
-
-# results
-results_path <- here("results", "RQ2", "ERP")
-
 # load data --------------------------------------------------------------------
 
 # results of model fit
-m <- readRDS(here(model_path, "RQ2.rds"))
+m <- readRDS(paste0(path_to_output_dir, "RQ2.rds"))
 
 # hypothesis testing via Region of Practical Equivalence (ROPE) --------------------------------------------------------
 
@@ -87,7 +92,7 @@ all_equivalence_test
 # save as .rds
 saveRDS(
   all_equivalence_test,
-  file = here(results_path, "equivalence_test.rds")
+  file = here("results_in_repo", "RQ2", "ERP", "equivalence_test.rds")
 )
 
 # Results: 95% of the posterior distribution 

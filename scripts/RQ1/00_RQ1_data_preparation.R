@@ -5,7 +5,6 @@ if (length(args) == 0) {
 } else {
 	project_seed             <- as.numeric(args[1])
 	path_to_ERP_step3_output <- args[2]
-	path_to_ERP_RQ1_data     <- args[3]
 }
 
 cat(paste("\n", "\n", "\n", 
@@ -53,7 +52,7 @@ stats_all_data <- NULL
 for (i in plot_list_RData) {
   
   # load participant-specific .RData
-  load(here(path_to_ERP_step3_output, i))
+  load(paste0(path_to_ERP_step3_output, i))
   
   plot_ERP_long <- 
     ERP %>% 
@@ -99,13 +98,13 @@ for (i in plot_list_RData) {
 # save as .RData (compressed)
 save(
   plot_all_data,
-  file = here(path_to_ERP_RQ1_data, "RQ1_plot_all_data.RData")
+  file = here("data_in_repo", "processed_data", "RQ1", "RQ1_plot_all_data.RData")
 )
 
 # save as .RData (compressed)
 save(
   stats_all_data,
-  file = here(path_to_ERP_RQ1_data, "RQ1_stats_all_data.RData" )
+  file = here("data_in_repo", "processed_data", "RQ1", "RQ1_stats_all_data.RData" )
 )
 
 # END --------------------------------------------------------------------

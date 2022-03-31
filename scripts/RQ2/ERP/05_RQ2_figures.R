@@ -1,7 +1,20 @@
+args = commandArgs(TRUE)
+
+if (length(args) == 0) {
+	stop("You need to provide arguments", call. = FALSE)
+} else {
+	project_seed       <- as.numeric(args[1])
+	path_to_output_dir <- args[2]
+}
+
+cat(paste("\n", "\n", "\n", 
+		  "start 05_RQ2_figures.R",
+		  "\n", "\n", "\n", sep = ""))
+
+print(args)
 
 # RNG --------------------------------------------------------
 
-project_seed <- 999 # RNG seed
 set.seed(project_seed) # set seed
 
 # install packages --------------------------------------------------------------------
@@ -30,14 +43,8 @@ library(patchwork)
 
 # set directories --------------------------------------------------------------------
 
-# ERP data
-ERP_path <- here("data", "processed_data", "ERP", "RData", "RQ2")
-
-# model
-model_path <- here("data", "processed_data", "ERP", "models", "RQ2")
-
 # results
-results_path <- here("results", "RQ2", "ERP")
+results_path <- here("results_in_repo", "RQ2", "ERP")
 
 # setup: plots --------------------------------------------------------------------
 
@@ -58,10 +65,10 @@ range_ropeHDI <- c(-.29, .29)
 # load and prepare data --------------------------------------------------------------------
 
 # ERP data
-load(here(ERP_path, "RQ2_stats_all_data.RData"))
+load(here("data_in_repo", "processed_data", "RQ2", "ERP", "RQ2_stats_all_data.RData"))
 
 # results of model fit
-m <- readRDS(here(model_path, "RQ2.rds"))
+m <- readRDS(paste0(path_to_output_dir, "RQ2.rds"))
 
 # data for trace plots of MCMC draws (fixed effects only)
 data_MCMC_m <-

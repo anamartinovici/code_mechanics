@@ -1,7 +1,19 @@
+args = commandArgs(TRUE)
+
+if (length(args) == 0) {
+	stop("You need to provide arguments", call. = FALSE)
+} else {
+	project_seed             <- as.numeric(args[1])
+}
+
+cat(paste("\n", "\n", "\n", 
+		  "start 01_RQ2_ERP_plots.R",
+		  "\n", "\n", "\n", sep = ""))
+
+print(args)
 
 # RNG --------------------------------------------------------
 
-project_seed <- 999 # RNG seed
 set.seed(project_seed) # set seed
 
 # install packages --------------------------------------------------------------------
@@ -23,15 +35,7 @@ library(eegUtils)
 
 # set directories --------------------------------------------------------------------
 
-# results
 results_path <- here("results_in_repo", "RQ2", "ERP")
-# create directory if it doesn't exist
-if (dir.exists(results_path)) {
-  print(paste0("The directory '", results_path, "' already exists."))
-} else {
-  dir.create(path = results_path)
-  print(paste0("Directory '", results_path, "' created."))
-}
 
 # setup: channels --------------------------------------------------------------------
 

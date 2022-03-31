@@ -44,7 +44,7 @@ library(patchwork)
 # load and prepare data --------------------------------------------------------------------
 
 # N1 data
-load(here("data_in_repo", "processed_data", "ERP", "RQ1", "RQ1_stats_all_data.RData"))
+load(here("data_in_repo", "processed_data", "RQ1", "RQ1_stats_all_data.RData"))
 
 # results of model fit
 N1_brms <- readRDS(paste0(path_to_output_dir, "RQ1.rds"))

@@ -31,15 +31,13 @@ library(brms)
 
 # set directories --------------------------------------------------------------------
 
-# ERP data
-ERP_path <- here("data_in_repo", "processed_data", "ERP", "RQ2")
-load(here(ERP_path, "RQ2_stats_all_data.RData"))
+load(here("data_in_repo", "processed_data", "RQ2", "ERP", "RQ2_stats_all_data.RData"))
 
 # setup: STAN --------------------------------------------------------------------
 
 num_chains <- 4 # number of chains = number of processor cores
-num_iter   <- 8000 # number of samples per chain
-num_warmup <- 4000 # number of warm-up samples per chain
+num_iter   <- 4000 # number of samples per chain
+num_warmup <- 2000 # number of warm-up samples per chain
 num_thin   <- 1 # thinning: extract one out of x samples per chain
 
 # priors  --------------------------------------------------------------------

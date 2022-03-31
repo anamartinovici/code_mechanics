@@ -5,11 +5,10 @@ if (length(args) == 0) {
 } else {
 	project_seed       <- as.numeric(args[1])
 	path_to_output_dir <- args[2]
-	#model_path <- "D:/Dropbox/Research/Data/EEG_Many_Pipelines/local_files/results_outside_repo/RQ1/"
 }
 
 cat(paste("\n", "\n", "\n", 
-		  "start 00_RQ1_data_preparation.R",
+		  "start 03_RQ1_model_diagnostics.R",
 		  "\n", "\n", "\n", sep = ""))
 
 print(args)
@@ -39,7 +38,7 @@ library(viridis)
 # load and prepare data --------------------------------------------------------------------
 
 # N1 data
-load(here("data_in_repo", "processed_data", "ERP", "RQ1", "RQ1_stats_all_data.RData"))
+load(here("data_in_repo", "processed_data", "RQ1", "RQ1_stats_all_data.RData"))
 
 # results of model fit
 N1_brms <- readRDS(paste0(path_to_output_dir, "RQ1.rds"))
