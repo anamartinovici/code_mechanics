@@ -1,6 +1,6 @@
 # for now, all has only test_make, to avoid everything building built by accident
 # to build the analysis, you need to write 'make name_of_target' explicitly in the terminal
-all: RQ1 RQ2 TFR_process_data
+all: restore_file_timestamps RQ1 RQ2 TFR_process_data
 
 #################################################
 ##
@@ -35,6 +35,11 @@ endif
 ifeq "$(strip $(user_name))" "STAFF+67003ama"
 	DIR_local_files = D:/Dropbox/Research/Data/EEG_Many_Pipelines/local_files
 endif
+
+restore_file_timestamps:
+	@echo "restoring commit timestamps such that Make does not build based on git clone time"
+	bash scripts/restore_file_timestamps.sh
+	date > $@
 
 test_make: create_receipt_directory
 	@echo "Check if success_test_make.txt is created in DIR_RECEIPT"
