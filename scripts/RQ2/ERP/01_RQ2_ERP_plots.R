@@ -70,7 +70,7 @@ ROI <- c("FC1", "FC2", "FCz")
 
 # load data --------------------------------------------------------------------
 
-load(here("data_in_repo", "processed_data", "ERP", "RQ2", "RQ2_plot_all_data.RData"))
+load(here("data_in_repo", "processed_data", "RQ2", "ERP", "RQ2_plot_all_data.RData"))
 
 # time points for topographies
 topo_times <- 

@@ -98,13 +98,13 @@ for (i in plot_list_RData) {
 # save as .RData (compressed)
 save(
   plot_all_data,
-  file = paste0("data_in_repo", "processed_data", "RQ2", "ERP", "RQ2_plot_all_data.RData")
+  file = here("data_in_repo", "processed_data", "RQ2", "ERP", "RQ2_plot_all_data.RData")
 )
 
 # save as .RData (compressed)
 save(
   stats_all_data,
-  file = paste0("data_in_repo", "processed_data", "RQ2", "ERP", "RQ2_stats_all_data.RData")
+  file = here("data_in_repo", "processed_data", "RQ2", "ERP", "RQ2_stats_all_data.RData")
 )
 
 # END --------------------------------------------------------------------
