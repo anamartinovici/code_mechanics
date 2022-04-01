@@ -19,7 +19,9 @@ project_seed = 999 # RNG seed
 random.seed(project_seed) # set seed to ensure computational reproducibility
 
 # directory with preprocessed files
-preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/data/processed_data/ERP/'
+# path_to_eeg_BIDS = sys.argv[1] # directory with eeg_BIDS data received from the EEG_manypipelines team
+
+preproc_path = 'C:/Users/anama/Dropbox/Research\Data/EEG_Many_Pipelines/local_files/data_outside_repo/processed_data/ERP/step1/'
 
 # list of .fif files in directory and all subdirectories
 filenames_manmade = glob.glob(preproc_path +  '/**/*_manmade_epo.fif') # 'manmade'

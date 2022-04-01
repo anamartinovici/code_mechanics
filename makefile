@@ -1,6 +1,6 @@
 # for now, all has only test_make, to avoid everything building built by accident
 # to build the analysis, you need to write 'make name_of_target' explicitly in the terminal
-all: restore_file_timestamps RQ1 RQ2 TFR_process_data
+all: restore_file_timestamps RQ1 RQ2 RQ3 RQ4 TFR_process_data
 
 #################################################
 ##
@@ -92,7 +92,39 @@ $(strip $(DIR_RECEIPT))/TFR_process_data_step1: scripts/TFR_preproc_step1.py
 ##
 #################################################
 
+RQ4: $(strip $(DIR_RECEIPT))/RQ4_results
+
+$(strip $(DIR_RECEIPT))/RQ4_results: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
+								  	 scripts/RQ4/ERP/RQ4_group_analysis.py
+	$(print-target-and-prereq-info)
+	python scripts/RQ4/ERP/RQ4_group_analysis.py
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+	
+#################################################
+
+RQ3: $(strip $(DIR_RECEIPT))/RQ3_results
+
+$(strip $(DIR_RECEIPT))/RQ3_results: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
+								  	 scripts/RQ3/ERP/RQ3_group_analysis.py
+	$(print-target-and-prereq-info)
+	python scripts/RQ3/ERP/RQ3_group_analysis.py
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+	
+#################################################
+
 RQ2: $(strip $(DIR_RECEIPT))/RQ2_results
+
+$(strip $(DIR_RECEIPT))/RQ2_results_python: $(strip $(DIR_RECEIPT))/RQ2_results \
+											scripts/RQ2/ERP/RQ2_mne_plots.py
+	$(print-target-and-prereq-info)
+	python scripts/RQ2/ERP/RQ2_mne_plots.py
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
 
 $(strip $(DIR_RECEIPT))/RQ2_results: $(strip $(DIR_RECEIPT))/RQ2_estimate_model \
 									 scripts/RQ2/ERP/03_RQ2_model_diagnostics.R \
@@ -152,6 +184,14 @@ $(strip $(DIR_RECEIPT))/RQ2_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_
 ##################################################
 
 RQ1: $(strip $(DIR_RECEIPT))/RQ1_results
+
+$(strip $(DIR_RECEIPT))/RQ1_results_python: $(strip $(DIR_RECEIPT))/RQ1_results \
+											scripts/RQ1/RQ1_mne_plots.py
+	$(print-target-and-prereq-info)
+	python scripts/RQ1/RQ1_mne_plots.py
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
 
 $(strip $(DIR_RECEIPT))/RQ1_results: $(strip $(DIR_RECEIPT))/RQ1_estimate_model \
 									 scripts/RQ1/03_RQ1_model_diagnostics.R \

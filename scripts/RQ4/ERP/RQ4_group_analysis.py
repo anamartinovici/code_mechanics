@@ -24,7 +24,8 @@ project_seed = 999 # RNG seed
 random.seed(project_seed) # set seed to ensure computational reproducibility
 
 # directory with preprocessed files
-preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/data/processed_data/ERP/'
+# preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/data/processed_data/ERP/'
+preproc_path = 'C:/Users/anama/Dropbox/Research\Data/EEG_Many_Pipelines/local_files/data_outside_repo/processed_data/ERP/step1/'
 
 # define electrode montage
 montage = mne.channels.make_standard_montage("biosemi64")
