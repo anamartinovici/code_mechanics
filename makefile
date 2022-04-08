@@ -32,6 +32,10 @@ ifeq "$(strip $(user_name))" "anama"
 	DIR_local_files = C:/Users/anama/Dropbox/Research/Data/EEG_Many_Pipelines/local_files
 endif
 
+ifeq "$(strip $(user_name))" "desktop-mcvpqoa\anama"
+	DIR_local_files = C:/Users/anama/Dropbox/Research/Data/EEG_Many_Pipelines/local_files
+endif
+
 # this is Ana's RSM laptop
 ifeq "$(strip $(user_name))" "marti"
 	DIR_local_files = C:/Users/marti/Dropbox/Research/Data/EEG_Many_Pipelines/local_files
@@ -121,11 +125,13 @@ $(strip $(DIR_RECEIPT))/RQ2_TFR_results: $(strip $(DIR_RECEIPT))/TFR_process_dat
 										 scripts/RQ2/TFR/TFR_RQ2.py
 	$(print-target-and-prereq-info)
 	mkdir -p results_in_repo/RQ2/TFR/
+	mkdir -p tmp/
 	python scripts/RQ2/TFR/TFR_RQ2.py \
 		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
 		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
 		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step2/ \
-		   results_in_repo/RQ2/TFR/
+		   results_in_repo/RQ2/TFR/ \
+		   tmp/
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
