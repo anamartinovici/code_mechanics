@@ -1,6 +1,6 @@
 # for now, all has only test_make, to avoid everything building built by accident
 # to build the analysis, you need to write 'make name_of_target' explicitly in the terminal
-all: restore_file_timestamps RQ1 RQ2 RQ3 RQ4 TFR_process_data
+all: restore_file_timestamps RQ1 RQ2 RQ3 RQ4
 
 
 #################################################
@@ -30,6 +30,11 @@ user_name=$(shell whoami)
 # this is Ana's personal laptop
 ifeq "$(strip $(user_name))" "anama"
 	DIR_local_files = C:/Users/anama/Dropbox/Research/Data/EEG_Many_Pipelines/local_files
+endif
+
+# this is Ana's RSM laptop
+ifeq "$(strip $(user_name))" "marti"
+	DIR_local_files = C:/Users/marti/Dropbox/Research/Data/EEG_Many_Pipelines/local_files
 endif
 
 # this is Ana's RSM PC
@@ -63,7 +68,67 @@ create_receipt_directory:
 ##
 #################################################
 
-TFR_process_data: $(strip $(DIR_RECEIPT))/TFR_process_data_step2
+$(strip $(DIR_RECEIPT))/RQ3_TFR_analysis_NOTeq: $(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq \
+										 scripts/RQ3/TFR/TFR_RQ3b_Analysis_not_equalized_events.py
+	$(print-target-and-prereq-info)
+	python scripts/RQ3/TFR/TFR_RQ3b_Analysis_not_equalized_events.py \
+		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
+		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
+		   results_in_repo/RQ3/TFR/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_NOTeq: $(strip $(DIR_RECEIPT))/TFR_process_data_step2 \
+										 scripts/RQ3/TFR/TFR_RQ3b_Decomposition_not_equalized_events.py
+	$(print-target-and-prereq-info)
+	mkdir -p results_in_repo/RQ3/TFR/not_equalized
+	python scripts/RQ3/TFR/TFR_RQ3b_Decomposition_not_equalized_events.py \
+		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
+		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
+		   results_in_repo/RQ3/TFR/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/RQ3_TFR_analysis_eq: $(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq \
+										 scripts/RQ3/TFR/TFR_RQ3b_Analysis_equalized_events.py
+	$(print-target-and-prereq-info)
+	python scripts/RQ3/TFR/TFR_RQ3b_Analysis_equalized_events.py \
+		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
+		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
+		   results_in_repo/RQ3/TFR/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_data_step2 \
+										 scripts/RQ3/TFR/TFR_RQ3b_Decomposition_equalized_events.py
+	$(print-target-and-prereq-info)
+	mkdir -p results_in_repo/RQ3/TFR/equalized
+	python scripts/RQ3/TFR/TFR_RQ3b_Decomposition_equalized_events.py \
+		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
+		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
+		   results_in_repo/RQ3/TFR/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+
+RQ2: $(strip $(DIR_RECEIPT))/RQ2_TFR_results
+
+$(strip $(DIR_RECEIPT))/RQ2_TFR_results: $(strip $(DIR_RECEIPT))/TFR_process_data_step2 \
+										 scripts/RQ2/TFR/TFR_RQ2.py
+	$(print-target-and-prereq-info)
+	mkdir -p results_in_repo/RQ2/TFR/
+	python scripts/RQ2/TFR/TFR_RQ2.py \
+		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
+		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
+		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step2/ \
+		   results_in_repo/RQ2/TFR/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
 
 $(strip $(DIR_RECEIPT))/TFR_process_data_step2: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
 										        scripts/TFR_preproc_step2.py
