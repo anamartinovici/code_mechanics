@@ -1,3 +1,4 @@
+import sys
 import mne
 import pandas as pd
 import scipy.io
@@ -39,8 +40,7 @@ path_to_eeg_BIDS = sys.argv[1]
 # directory where the output of the previous step is saved
 path_to_TFR_step1_output = sys.argv[2]
 path_to_TFR_RQ3_output   = sys.argv[3]
-
-
+path_to_cache_dir = sys.argv[4]
 
 decim = 1 
 subject = 'sub-001'
@@ -48,15 +48,10 @@ epochs_old_hit = mne.read_epochs(glob(opj(path_to_TFR_step1_output, subject,subj
                                  preload=True,
                                  verbose='error')
 
-
 times = epochs_old_hit.crop(0,0.5).decimate(decim).times
 epochs_old_hit.pick_types(eeg = True)
 info = epochs_old_hit.info
 logged_freqs = np.logspace(np.log10(4),np.log10(40),18)
-
-
-
-# out_dir=opj(bids_root,'TFR_RQ3')
 
 power_all_subj_old_hit = np.load(opj(path_to_TFR_RQ3_output, 'equalized', 'power_all_subj_old_hit.npy'))
 power_all_subj_old_miss = np.load(opj(path_to_TFR_RQ3_output, 'equalized', 'power_all_subj_old_miss.npy'))
@@ -73,46 +68,37 @@ stat_old_hit_vs_miss, pval_old_hit_vs_miss = ttest_ind(power_all_subj_old_hit.da
 
 OldHitVsOldMiss = mne.time_frequency.AverageTFR(power_all_subj_old_hit.info, stat_old_hit_vs_miss[:,:,:], power_all_subj_old_hit.times, power_all_subj_old_hit.freqs, nave=power_all_subj_old_hit.data.shape[0]) # take only the freqs from 4-8HZ
 
-plot_tfr_topomap(OldHitVsOldMiss, colorbar=False, size=10, show_names=False, unit=None,  cbar_fmt='%1.2f') # take 0.3s to 0.5s after stim onset
+# plot_tfr_topomap(OldHitVsOldMiss, colorbar=False, size=10, show_names=False, unit=None,  cbar_fmt='%1.2f') # take 0.3s to 0.5s after stim onset
+# plt.savefig('/data/sebastian/EEG/neural_analysis/Plots&Graphs/topomap_Stroop_logscaled_final32')
 
+################
+#
+# Cluster-Based Permutation tests
 
-#plt.savefig('/data/sebastian/EEG/neural_analysis/Plots&Graphs/topomap_Stroop_logscaled_final32')
+mne.set_cache_dir(path_to_cache_dir)
 
-
+# all cluster-based permutations tests use the same threshhold
+threshold_tfce = dict(start = 0, step = 0.2)
+# all cluster-based permutations tests use the same number of jobs (cores)
+n_cores = 1
+# all cluster-based permutations tests use the same number of permutations (1000)
+n_perm = 10
 
 '''
 Cluster-Based Permutation test over all channels and freqs
 '''
 
-
-
-
 start_time = time.time()
-
-
-
-# downsampling in case it's needed
-power_all_subj_old_hit_down=mne.filter.resample(power_all_subj_old_hit, down=1)
-power_all_subj_old_miss_down=mne.filter.resample(power_all_subj_old_miss, down=1)
-
-
-opj(bids_root,'TFR_RQ3')
-ensure_dir(opj(path_to_TFR_RQ3_output, 'cache'))
-mne.set_cache_dir(opj(path_to_TFR_RQ3_output, 'cache'))
-
-threshold = None
-threshold_tfce = dict(start=0, step=0.2)
 T_obs, clusters, cluster_p_values, H0 = \
-    permutation_cluster_test([power_all_subj_old_hit_down[:,:,:,:],
-                              power_all_subj_old_miss_down[:,:,:,:]],
-                             n_jobs = 1,
-                             n_permutations = 1000,
+    permutation_cluster_test([power_all_subj_old_hit.data[:,:,:,:],
+                              power_all_subj_old_miss.data[:,:,:,:]],
+                             n_jobs = n_cores,
+                             n_permutations = n_perm,
                              threshold = threshold_tfce,
-                             tail = 0,
+                             tail = 0, 
                              buffer_size = 100,
-                             verbose = 'error',
+                             verbose = 'error', 
                              seed = 888)
-
 
 print("--- %s seconds ---" % (time.time() - start_time))
 print(cluster_p_values[cluster_p_values<0.05])

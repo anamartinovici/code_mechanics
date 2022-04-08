@@ -1,3 +1,4 @@
+import sys
 import mne
 import pandas as pd
 import scipy.io
@@ -24,35 +25,26 @@ def ensure_dir(ed):
         if not os.path.isdir(ed):
             raise
 
-'''
-loading subs after fitting
-'''
-            
+# directory with eeg_BIDS data received from the EEG_manypipelines team
+path_to_eeg_BIDS = sys.argv[1] 
+# directory where the output of the previous step is saved
+path_to_TFR_step1_output = sys.argv[2]
+path_to_TFR_RQ4_output   = sys.argv[3]
 
-bids_root = '../eeg_BIDS/'
-prepro_root = '../Preprocessed/'
 decim = 1 
 
-
-
 subject = 'sub-001'
-epochs_old_hit = mne.read_epochs(glob(opj(prepro_root,subject,subject+'*remembered*epo.fif'))[0],
+epochs_old_hit = mne.read_epochs(glob(opj(path_to_TFR_step1_output,subject,subject+'*remembered*epo.fif'))[0],
                                  preload=True,
                                  verbose='error')
-
 
 times = epochs_old_hit.crop(0,0.5).decimate(decim).times
 epochs_old_hit.pick_types(eeg = True)
 info = epochs_old_hit.info
 logged_freqs = np.logspace(np.log10(4),np.log10(40),18)
 
-
-
-out_dir=opj(bids_root,'TFR_RQ4_not_equalized')
-
-power_all_subj_old_hit = np.load(opj(out_dir,'power_all_subj_rem.npy'))
-power_all_subj_old_miss = np.load(opj(out_dir,'power_all_subj_forg.npy'))
-
+power_all_subj_old_hit = np.load(opj(path_to_TFR_RQ4_output, 'not_equalized', 'power_all_subj_rem.npy'))
+power_all_subj_old_miss = np.load(opj(path_to_TFR_RQ4_output, 'not_equalized', 'power_all_subj_forg.npy'))
 
 power_all_subj_old_hit = mne.time_frequency.EpochsTFR(info, power_all_subj_old_hit, times,logged_freqs)
 power_all_subj_old_miss = mne.time_frequency.EpochsTFR(info, power_all_subj_old_miss, times,logged_freqs)
@@ -63,50 +55,39 @@ topo-plot
 '''
 stat_old_hit_vs_miss, pval_old_hit_vs_miss = ttest_ind(power_all_subj_old_hit.data,power_all_subj_old_miss.data, axis=0, equal_var=False, nan_policy='propagate')
 
-
 OldHitVsOldMiss = mne.time_frequency.AverageTFR(power_all_subj_old_hit.info, stat_old_hit_vs_miss[:,:,:], power_all_subj_old_hit.times, power_all_subj_old_hit.freqs, nave=power_all_subj_old_hit.data.shape[0]) # take only the freqs from 4-8HZ
 
-plot_tfr_topomap(OldHitVsOldMiss, colorbar=False, size=10, show_names=False, unit=None,  cbar_fmt='%1.2f') # take 0.3s to 0.5s after stim onset
+# plot_tfr_topomap(OldHitVsOldMiss, colorbar=False, size=10, show_names=False, unit=None,  cbar_fmt='%1.2f') # take 0.3s to 0.5s after stim onset
+# plt.savefig('/data/sebastian/EEG/neural_analysis/Plots&Graphs/topomap_Stroop_logscaled_final32')
 
 
-#plt.savefig('/data/sebastian/EEG/neural_analysis/Plots&Graphs/topomap_Stroop_logscaled_final32')
+################
+#
+# Cluster-Based Permutation tests
 
+mne.set_cache_dir(path_to_cache_dir)
+
+# all cluster-based permutations tests use the same threshhold
+threshold_tfce = dict(start = 0, step = 0.2)
+# all cluster-based permutations tests use the same number of jobs (cores)
+n_cores = 1
+# all cluster-based permutations tests use the same number of permutations (1000)
+n_perm = 10
 
 
 '''
 Cluster-Based Permutation test over all channels and freqs
 '''
-
-
-
-
 start_time = time.time()
-
-
-
-# downsampling in case it's needed
-power_all_subj_rem_down = mne.filter.resample(power_all_subj_rem, down=1)
-power_all_subj_forg_down = mne.filter.resample(power_all_subj_forg, down=1)
-
-
-opj(bids_root,'TFR_RQ4_not_equalized')
-ensure_dir(opj(out_dir,'cache'))
-mne.set_cache_dir(opj(out_dir,'cache'))
-
-
-threshold = None
-threshold_tfce = dict(start = 0, step = 0.2)
 T_obs, clusters, cluster_p_values, H0 = \
-    permutation_cluster_test([power_all_subj_rem_down[:,:,:,:],
-                              power_all_subj_forg_down[:,:,:,:]],
-                             n_jobs=20,
-                             n_permutations=1000,
-                             threshold=threshold_tfce,
-                             tail=0,
-                             buffer_size=100,
-                             verbose='error',
-                             seed=888)
-
-
+    permutation_cluster_test([power_all_subj_rem.data[:,:,:,:],
+                              power_all_subj_forg.data[:,:,:,:]],
+                             n_jobs = n_cores,
+                             n_permutations = n_perm,
+                             threshold = threshold_tfce,
+                             tail = 0, 
+                             buffer_size = 100,
+                             verbose = 'error', 
+                             seed = 888)
 print("--- %s seconds ---" % (time.time() - start_time))
 print(cluster_p_values[cluster_p_values<0.05])

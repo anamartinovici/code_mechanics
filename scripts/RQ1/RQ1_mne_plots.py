@@ -12,6 +12,7 @@ import random
 import glob
 import os
 import mne
+import sys
 
 # %% SETUP
 
@@ -19,15 +20,13 @@ project_seed = 999 # RNG seed
 random.seed(project_seed) # set seed to ensure computational reproducibility
 
 # directory with preprocessed files
-# path_to_eeg_BIDS = sys.argv[1] # directory with eeg_BIDS data received from the EEG_manypipelines team
-
-preproc_path = 'C:/Users/anama/Dropbox/Research\Data/EEG_Many_Pipelines/local_files/data_outside_repo/processed_data/ERP/step1/'
+path_to_ERP_step1_output = sys.argv[1]
 
 # list of .fif files in directory and all subdirectories
-filenames_manmade = glob.glob(preproc_path +  '/**/*_manmade_epo.fif') # 'manmade'
-filenames_natural = glob.glob(preproc_path +  '/**/*_natural_epo.fif') # 'natural'
+filenames_manmade = glob.glob(path_to_ERP_step1_output +  '/**/*_manmade_epo.fif') # 'manmade'
+filenames_natural = glob.glob(path_to_ERP_step1_output +  '/**/*_natural_epo.fif') # 'natural'
 
-subs = [name for name in os.listdir(preproc_path) if name.startswith('sub')] # participant names
+subs = [name for name in os.listdir(path_to_ERP_step1_output) if name.startswith('sub')] # participant names
 
 # ROI
 ROI = ['PO7', 'PO3', 'O1', 'PO4', 'PO8', 'O2']
@@ -57,13 +56,10 @@ for i in range(len(subs)):
     all_evoked = mne.combine_evoked([evokeds_manmade, evokeds_natural], weights = 'nave')
     
     # plot 
-    mne.viz.plot_compare_evokeds(all_evoked, 
-                         picks = ROI, 
-                         combine='mean',
-                         legend = False
-                         )
- 
+    # I have commented out these plots because otherwise the user needs to manually close N*2 windows
+    # remove the # if you want to see all the plots
+    # mne.viz.plot_compare_evokeds(all_evoked, picks = ROI, combine='mean', legend = False)
     # joint plot
-    all_evoked.plot_joint(times = topo_times)
+    # all_evoked.plot_joint(times = topo_times)
     
 # %% END

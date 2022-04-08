@@ -1,3 +1,4 @@
+import sys
 import mne
 import pandas as pd
 import scipy.io
@@ -40,13 +41,12 @@ path_to_eeg_BIDS = sys.argv[1]
 path_to_TFR_step1_output = sys.argv[2]
 path_to_TFR_RQ3_output   = sys.argv[3]
 
-
 subs = [ name for name in os.listdir(path_to_eeg_BIDS) if name.startswith('sub') ]
 
 #=========================================================================
 # === just for initiating some params, I need to read one epoch to fill them out
 
-logged_freqs=np.logspace(np.log10(4),np.log10(40),18)
+logged_freqs = np.logspace(np.log10(4),np.log10(40),18)
 n_cycles = logged_freqs / 2.
 decim = 1 # specify decimation factor - decimation occors after TFR estimation
 njobs = 10
@@ -57,7 +57,7 @@ itc_all      = dict()#[subj * chan * freqs * time]
 power_avgAll = dict()
 itc_avgAll   = dict()#[chan * freqs * time]
 
-subject=subs[0]
+subject = subs[0]
 epochs_RQ3 = mne.read_epochs(glob(opj(path_to_TFR_step1_output,subject,subject+'*old_hit*epo.fif'))[0],
                              preload=True,
                              verbose='error')

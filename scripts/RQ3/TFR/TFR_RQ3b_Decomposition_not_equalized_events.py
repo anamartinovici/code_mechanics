@@ -1,3 +1,4 @@
+import sys
 import mne
 import pandas as pd
 import scipy.io
@@ -29,25 +30,17 @@ def ensure_dir(ed):
 load epoched and autorejected data
 '''
 
-# starting from a relative path /eeg_BIDS which you should also have
-#bids_root = '../eeg_BIDS/'
-#prepro_root = '../Preprocessed/'
-# bids_root = path_to_eeg_BIDS
-# prepro_root = path_to_TFR_step1_output
-
 # directory with eeg_BIDS data received from the EEG_manypipelines team
 path_to_eeg_BIDS = sys.argv[1] 
 # directory where the output of the previous step is saved
 path_to_TFR_step1_output = sys.argv[2]
 path_to_TFR_RQ3_output   = sys.argv[3]
 
-
-
 subs = [ name for name in os.listdir(path_to_eeg_BIDS) if name.startswith('sub') ]
 
 #=========================================================================
 # === just for initiating some params, I need to read one epoch to fill them out
-logged_freqs=np.logspace(np.log10(4),np.log10(40),18)
+logged_freqs = np.logspace(np.log10(4),np.log10(40),18)
 
 n_cycles = logged_freqs / 2.
 
@@ -159,7 +152,6 @@ power_all_old_hit = mne.time_frequency.EpochsTFR(info, power_all_subj_old_hit, t
 
 np.save(opj(path_to_TFR_RQ3_output, 'not_equalized', 'power_all_subj_old_hit'),power_all_subj_old_hit)
 np.save(opj(path_to_TFR_RQ3_output, 'not_equalized', 'power_all_subj_old_miss'),power_all_subj_old_miss)
-
 
 write_tfrs(opj(path_to_TFR_RQ3_output, 'not_equalized', 'pwr_old_hit-tfr.h5'),power_all_old_hit, overwrite=True )
 

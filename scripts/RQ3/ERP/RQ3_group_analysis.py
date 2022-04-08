@@ -12,6 +12,7 @@ import random
 import numpy as np
 import os
 import mne
+import sys
 
 from os.path import join as opj
 from mne.epochs import equalize_epoch_counts
@@ -24,9 +25,7 @@ project_seed = 999 # RNG seed
 random.seed(project_seed) # set seed to ensure computational reproducibility
 
 # directory with preprocessed files
-# preproc_path = '/home/aschetti/Documents/Projects/code_mechanics/data/processed_data/ERP/'
-preproc_path = 'C:/Users/anama/Dropbox/Research\Data/EEG_Many_Pipelines/local_files/data_outside_repo/processed_data/ERP/step1/'
-
+path_to_ERP_step1_output = sys.argv[1]
 
 # define electrode montage
 montage = mne.channels.make_standard_montage("biosemi64")
@@ -42,7 +41,7 @@ n_perm = 1000 # number of permutations (at least 1000)
 # %% load data for TFCE
 
 # get all participant names
-subs = [name for name in os.listdir(preproc_path) if name.startswith('sub')]
+subs = [name for name in os.listdir(path_to_ERP_step1_output) if name.startswith('sub')]
 
 # template array of zeros with 64 time points x 64 channels
 template_zeros = np.zeros((64, 64)) 
@@ -60,12 +59,12 @@ for ssj in subs: # loop through participants
     
     # load 'old_hit' epochs
     old_hit = mne.read_epochs(
-            opj(preproc_path + ssj, ssj + '_old_hit_epo.fif'), preload = True
+            opj(path_to_ERP_step1_output + ssj, ssj + '_old_hit_epo.fif'), preload = True
             )
     
     # load 'old_miss' epochs
     old_miss = mne.read_epochs(
-            opj(preproc_path + ssj, ssj + '_old_miss_epo.fif'), preload = True
+            opj(path_to_ERP_step1_output + ssj, ssj + '_old_miss_epo.fif'), preload = True
             )
     
     # equalize epoch counts
@@ -100,7 +99,7 @@ all_old_miss_data = all_old_miss_data[1:, :, :]
 # calculate adjacency matrix between sensors from their locations
 adjacency, _ = find_ch_adjacency(
     mne.read_epochs( 
-        opj(preproc_path + ssj, ssj + '_old_epo.fif'), # can be extracted from any epoch file
+        opj(path_to_ERP_step1_output + ssj, ssj + '_old_epo.fif'), # can be extracted from any epoch file
         preload = False
         ).info, 
     "eeg"
