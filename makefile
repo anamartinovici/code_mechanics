@@ -1,5 +1,8 @@
+# if you type 'make' in the terminal, it will first restore the timestamps and then test make
+all: restore_file_timestamps test_make
+
 # to build the analysis, you need to write 'make name_of_target' explicitly in the terminal
-all: restore_file_timestamps RQ1 RQ2 RQ3 RQ4
+analysis: RQ1 RQ2 RQ3 RQ4
 
 #################################################
 ##
@@ -86,6 +89,7 @@ $(strip $(DIR_RECEIPT))/RQ4_ERP_results: $(strip $(DIR_RECEIPT))/ERP_process_dat
 $(strip $(DIR_RECEIPT))/RQ4_TFR_analysis_NOTeq: $(strip $(DIR_RECEIPT))/RQ4_TFR_decomp_NOTeq \
 										        scripts/RQ4/TFR/TFR_RQ4b_Analysis_not_equalized_events.py
 	$(print-target-and-prereq-info)
+	mkdir -p tmp/
 	python scripts/RQ4/TFR/TFR_RQ4b_Analysis_not_equalized_events.py \
 		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
 		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \

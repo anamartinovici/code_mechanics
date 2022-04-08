@@ -1,3 +1,4 @@
+import sys 
 import mne
 import pandas as pd
 import scipy.io
@@ -29,6 +30,7 @@ path_to_eeg_BIDS = sys.argv[1]
 # directory where the output of the previous step is saved
 path_to_TFR_step1_output = sys.argv[2]
 path_to_TFR_RQ4_output   = sys.argv[3]
+path_to_cache_dir = sys.argv[4]
 
 decim = 1 
 
@@ -42,18 +44,18 @@ epochs_old_hit.pick_types(eeg = True)
 info = epochs_old_hit.info
 logged_freqs = np.logspace(np.log10(4),np.log10(40),18)
 
-power_all_subj_old_hit = np.load(opj(path_to_TFR_RQ4_output,'equalized','power_all_subj_rem.npy'))
-power_all_subj_old_miss = np.load(opj(path_to_TFR_RQ4_output,'equalized','power_all_subj_forg.npy'))
+power_all_subj_rem = np.load(opj(path_to_TFR_RQ4_output,'equalized','power_all_subj_rem.npy'))
+power_all_subj_forg = np.load(opj(path_to_TFR_RQ4_output,'equalized','power_all_subj_forg.npy'))
 
-power_all_subj_old_hit = mne.time_frequency.EpochsTFR(info, power_all_subj_old_hit, times,logged_freqs)
-power_all_subj_old_miss = mne.time_frequency.EpochsTFR(info, power_all_subj_old_miss, times,logged_freqs)
+power_all_subj_rem = mne.time_frequency.EpochsTFR(info, power_all_subj_rem, times,logged_freqs)
+power_all_subj_forg = mne.time_frequency.EpochsTFR(info, power_all_subj_forg, times,logged_freqs)
 
 '''
 topo-plot 
 '''
-stat_old_hit_vs_miss, pval_old_hit_vs_miss = ttest_ind(power_all_subj_old_hit.data,power_all_subj_old_miss.data, axis=0, equal_var=False, nan_policy='propagate')
+stat_old_hit_vs_miss, pval_old_hit_vs_miss = ttest_ind(power_all_subj_rem.data,power_all_subj_forg.data, axis=0, equal_var=False, nan_policy='propagate')
 
-OldHitVsOldMiss = mne.time_frequency.AverageTFR(power_all_subj_old_hit.info, stat_old_hit_vs_miss[:,:,:], power_all_subj_old_hit.times, power_all_subj_old_hit.freqs, nave=power_all_subj_old_hit.data.shape[0]) # take only the freqs from 4-8HZ
+OldHitVsOldMiss = mne.time_frequency.AverageTFR(power_all_subj_rem.info, stat_old_hit_vs_miss[:,:,:], power_all_subj_rem.times, power_all_subj_rem.freqs, nave=power_all_subj_rem.data.shape[0]) # take only the freqs from 4-8HZ
 
 # plot_tfr_topomap(OldHitVsOldMiss, colorbar=False, size=10, show_names=False, unit=None,  cbar_fmt='%1.2f') # take 0.3s to 0.5s after stim onset
 # plt.savefig('/data/sebastian/EEG/neural_analysis/Plots&Graphs/topomap_Stroop_logscaled_final32')

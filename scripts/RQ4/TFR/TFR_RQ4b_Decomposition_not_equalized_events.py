@@ -135,7 +135,6 @@ for subject in subs[:12]:
     # plot all channels averaged
     # tfr_pwr_forg.plot_joint(title='All Channels Old')
     
-    
     subj_num_id+=1
 
 
@@ -146,7 +145,7 @@ power_all_rem = mne.time_frequency.EpochsTFR(info, power_all_subj_rem, times,log
 np.save(opj(path_to_TFR_RQ4_output,'not_equalized','power_all_subj_rem'),power_all_rem)
 np.save(opj(path_to_TFR_RQ4_output,'not_equalized','power_all_subj_forg'),power_all_subj_forg)
 
-write_tfrs(opj(path_to_TFR_RQ4_output,'RQ4_not_equalized','pwr_rem-tfr.h5'),power_all_rem, overwrite=True )
+write_tfrs(opj(path_to_TFR_RQ4_output,'not_equalized','pwr_rem-tfr.h5'),power_all_rem, overwrite=True )
 
 power_all_forg = mne.time_frequency.EpochsTFR(info, power_all_subj_forg, times,logged_freqs)
 
