@@ -16,7 +16,6 @@ from scipy.stats import spearmanr, ttest_ind, describe, normaltest, pearsonr
 from mne.stats import permutation_cluster_1samp_test, permutation_cluster_test
 import time
 from mne.viz import plot_tfr_topomap
-import joblib
 
 def ensure_dir(ed):
     import os
@@ -119,7 +118,7 @@ threshold_tfce = dict(start = 0, step = 0.2)
 T_obs, clusters, cluster_p_values, H0 = \
     permutation_cluster_test([power_all_old_down[:,:,:,:], power_all_new_down[:,:,:,:]], 
                              n_jobs = 1, # this used to be 1
-                             n_permutations = 100, # this should be 1000 permutations 
+                             n_permutations = 10, # this should be 1000 permutations 
                              threshold = threshold_tfce, 
                              tail = 0, 
                              buffer_size = 100, # this used to be 100
