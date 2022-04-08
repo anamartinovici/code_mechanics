@@ -40,6 +40,8 @@ path_to_TFR_step2_output = 'C:/Users/anama/Dropbox/Research/Data/EEG_Many_Pipeli
 # path_to_TFR_RQ2_output = sys.argv[4]
 path_to_TFR_RQ2_output = 'results_in_repo/RQ2/TFR/'
 
+decim = 1 # specify decimation factor - decimation occors after TFR estimation
+
 subject='sub-001'
 epochs_old = mne.read_epochs(glob(opj(path_to_TFR_step1_output,subject,subject+'*old*epo.fif'))[0], preload=True, verbose='error')
 
