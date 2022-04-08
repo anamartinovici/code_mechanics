@@ -29,14 +29,22 @@ def ensure_dir(ed):
 loading subs after fitting
 '''
 
-bids_root = '../eeg_BIDS/'
-prepro_root = '../Preprocessed/'
+# bids_root = '../eeg_BIDS/'
+# prepro_root = '../Preprocessed/'
+# bids_root = path_to_eeg_BIDS
+# prepro_root = path_to_TFR_step1_output
+
+# directory with eeg_BIDS data received from the EEG_manypipelines team
+path_to_eeg_BIDS = sys.argv[1] 
+# directory where the output of the previous step is saved
+path_to_TFR_step1_output = sys.argv[2]
+path_to_TFR_RQ3_output   = sys.argv[3]
+
+
+
 decim = 1 
-
-
-
 subject = 'sub-001'
-epochs_old_hit = mne.read_epochs(glob(opj(prepro_root,subject,subject+'*old_hit*epo.fif'))[0],
+epochs_old_hit = mne.read_epochs(glob(opj(path_to_TFR_step1_output, subject,subject+'*old_hit*epo.fif'))[0],
                                  preload=True,
                                  verbose='error')
 
@@ -48,11 +56,10 @@ logged_freqs = np.logspace(np.log10(4),np.log10(40),18)
 
 
 
-out_dir=opj(bids_root,'TFR_RQ3')
+# out_dir=opj(bids_root,'TFR_RQ3')
 
-power_all_subj_old_hit = np.load(opj(out_dir,'power_all_subj_old_hit.npy'))
-power_all_subj_old_miss = np.load(opj(out_dir,'power_all_subj_old_miss.npy'))
-
+power_all_subj_old_hit = np.load(opj(path_to_TFR_RQ3_output, 'equalized', 'power_all_subj_old_hit.npy'))
+power_all_subj_old_miss = np.load(opj(path_to_TFR_RQ3_output, 'equalized', 'power_all_subj_old_miss.npy'))
 
 power_all_subj_old_hit = mne.time_frequency.EpochsTFR(info, power_all_subj_old_hit, times,logged_freqs)
 power_all_subj_old_miss = mne.time_frequency.EpochsTFR(info, power_all_subj_old_miss, times,logged_freqs)
@@ -90,9 +97,8 @@ power_all_subj_old_miss_down=mne.filter.resample(power_all_subj_old_miss, down=1
 
 
 opj(bids_root,'TFR_RQ3')
-ensure_dir(opj(out_dir,'cache'))
-mne.set_cache_dir(opj(out_dir,'cache'))
-
+ensure_dir(opj(path_to_TFR_RQ3_output, 'cache'))
+mne.set_cache_dir(opj(path_to_TFR_RQ3_output, 'cache'))
 
 threshold = None
 threshold_tfce = dict(start=0, step=0.2)

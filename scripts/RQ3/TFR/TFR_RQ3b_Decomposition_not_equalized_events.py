@@ -30,10 +30,20 @@ load epoched and autorejected data
 '''
 
 # starting from a relative path /eeg_BIDS which you should also have
-bids_root = '../eeg_BIDS/'
-prepro_root = '../Preprocessed/'
+#bids_root = '../eeg_BIDS/'
+#prepro_root = '../Preprocessed/'
+# bids_root = path_to_eeg_BIDS
+# prepro_root = path_to_TFR_step1_output
 
-subs = [ name for name in os.listdir(bids_root) if name.startswith('sub') ]
+# directory with eeg_BIDS data received from the EEG_manypipelines team
+path_to_eeg_BIDS = sys.argv[1] 
+# directory where the output of the previous step is saved
+path_to_TFR_step1_output = sys.argv[2]
+path_to_TFR_RQ3_output   = sys.argv[3]
+
+
+
+subs = [ name for name in os.listdir(path_to_eeg_BIDS) if name.startswith('sub') ]
 
 #=========================================================================
 # === just for initiating some params, I need to read one epoch to fill them out
@@ -50,7 +60,7 @@ power_all    = dict();itc_all     = dict()#[subj * chan * freqs * time]
 power_avgAll = dict(); itc_avgAll = dict()#[chan * freqs * time]
 
 subject=subs[0]
-epochs_RQ3 = mne.read_epochs(glob(opj(prepro_root,subject,subject+'*old_hit*epo.fif'))[0],
+epochs_RQ3 = mne.read_epochs(glob(opj(path_to_TFR_step1_output, subject,subject+'*old_hit*epo.fif'))[0],
                              preload=True,
                              verbose='error')
 epochs_RQ3.decimate(decim)
@@ -80,11 +90,11 @@ for subject in subs:
     epochs_old_hit
     '''
     #picks = mne.pick_channels(raw.info["ch_names"], ["C3", "Cz", "C4"]) # In case specific channels are to be picked - also need to add the picks parameter to the next function
-    epochs_old_hit = mne.read_epochs(glob(opj(prepro_root,subject,subject+'*old_hit*epo.fif'))[0],
+    epochs_old_hit = mne.read_epochs(glob(opj(path_to_TFR_step1_output, subject,subject+'*old_hit*epo.fif'))[0],
                                      preload=True,
                                      verbose='error')
     
-    epochs_old_miss = mne.read_epochs(glob(opj(prepro_root,subject,subject+'*old_miss*epo.fif'))[0],
+    epochs_old_miss = mne.read_epochs(glob(opj(path_to_TFR_step1_output, subject,subject+'*old_miss*epo.fif'))[0],
                                       preload=True,
                                       verbose='error')
 
@@ -142,18 +152,18 @@ for subject in subs:
 
 
 # safe TFR data for all subs as numpy array
-ensure_dir(opj(bids_root,'TFR_RQ3_not_equalized'))
+# ensure_dir(opj(bids_root,'TFR_RQ3_not_equalized'))
     
 # put data across subs in containers
 power_all_old_hit = mne.time_frequency.EpochsTFR(info, power_all_subj_old_hit, times,logged_freqs)
 
-np.save(opj(bids_root,'TFR_RQ3_not_equalized','power_all_subj_old_hit'),power_all_subj_old_hit)
-np.save(opj(bids_root,'TFR_RQ3_not_equalized','power_all_subj_old_miss'),power_all_subj_old_miss)
+np.save(opj(path_to_TFR_RQ3_output, 'not_equalized', 'power_all_subj_old_hit'),power_all_subj_old_hit)
+np.save(opj(path_to_TFR_RQ3_output, 'not_equalized', 'power_all_subj_old_miss'),power_all_subj_old_miss)
 
 
-write_tfrs(opj(bids_root,'TFR_RQ3_not_equalized','pwr_old_hit-tfr.h5'),power_all_old_hit, overwrite=True )
+write_tfrs(opj(path_to_TFR_RQ3_output, 'not_equalized', 'pwr_old_hit-tfr.h5'),power_all_old_hit, overwrite=True )
 
 power_all_old_miss = mne.time_frequency.EpochsTFR(info, power_all_subj_old_miss, times,logged_freqs)
 
-write_tfrs(opj(bids_root,'TFR_RQ3_not_equalized','pwr_old_miss-tfr.h5'),power_all_old_miss, overwrite=True)
+write_tfrs(opj(path_to_TFR_RQ3_output, 'not_equalized', 'pwr_old_miss-tfr.h5'),power_all_old_miss, overwrite=True)
 

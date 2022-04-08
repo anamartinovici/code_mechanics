@@ -67,6 +67,52 @@ create_receipt_directory:
 ##
 #################################################
 
+$(strip $(DIR_RECEIPT))/RQ3_TFR_analysis_NOTeq: $(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq \
+										 scripts/RQ3/TFR/TFR_RQ3b_Analysis_not_equalized_events.py
+	$(print-target-and-prereq-info)
+	python scripts/RQ3/TFR/TFR_RQ3b_Analysis_not_equalized_events.py \
+		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
+		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
+		   results_in_repo/RQ3/TFR/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_NOTeq: $(strip $(DIR_RECEIPT))/TFR_process_data_step2 \
+										 scripts/RQ3/TFR/TFR_RQ3b_Decomposition_not_equalized_events.py
+	$(print-target-and-prereq-info)
+	mkdir -p results_in_repo/RQ3/TFR/not_equalized
+	python scripts/RQ3/TFR/TFR_RQ3b_Decomposition_not_equalized_events.py \
+		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
+		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
+		   results_in_repo/RQ3/TFR/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/RQ3_TFR_analysis_eq: $(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq \
+										 scripts/RQ3/TFR/TFR_RQ3b_Analysis_equalized_events.py
+	$(print-target-and-prereq-info)
+	python scripts/RQ3/TFR/TFR_RQ3b_Analysis_equalized_events.py \
+		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
+		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
+		   results_in_repo/RQ3/TFR/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_data_step2 \
+										 scripts/RQ3/TFR/TFR_RQ3b_Decomposition_equalized_events.py
+	$(print-target-and-prereq-info)
+	mkdir -p results_in_repo/RQ3/TFR/equalized
+	python scripts/RQ3/TFR/TFR_RQ3b_Decomposition_equalized_events.py \
+		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
+		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
+		   results_in_repo/RQ3/TFR/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
 
 RQ2: $(strip $(DIR_RECEIPT))/RQ2_TFR_results
 
