@@ -16,6 +16,7 @@ from scipy.stats import spearmanr, ttest_ind, describe, normaltest, pearsonr
 from mne.stats import permutation_cluster_1samp_test, permutation_cluster_test
 import time
 from mne.viz import plot_tfr_topomap
+import joblib
 
 def ensure_dir(ed):
     import os
@@ -70,17 +71,16 @@ mne.set_cache_dir(path_to_cache_dir)
 # all cluster-based permutations tests use the same threshhold
 threshold_tfce = dict(start = 0, step = 0.2)
 # all cluster-based permutations tests use the same number of jobs (cores)
-n_cores = 1
+n_cores = 4
 # all cluster-based permutations tests use the same number of permutations (1000)
-n_perm = 10
+n_perm = 1000
 
 '''
 Cluster-Based Permutation test over all channels and freqs
 '''
 start_time = time.time()
 T_obs, clusters, cluster_p_values, H0 = \
-    permutation_cluster_test([power_all_subj_rem.data[:,:,:,:],
-                              power_all_subj_forg.data[:,:,:,:]],
+    permutation_cluster_test([power_all_subj_rem.data[:,:,:,:], power_all_subj_forg.data[:,:,:,:]],
                              n_jobs = n_cores,
                              n_permutations = n_perm,
                              threshold = threshold_tfce,
@@ -89,4 +89,4 @@ T_obs, clusters, cluster_p_values, H0 = \
                              verbose = 'error', 
                              seed = 888)
 print("--- %s seconds ---" % (time.time() - start_time))
-print(cluster_p_values[cluster_p_values<0.05])
+print(cluster_p_values[cluster_p_values < 0.05])

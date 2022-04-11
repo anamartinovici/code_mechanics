@@ -90,6 +90,7 @@ $(strip $(DIR_RECEIPT))/RQ4_TFR_analysis_NOTeq: $(strip $(DIR_RECEIPT))/RQ4_TFR_
 										        scripts/RQ4/TFR/TFR_RQ4b_Analysis_not_equalized_events.py
 	$(print-target-and-prereq-info)
 	mkdir -p tmp/
+	# note that this can use up to 50GB of RAM for 1000 permutations
 	python scripts/RQ4/TFR/TFR_RQ4b_Analysis_not_equalized_events.py \
 		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
 		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
@@ -112,9 +113,10 @@ $(strip $(DIR_RECEIPT))/RQ4_TFR_decomp_NOTeq: $(strip $(DIR_RECEIPT))/TFR_proces
 	@echo "---------"
 
 $(strip $(DIR_RECEIPT))/RQ4_TFR_analysis_eq: $(strip $(DIR_RECEIPT))/RQ4_TFR_decomp_eq \
-										 scripts/RQ4/TFR/TFR_RQ4b_Analysis_equalized_events.py
+										     scripts/RQ4/TFR/TFR_RQ4b_Analysis_equalized_events.py
 	$(print-target-and-prereq-info)
 	mkdir -p tmp/
+	# note that this can use up to 50GB of RAM for 1000 permutations
 	python scripts/RQ4/TFR/TFR_RQ4b_Analysis_equalized_events.py \
 		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
 		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
