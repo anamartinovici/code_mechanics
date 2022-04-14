@@ -213,7 +213,6 @@ $(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_d
 #################################################
 
 RQ2: $(strip $(DIR_RECEIPT))/RQ2_TFR_results
-RQ2: $(strip $(DIR_RECEIPT))/RQ2_ERP_results_python
 RQ2: $(strip $(DIR_RECEIPT))/RQ2_ERP_results
 
 $(strip $(DIR_RECEIPT))/RQ2_TFR_results: $(strip $(DIR_RECEIPT))/TFR_process_data_step2 \
@@ -227,15 +226,6 @@ $(strip $(DIR_RECEIPT))/RQ2_TFR_results: $(strip $(DIR_RECEIPT))/TFR_process_dat
 		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step2/ \
 		   results_in_repo/RQ2/TFR/ \
 		   tmp/
-	date > $@
-	@echo "done with $@"
-	@echo "---------"
-
-$(strip $(DIR_RECEIPT))/RQ2_ERP_results_python: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
-											    scripts/RQ2/ERP/RQ2_mne_plots.py
-	$(print-target-and-prereq-info)
-	python scripts/RQ2/ERP/RQ2_mne_plots.py \
-	       $(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step1/
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
@@ -301,17 +291,7 @@ $(strip $(DIR_RECEIPT))/RQ2_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_
 ##
 #################################################
 
-RQ1: $(strip $(DIR_RECEIPT))/RQ1_results_python
 RQ1: $(strip $(DIR_RECEIPT))/RQ1_results
-
-$(strip $(DIR_RECEIPT))/RQ1_results_python: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
-											scripts/RQ1/RQ1_mne_plots.py
-	$(print-target-and-prereq-info)
-	python scripts/RQ1/RQ1_mne_plots.py \
-		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step1/
-	date > $@
-	@echo "done with $@"
-	@echo "---------"
 
 $(strip $(DIR_RECEIPT))/RQ1_results: $(strip $(DIR_RECEIPT))/RQ1_estimate_model \
 									 scripts/RQ1/03_RQ1_model_diagnostics.R \
