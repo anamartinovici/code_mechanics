@@ -12,3 +12,5 @@ data_in_repo/*.html
 
 Rplots.pdf
 restore_file_timestamps
+
+/tmp

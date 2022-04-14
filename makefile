@@ -2,7 +2,7 @@
 all: restore_file_timestamps test_make
 
 # to build the analysis, you need to write 'make name_of_target' explicitly in the terminal
-analysis: RQ1 RQ2 RQ3 RQ4
+#analysis: data_processing RQ1 RQ2 RQ3 RQ4
 
 #################################################
 ##
@@ -30,21 +30,21 @@ DIR_local_files = "Specify a PATH to your local_files directory"
 user_name=$(shell whoami)
 # this is Ana's personal laptop
 ifeq "$(strip $(user_name))" "anama"
-	DIR_local_files = C:/Users/anama/Dropbox/Research/Data/EEG_Many_Pipelines/local_files
+	DIR_local_files = C:/Users/anama/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics
 endif
 
 ifeq "$(strip $(user_name))" "desktop-mcvpqoa\anama"
-	DIR_local_files = C:/Users/anama/Dropbox/Research/Data/EEG_Many_Pipelines/local_files
+	DIR_local_files = C:/Users/anama/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics
 endif
 
 # this is Ana's RSM laptop
 ifeq "$(strip $(user_name))" "marti"
-	DIR_local_files = C:/Users/marti/Dropbox/Research/Data/EEG_Many_Pipelines/local_files
+	DIR_local_files = C:/Users/marti/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics
 endif
 
 # this is Ana's RSM PC
 ifeq "$(strip $(user_name))" "STAFF+67003ama"
-	DIR_local_files = D:/Dropbox/Research/Data/EEG_Many_Pipelines/local_files
+	DIR_local_files = D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics
 endif
 
 restore_file_timestamps:
@@ -66,6 +66,8 @@ create_receipt_directory:
 ## from here on we have the analysis
 ##
 #################################################
+
+data_processing: $(strip $(DIR_RECEIPT))/initial_setup
 
 #################################################
 ##
@@ -404,12 +406,26 @@ $(strip $(DIR_RECEIPT))/ERP_process_data_step2: $(strip $(DIR_RECEIPT))/ERP_proc
 	@echo "done with $@"
 	@echo "---------"
 
-$(strip $(DIR_RECEIPT))/ERP_process_data_step1: scripts/ERP_preproc_step1.py
+analysis: $(strip $(DIR_RECEIPT))/ERP_process_data_step1
+
+$(strip $(DIR_RECEIPT))/ERP_process_data_step1: $(strip $(DIR_RECEIPT))/initial_setup \
+												scripts/ERP_preproc_step1.py \
+												scripts/ERP_preproc_step1.Rmd
 	$(print-target-and-prereq-info)
 	mkdir -p $(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step1/
-	python scripts/ERP_preproc_step1.py \
-		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
-		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step1/
+	Rscript scripts/render_Rmd.R \
+			scripts/ERP_preproc_step1.Rmd \
+			$(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step1/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/initial_setup: scripts/initial_setup.R
+	$(print-target-and-prereq-info)
+	mkdir -p tmp/
+	Rscript scripts/initial_setup.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
