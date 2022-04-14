@@ -72,7 +72,7 @@ subj_num_id=0
 
 # loop over subjects to transform to the time-frequency domain
 
-for subject in subs[:12]:
+for subject in subs:
     print(subject)
     '''
     epochs_old_hit
@@ -137,17 +137,14 @@ for subject in subs[:12]:
     
     subj_num_id+=1
 
-
 # save TFR data for all subs as numpy array
 # put data across subs in containers
-power_all_rem = mne.time_frequency.EpochsTFR(info, power_all_subj_rem, times,logged_freqs)
+np.save(opj(path_to_TFR_RQ4_output, 'not_equalized', 'power_all_subj_rem'), power_all_subj_rem)
+np.save(opj(path_to_TFR_RQ4_output, 'not_equalized', 'power_all_subj_forg'), power_all_subj_forg)
 
-np.save(opj(path_to_TFR_RQ4_output,'not_equalized','power_all_subj_rem'),power_all_rem)
-np.save(opj(path_to_TFR_RQ4_output,'not_equalized','power_all_subj_forg'),power_all_subj_forg)
+power_all_rem = mne.time_frequency.EpochsTFR(info, power_all_subj_rem, times, logged_freqs)
+power_all_forg = mne.time_frequency.EpochsTFR(info, power_all_subj_forg, times, logged_freqs)
 
-write_tfrs(opj(path_to_TFR_RQ4_output,'not_equalized','pwr_rem-tfr.h5'),power_all_rem, overwrite=True )
-
-power_all_forg = mne.time_frequency.EpochsTFR(info, power_all_subj_forg, times,logged_freqs)
-
-write_tfrs(opj(path_to_TFR_RQ4_output,'not_equalized','pwr_forg-tfr.h5'),power_all_forg, overwrite=True)
+write_tfrs(opj(path_to_TFR_RQ4_output, 'not_equalized', 'pwr_rem-tfr.h5'), power_all_rem, overwrite=True )
+write_tfrs(opj(path_to_TFR_RQ4_output, 'not_equalized', 'pwr_forg-tfr.h5'), power_all_forg, overwrite=True)
 
