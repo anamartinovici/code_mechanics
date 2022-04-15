@@ -316,28 +316,34 @@ $(strip $(DIR_RECEIPT))/RQ1_results: $(strip $(DIR_RECEIPT))/RQ1_estimate_model 
 	@echo "done with $@"
 	@echo "---------"
 
+RQ1_in_progress: $(strip $(DIR_RECEIPT))/RQ1_estimate_model
+
 $(strip $(DIR_RECEIPT))/RQ1_estimate_model: $(strip $(DIR_RECEIPT))/RQ1_ERP_plots \
 											scripts/RQ1/02_RQ1_parameter_estimation.R
 	$(print-target-and-prereq-info)
 	# estimation results are too large for GitHub, so they are saved outside the repository
 	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ1/
+	# we estimate the model 3 times, using different priors, to assess results sensitivity
 	Rscript scripts/RQ1/02_RQ1_parameter_estimation.R \
 			$(strip $(PROJECT_SEED)) \
-			$(strip $(DIR_local_files))/results_outside_repo/RQ1/
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/ \
+			"informative"
+	Rscript scripts/RQ1/02_RQ1_parameter_estimation.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/ \
+			"weaklyinformative"
+	Rscript scripts/RQ1/02_RQ1_parameter_estimation.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/ \
+			"noninformative"
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
- 
+
 $(strip $(DIR_RECEIPT))/RQ1_ERP_plots: $(strip $(DIR_RECEIPT))/RQ1_prep_data \
 									   scripts/RQ1/01_RQ1_ERP_plots.R
-	$(print-target-and-prereq-info)
-	mkdir -p results_in_repo/RQ1/
-	Rscript scripts/RQ1/01_RQ1_ERP_plots.R \
-			$(strip $(PROJECT_SEED))
-	date > $@
-	@echo "done with $@"
-	@echo "---------"
- 
+	$(do-RQ1-ERP-plots)
+	
 $(strip $(DIR_RECEIPT))/RQ1_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_step3 \
 								       scripts/RQ1/00_RQ1_data_preparation.R
 	$(print-target-and-prereq-info)
@@ -396,17 +402,16 @@ $(strip $(DIR_RECEIPT))/ERP_process_data_step3: $(strip $(DIR_RECEIPT))/ERP_proc
 	@echo "---------"
 
 $(strip $(DIR_RECEIPT))/ERP_process_data_step2: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
-												scripts/ERP_preproc_step2.py
+												scripts/ERP_preproc_step2.py \
+												scripts/ERP_preproc_step2.Rmd
 	$(print-target-and-prereq-info)
 	mkdir -p $(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step2/
-	python scripts/ERP_preproc_step2.py \
-		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step1/ \
-		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step2/
+	Rscript scripts/render_Rmd.R \
+			scripts/ERP_preproc_step2.Rmd \
+			$(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step2/
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
-
-analysis: $(strip $(DIR_RECEIPT))/ERP_process_data_step1
 
 $(strip $(DIR_RECEIPT))/ERP_process_data_step1: $(strip $(DIR_RECEIPT))/initial_setup \
 												scripts/ERP_preproc_step1.py \
@@ -449,5 +454,15 @@ define print-target-and-prereq-info
 	@echo ""
 	@echo "The prerequisites newer than the target are:"
 	echo $?
+	@echo "---------"
+endef
+
+define do-RQ1-ERP-plots
+	$(print-target-and-prereq-info)
+	mkdir -p results_in_repo/RQ1/
+	Rscript scripts/RQ1/01_RQ1_ERP_plots.R \
+			$(strip $(PROJECT_SEED))
+	date > $@
+	@echo "done with $@"
 	@echo "---------"
 endef
