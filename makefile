@@ -293,8 +293,6 @@ $(strip $(DIR_RECEIPT))/RQ2_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_
 ##
 #################################################
 
-RQ1: $(strip $(DIR_RECEIPT))/RQ1_results
-
 $(strip $(DIR_RECEIPT))/RQ1_results: $(strip $(DIR_RECEIPT))/RQ1_estimate_model \
 									 scripts/RQ1/03_RQ1_model_diagnostics.R \
 									 scripts/RQ1/04_RQ1_hypothesis_testing.R \
@@ -316,7 +314,7 @@ $(strip $(DIR_RECEIPT))/RQ1_results: $(strip $(DIR_RECEIPT))/RQ1_estimate_model 
 	@echo "done with $@"
 	@echo "---------"
 
-RQ1_in_progress: $(strip $(DIR_RECEIPT))/RQ1_estimate_model
+RQ1: $(strip $(DIR_RECEIPT))/RQ1_estimate_model
 
 $(strip $(DIR_RECEIPT))/RQ1_estimate_model: $(strip $(DIR_RECEIPT))/RQ1_ERP_plots \
 											scripts/RQ1/02_RQ1_parameter_estimation.R
@@ -342,7 +340,13 @@ $(strip $(DIR_RECEIPT))/RQ1_estimate_model: $(strip $(DIR_RECEIPT))/RQ1_ERP_plot
 
 $(strip $(DIR_RECEIPT))/RQ1_ERP_plots: $(strip $(DIR_RECEIPT))/RQ1_prep_data \
 									   scripts/RQ1/01_RQ1_ERP_plots.R
-	$(do-RQ1-ERP-plots)
+	$(print-target-and-prereq-info)
+	mkdir -p results_in_repo/RQ1/
+	Rscript scripts/RQ1/01_RQ1_ERP_plots.R \
+			$(strip $(PROJECT_SEED))
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
 	
 $(strip $(DIR_RECEIPT))/RQ1_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_step3 \
 								       scripts/RQ1/00_RQ1_data_preparation.R
@@ -457,12 +461,3 @@ define print-target-and-prereq-info
 	@echo "---------"
 endef
 
-define do-RQ1-ERP-plots
-	$(print-target-and-prereq-info)
-	mkdir -p results_in_repo/RQ1/
-	Rscript scripts/RQ1/01_RQ1_ERP_plots.R \
-			$(strip $(PROJECT_SEED))
-	date > $@
-	@echo "done with $@"
-	@echo "---------"
-endef

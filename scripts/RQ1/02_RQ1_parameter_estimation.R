@@ -38,7 +38,7 @@ load(here("data_in_repo", "processed_data", "RQ1", "RQ1_stats_all_data.RData"))
 # setup: STAN --------------------------------------------------------------------
 
 num_chains <- 4 # number of chains = number of processor cores
-num_iter   <- 100 # number of samples per chain
+num_iter   <- 4000 # number of samples per chain
 num_warmup <- num_iter/2 # number of warm-up samples per chain
 num_thin   <- 1 # thinning: extract one out of x samples per chain
 
