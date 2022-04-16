@@ -5,6 +5,8 @@ if (length(args) == 0) {
 } else {
 	project_seed       <- as.numeric(args[1])
 	path_to_output_dir <- args[2]
+	# type_of_prior = informative, weaklyinformation, noninformative
+	type_of_prior      <- args[3]
 }
 
 cat(paste("\n", "\n", "\n", 
@@ -29,7 +31,7 @@ library(here)
 library(tidyverse)
 library(brms)
 
-# set directories --------------------------------------------------------------------
+# load ERP data  --------------------------------------------------------------------
 
 load(here("data_in_repo", "processed_data", "RQ2", "ERP", "RQ2_stats_all_data.RData"))
 
@@ -37,18 +39,35 @@ load(here("data_in_repo", "processed_data", "RQ2", "ERP", "RQ2_stats_all_data.RD
 
 num_chains <- 4 # number of chains = number of processor cores
 num_iter   <- 4000 # number of samples per chain
-num_warmup <- 2000 # number of warm-up samples per chain
+num_warmup <- num_iter/2 # number of warm-up samples per chain
 num_thin   <- 1 # thinning: extract one out of x samples per chain
 
 # priors  --------------------------------------------------------------------
 
-# informative priors (based on grand average)
-priors <- c(
-  prior("normal(-8, 2)", class = "b", coef = "Intercept"), 
-  prior("normal(0, 3)", class = "b"),
-  prior("student_t(3, 0, 2)", class = "sd")
-)
+if(type_of_prior == "informative") {
+	# informative priors (based on grand average)
+	priors <- c(
+		prior("normal(-8, 2)", class = "b", coef = "Intercept"), 
+		prior("normal(0, 1)", class = "b"),
+		prior("student_t(3, 0, 2)", class = "sd")
+	)
+}
 
+if(type_of_prior == "weaklyinformative") {
+	priors <- c(
+		prior("normal(-8, 4)", class = "b", coef = "Intercept"), 
+		prior("normal(0, 4)", class = "b"),
+		prior("student_t(3, 0, 2)", class = "sd")
+	)
+}
+
+if(type_of_prior == "noninformative") {
+	priors <- c(
+		prior("normal(-8, 10)", class = "b", coef = "Intercept"), 
+		prior("normal(0, 10)", class = "b"),
+		prior("student_t(3, 0, 2)", class = "sd")
+	)
+}
 # sampling  --------------------------------------------------------------------
 
 m <-
@@ -69,7 +88,7 @@ m <-
     algorithm = "sampling",
     cores = num_chains,
     seed = project_seed,
-    file = paste0(path_to_output_dir, "RQ2.rds"),
+    file = paste0(path_to_output_dir, "RQ2_", type_of_prior, "_prior.rds"),
     file_refit = "always" # plausible options: "on_change" or "always"
   )
 

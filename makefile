@@ -255,7 +255,8 @@ $(strip $(DIR_RECEIPT))/RQ2_ERP_results: $(strip $(DIR_RECEIPT))/RQ2_estimate_mo
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
- 
+
+RQ2: $(strip $(DIR_RECEIPT))/RQ2_estimate_model 
 $(strip $(DIR_RECEIPT))/RQ2_estimate_model: $(strip $(DIR_RECEIPT))/RQ2_ERP_plots \
 											scripts/RQ2/ERP/02_RQ2_parameter_estimation.R
 	$(print-target-and-prereq-info)
@@ -263,7 +264,16 @@ $(strip $(DIR_RECEIPT))/RQ2_estimate_model: $(strip $(DIR_RECEIPT))/RQ2_ERP_plot
 	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ2/
 	Rscript scripts/RQ2/ERP/02_RQ2_parameter_estimation.R \
 			$(strip $(PROJECT_SEED)) \
-			$(strip $(DIR_local_files))/results_outside_repo/RQ2/
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ \
+			"informative"
+	Rscript scripts/RQ2/ERP/02_RQ2_parameter_estimation.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ \
+			"weaklyinformative"
+	Rscript scripts/RQ2/ERP/02_RQ2_parameter_estimation.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ \
+			"noninformative"
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
@@ -277,8 +287,6 @@ $(strip $(DIR_RECEIPT))/RQ2_ERP_plots: $(strip $(DIR_RECEIPT))/RQ2_prep_data \
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
-
-RQ2: $(strip $(DIR_RECEIPT))/RQ2_prep_data
 
 $(strip $(DIR_RECEIPT))/RQ2_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_step3 \
 								       scripts/RQ2/ERP/00_RQ2_data_preparation.R

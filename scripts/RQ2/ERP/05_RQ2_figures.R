@@ -5,6 +5,7 @@ if (length(args) == 0) {
 } else {
 	project_seed       <- as.numeric(args[1])
 	path_to_output_dir <- args[2]
+	type_of_prior      <- args[3]
 }
 
 cat(paste("\n", "\n", "\n", 

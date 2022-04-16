@@ -46,7 +46,6 @@ plot_list_RData <-
 
 # preallocate data frame with all trial-averaged data
 plot_all_data <- NULL
-# RQ1 ERP trial data for stats -----------------------------------------------------------------------
 stats_all_data <- NULL
 
 # yes, I know I shouldn't use loops in R
