@@ -5,6 +5,7 @@ if (length(args) == 0) {
 } else {
 	project_seed       <- as.numeric(args[1])
 	path_to_output_dir <- args[2]
+	type_of_prior      <- args[3]
 }
 
 cat(paste("\n", "\n", "\n", 
@@ -34,7 +35,7 @@ library(bayestestR)
 # load data --------------------------------------------------------------------
 
 # results of model fit
-N1_brms <- readRDS(paste0(path_to_output_dir, "RQ1.rds"))
+m <- readRDS(paste0(path_to_output_dir, "RQ1_", type_of_prior, "_prior.rds"))
 
 # hypothesis testing via Region of Practical Equivalence (ROPE): range of ROPEs --------------------------------------------------------
 
@@ -55,13 +56,13 @@ range_ropeHDI <- tibble(
   )
 
 # preallocate data frame with all ROPE results
-all_equivalence_test_N1_brms <- NULL
+all_equivalence_test <- NULL
 
 # yes, I know I shouldn't use loops in R
 for (i in 1:nrow(range_ropeHDI)) {
   
   res <-
-    N1_brms %>%
+    m %>%
     emmeans(~ condition_RQ1) %>% # estimated marginal means
     pairs() %>% # posterior distributions of difference
     equivalence_test(
@@ -70,7 +71,7 @@ for (i in 1:nrow(range_ropeHDI)) {
     )
   
   # extract values from results
-  equivalence_test_N1_brms <- 
+  equivalence_test <- 
     tibble(
       Parameter = res$Parameter,
       CI = res$CI,
@@ -83,16 +84,22 @@ for (i in 1:nrow(range_ropeHDI)) {
     )
   
   # merge results using all ROPEs
-  all_equivalence_test_N1_brms <- rbind(all_equivalence_test_N1_brms, equivalence_test_N1_brms) 
+  all_equivalence_test <- rbind(all_equivalence_test, equivalence_test) 
   
 } 
   
-all_equivalence_test_N1_brms
+all_equivalence_test
+
+# save as .rds
+saveRDS(
+	all_equivalence_test,
+	file = here("results_in_repo", "RQ1", paste0("equivalence_test_", type_of_prior, "_prior.rds"))
+)
 
 # Results: 95% of the posterior distribution 
 # of the N1 amplitude difference between manmade and natural scenes
 # is outside of a region of practical equivalence up until ±0.08 µV.
 # More specifically, manmade scenes elicit an N1 whose amplitude is at least 
-# 0.08 µV larger than the N1 elicited by natural scenes.
+# 0.08 µV larger than the N1 elicited by natural scenes. 
 
 # END --------------------------------------------------------------------

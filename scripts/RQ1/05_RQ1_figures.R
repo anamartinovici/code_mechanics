@@ -5,6 +5,7 @@ if (length(args) == 0) {
 } else {
 	project_seed       <- as.numeric(args[1])
 	path_to_output_dir <- args[2]
+	type_of_prior      <- args[3]
 }
 
 cat(paste("\n", "\n", "\n", 
@@ -41,13 +42,10 @@ library(viridis)
 library(tidybayes)
 library(patchwork)
 
-# load and prepare data --------------------------------------------------------------------
+# set directories --------------------------------------------------------------------
 
-# N1 data
-load(here("data_in_repo", "processed_data", "RQ1", "RQ1_stats_all_data.RData"))
-
-# results of model fit
-N1_brms <- readRDS(paste0(path_to_output_dir, "RQ1.rds"))
+# results
+results_path <- here("results_in_repo", "RQ1")
 
 # setup: plots --------------------------------------------------------------------
 
@@ -60,30 +58,38 @@ source(here("scripts", "analysis", "functions", "geom_flat_violin.R"))
 # cividis color palette for bayesplot
 color_scheme_set("viridisE")
 
-# setup: N1 --------------------------------------------------------------------
+# setup: results --------------------------------------------------------------------
 
 # largest ROPE identified during hypothesis testing
 range_ropeHDI <- c(-.08, .08)
 
+# load and prepare data --------------------------------------------------------------------
+
+# ERP data
+load(here("data_in_repo", "processed_data", "RQ1", "RQ1_stats_all_data.RData"))
+
+# results of model fit
+m <- readRDS(paste0(path_to_output_dir, "RQ1_", type_of_prior, "_prior.rds"))
+
 # data for trace plots of MCMC draws (fixed effects only)
-data_MCMC_N1_brms <-
-  N1_brms %>%
+data_MCMC_m <-
+  m %>%
   as.array() %>%
   .[, , 1:2]
 
-dimnames(data_MCMC_N1_brms)[[3]] <-
-  c("intercept_manmade",
-    "beta_natural"
+dimnames(data_MCMC_m)[[3]] <-
+  c("intercept",
+    "beta"
     )
 
 # posterior samples of the posterior predictive distribution
-posterior_predict_N1_brms <-
-  N1_brms %>%
+posterior_predict_m <-
+  m %>%
   posterior_predict(ndraws = 2000)
 
 # Figure 1. Stimulus position 5, averaged across trials (raincloud plot) --------------------------------------------------------
 
-raincloud_N1_avg_trials <-
+raincloud_ERP_avg_trials <-
   stats_all_data %>%
   group_by(ssj, condition_RQ1) %>% 
   summarize(
@@ -127,24 +133,37 @@ raincloud_N1_avg_trials <-
   # coord_flip() +
   theme_custom
 
-raincloud_N1_avg_trials
+raincloud_ERP_avg_trials
+
+# save as.png
+ggsave(
+	filename = paste0("raincloud_ERP_avg_trials_", type_of_prior, "_prior.png"),
+	plot = raincloud_ERP_avg_trials,
+	device = "png",
+	path = results_path,
+	scale = 5,
+	width = 1024,
+	height = 768,
+	units = "px",
+	dpi = 600
+)
 
 # Figure 2. Model diagnostics, fixed effects only (various plots) --------------------------------------------------------
 
 # trace plots of MCMC draws
-MCMC_N1_brms <-
-  data_MCMC_N1_brms %>%
+MCMC_m <-
+  data_MCMC_m %>%
   mcmc_trace(
     pars = character(),
     facet_args = list(nrow = 3, strip.position = "left"),
-    np = nuts_params(N1_brms)
+    np = nuts_params(m)
   ) +
   ggtitle("Trace plots") +
   theme_custom
 
 # rank histograms
-rank_N1_brms <-
-  data_MCMC_N1_brms %>%
+rank_m <-
+  data_MCMC_m %>%
   mcmc_rank_overlay(
     n_bins = 20,
     ref_line = TRUE,
@@ -154,8 +173,8 @@ rank_N1_brms <-
   theme_custom
 
 # posterior predictive checks
-PPC_N1_brms <-
-  posterior_predict_N1_brms %>%
+PPC_m <-
+  posterior_predict_m %>%
   ppc_stat_grouped(
     y = pull(stats_all_data, amplitude),
     group = pull(stats_all_data, condition_RQ1),
@@ -165,28 +184,41 @@ PPC_N1_brms <-
   theme_custom
 
 # combine plots
-plots_diagnostics_N1_brms <- 
-  (MCMC_N1_brms + rank_N1_brms) / 
-  PPC_N1_brms
+plots_diagnostics_m <- 
+  (MCMC_m + rank_m) / 
+  PPC_m
 
-plots_diagnostics_N1_brms[[1]] <-
-  plots_diagnostics_N1_brms[[1]] + plot_layout(tag_level = "new")
+plots_diagnostics_m[[1]] <-
+  plots_diagnostics_m[[1]] + plot_layout(tag_level = "new")
 
-plots_diagnostics_N1_brms <-
-  plots_diagnostics_N1_brms +
+plots_diagnostics_m <-
+  plots_diagnostics_m +
   plot_annotation(
     tag_levels = c("A", "1"),
     title = "Model Diagnostics",
     theme = theme(plot.title = element_text(size = 26, hjust = .5))
   )
 
-plots_diagnostics_N1_brms
+plots_diagnostics_m
+
+# save as.png
+ggsave(
+	filename = paste0("model_diagnostics_", type_of_prior, "_prior.png"),
+	plot = plots_diagnostics_m,
+	device = "png",
+	path = results_path,
+	scale = 8,
+	width = 1024,
+	height = 768,
+	units = "px",
+	dpi = 600
+)
 
 # Figure 3. Posterior distributions of estimated marginal means (half-eye plots) --------------------------------------------------------
 
 # posterior distributions of estimated marginal means
-halfeye_emm_N1_brms <-
-  N1_brms %>% 
+halfeye_emm_m <-
+  m %>% 
   emmeans(~ condition_RQ1) %>%
   gather_emmeans_draws(value = "amplitude") %>% 
   ggplot(
@@ -210,8 +242,8 @@ halfeye_emm_N1_brms <-
   theme_custom
 
 # pairwise comparisons of posterior distributions of estimated marginal means
-halfeye_emm_diff_N1_brms <- 
-  N1_brms %>% 
+halfeye_emm_diff_m <- 
+  m %>% 
   emmeans(~ condition_RQ1) %>%
   pairs() %>% 
   gather_emmeans_draws(value = "amplitude") %>%
@@ -237,14 +269,27 @@ halfeye_emm_diff_N1_brms <-
   theme_custom
 
 # combine plots
-halfeye_posteriors_N1_brms <- 
-  halfeye_emm_N1_brms / halfeye_emm_diff_N1_brms +
+halfeye_posteriors_m <- 
+  halfeye_emm_m / halfeye_emm_diff_m +
   plot_annotation(
     tag_levels = "A",
     title = "Posterior distributions",
     theme = theme(plot.title = element_text(size = 26, hjust = .5))
   )
 
-halfeye_posteriors_N1_brms
+halfeye_posteriors_m
 
-# END --------------------------------------------------------
+# save as.png
+ggsave(
+	filename = paste0("posterior_distributions_", type_of_prior, "_prior.png"),
+	plot = halfeye_posteriors_m,
+	device = "png",
+	path = results_path,
+	scale = 5,
+	width = 1024,
+	height = 768,
+	units = "px",
+	dpi = 600
+)
+
+# END -------------------------------------------------------- 

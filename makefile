@@ -1,8 +1,14 @@
-# if you type 'make' in the terminal, it will first restore the timestamps and then test make
-all: restore_file_timestamps test_make
+# if you type 'make' in the terminal test make
+# if the test is succesfull, then you can go ahead and start building targets as needed
+all: test_make
 
-# to build the analysis, you need to write 'make name_of_target' explicitly in the terminal
-#analysis: data_processing RQ1 RQ2 RQ3 RQ4
+# targets in this file:
+#		restore_file_timestamps
+#		RQ1 RQ2 RQ3 RQ4
+#		analysis
+# to build a target, you need to write "make name_of_target"" explicitly in the terminal
+# analysis builds RQ1, RQ2, RQ3, and RQ4. If you want to build the targets associated with
+#		a specific research question, then type "make name_of_target" in the terminal
 
 #################################################
 ##
@@ -66,8 +72,6 @@ create_receipt_directory:
 ## from here on we have the analysis
 ##
 #################################################
-
-data_processing: $(strip $(DIR_RECEIPT))/initial_setup
 
 #################################################
 ##
@@ -214,8 +218,7 @@ $(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_d
 ##
 #################################################
 
-RQ2: $(strip $(DIR_RECEIPT))/RQ2_TFR_results
-RQ2: $(strip $(DIR_RECEIPT))/RQ2_ERP_results
+# RQ2: $(strip $(DIR_RECEIPT))/RQ2_TFR_results
 
 $(strip $(DIR_RECEIPT))/RQ2_TFR_results: $(strip $(DIR_RECEIPT))/TFR_process_data_step2 \
 										 scripts/RQ2/TFR/TFR_RQ2.py
@@ -275,6 +278,8 @@ $(strip $(DIR_RECEIPT))/RQ2_ERP_plots: $(strip $(DIR_RECEIPT))/RQ2_prep_data \
 	@echo "done with $@"
 	@echo "---------"
 
+RQ2: $(strip $(DIR_RECEIPT))/RQ2_prep_data
+
 $(strip $(DIR_RECEIPT))/RQ2_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_step3 \
 								       scripts/RQ2/ERP/00_RQ2_data_preparation.R
 	$(print-target-and-prereq-info)
@@ -293,28 +298,67 @@ $(strip $(DIR_RECEIPT))/RQ2_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_
 ##
 #################################################
 
-$(strip $(DIR_RECEIPT))/RQ1_results: $(strip $(DIR_RECEIPT))/RQ1_estimate_model \
-									 scripts/RQ1/03_RQ1_model_diagnostics.R \
-									 scripts/RQ1/04_RQ1_hypothesis_testing.R \
+RQ1: $(strip $(DIR_RECEIPT))/RQ1_figures
+
+$(strip $(DIR_RECEIPT))/RQ1_figures: $(strip $(DIR_RECEIPT))/RQ1_hypothesis_tests \
 									 scripts/RQ1/05_RQ1_figures.R
 	$(print-target-and-prereq-info)
-	# first, check model diagnostics
-	Rscript scripts/RQ1/03_RQ1_model_diagnostics.R \
-			$(strip $(PROJECT_SEED)) \
-			$(strip $(DIR_local_files))/results_outside_repo/RQ1/
-	# second, check support for hypothesis
-	Rscript scripts/RQ1/04_RQ1_hypothesis_testing.R \
-			$(strip $(PROJECT_SEED)) \
-			$(strip $(DIR_local_files))/results_outside_repo/RQ1/
-	# third, prepare plots
+	# generate plots
 	Rscript scripts/RQ1/05_RQ1_figures.R \
 			$(strip $(PROJECT_SEED)) \
-			$(strip $(DIR_local_files))/results_outside_repo/RQ1/
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/ \
+			"informative"
+	Rscript scripts/RQ1/05_RQ1_figures.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/ \
+			"weaklyinformative"
+	Rscript scripts/RQ1/05_RQ1_figures.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/ \
+			"noninformative"
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
 
-RQ1: $(strip $(DIR_RECEIPT))/RQ1_estimate_model
+$(strip $(DIR_RECEIPT))/RQ1_hypothesis_tests: $(strip $(DIR_RECEIPT))/RQ1_model_diagnostics \
+											  scripts/RQ1/04_RQ1_hypothesis_testing.R
+	$(print-target-and-prereq-info)
+	# check support for hypothesis
+	Rscript scripts/RQ1/04_RQ1_hypothesis_testing.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/ \
+			"informative"
+	Rscript scripts/RQ1/04_RQ1_hypothesis_testing.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/ \
+			"weaklyinformative"
+	Rscript scripts/RQ1/04_RQ1_hypothesis_testing.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/ \
+			"noninformative"
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/RQ1_model_diagnostics: $(strip $(DIR_RECEIPT))/RQ1_estimate_model \
+											   scripts/RQ1/03_RQ1_model_diagnostics.R
+	$(print-target-and-prereq-info)
+	# model diagnostics need to be checked for all types of priors used in estimation
+	Rscript scripts/RQ1/03_RQ1_model_diagnostics.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/ \
+			"informative"
+	Rscript scripts/RQ1/03_RQ1_model_diagnostics.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/ \
+			"weaklyinformative"
+	Rscript scripts/RQ1/03_RQ1_model_diagnostics.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ1/ \
+			"noninformative"
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
 
 $(strip $(DIR_RECEIPT))/RQ1_estimate_model: $(strip $(DIR_RECEIPT))/RQ1_ERP_plots \
 											scripts/RQ1/02_RQ1_parameter_estimation.R
