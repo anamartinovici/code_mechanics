@@ -5,6 +5,7 @@ if (length(args) == 0) {
 } else {
 	project_seed       <- as.numeric(args[1])
 	path_to_output_dir <- args[2]
+	type_of_prior      <- args[3]
 }
 
 cat(paste("\n", "\n", "\n", 
@@ -34,7 +35,7 @@ library(bayestestR)
 # load data --------------------------------------------------------------------
 
 # results of model fit
-m <- readRDS(paste0(path_to_output_dir, "RQ2.rds"))
+m <- readRDS(paste0(path_to_output_dir, "RQ2_", type_of_prior, "_prior.rds"))
 
 # hypothesis testing via Region of Practical Equivalence (ROPE) --------------------------------------------------------
 
@@ -92,7 +93,7 @@ all_equivalence_test
 # save as .rds
 saveRDS(
   all_equivalence_test,
-  file = here("results_in_repo", "RQ2", "ERP", "equivalence_test.rds")
+  file = here("results_in_repo", "RQ2", "ERP", paste0("equivalence_test_", type_of_prior, "_prior.rds"))
 )
 
 # Results: 95% of the posterior distribution 

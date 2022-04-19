@@ -69,7 +69,7 @@ range_ropeHDI <- c(-.29, .29)
 load(here("data_in_repo", "processed_data", "RQ2", "ERP", "RQ2_stats_all_data.RData"))
 
 # results of model fit
-m <- readRDS(paste0(path_to_output_dir, "RQ2.rds"))
+m <- readRDS(paste0(path_to_output_dir, "RQ2_", type_of_prior, "_prior.rds"))
 
 # data for trace plots of MCMC draws (fixed effects only)
 data_MCMC_m <-
@@ -192,7 +192,7 @@ raincloud_ERP_avg_trials
 
 # save as.png
 ggsave(
-  filename = "raincloud_ERP_avg_trials.png",
+  filename = paste0("raincloud_ERP_avg_trials_", type_of_prior, "_prior.png"),
   plot = raincloud_ERP_avg_trials,
   device = "png",
   path = results_path,
@@ -258,7 +258,7 @@ plots_diagnostics_m
 
 # save as.png
 ggsave(
-  filename = "model_diagnostics.png",
+  filename = paste0("model_diagnostics_", type_of_prior, "_prior.png"),
   plot = plots_diagnostics_m,
   device = "png",
   path = results_path,
@@ -349,7 +349,7 @@ halfeye_posteriors_m
 
 # save as.png
 ggsave(
-  filename = "posterior_distributions.png",
+  filename = paste0("posterior_distributions_", type_of_prior, "_prior.png"),
   plot = halfeye_posteriors_m,
   device = "png",
   path = results_path,

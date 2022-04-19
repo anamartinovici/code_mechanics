@@ -5,6 +5,7 @@ if (length(args) == 0) {
 } else {
 	project_seed       <- as.numeric(args[1])
 	path_to_output_dir <- args[2]
+	type_of_prior      <- args[3]
 }
 
 cat(paste("\n", "\n", "\n", 
@@ -49,7 +50,7 @@ color_scheme_set("viridisE")
 load(here("data_in_repo", "processed_data", "RQ2", "ERP", "RQ2_stats_all_data.RData"))
 
 # results of model fit
-m <- readRDS(paste0(path_to_output_dir, "RQ2.rds"))
+m <- readRDS(paste0(path_to_output_dir, "RQ2_", type_of_prior, "_prior.rds"))
   
 # posterior samples of the posterior predictive distribution
 posterior_predict_m <-
@@ -95,7 +96,7 @@ ESS_Rhat_PPC_m
 # save as .rds
 saveRDS(
   ESS_Rhat_PPC_m,
-  file = here("results_in_repo", "RQ2", "ERP", "summary_posteriors.rds")
+  file = here("results_in_repo", "RQ2", "ERP", paste0("summary_posteriors_", type_of_prior, "_prior.rds"))
 )
 
 # END --------------------------------------------------------

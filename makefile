@@ -235,50 +235,91 @@ $(strip $(DIR_RECEIPT))/RQ2_TFR_results: $(strip $(DIR_RECEIPT))/TFR_process_dat
 	@echo "done with $@"
 	@echo "---------"
 
-$(strip $(DIR_RECEIPT))/RQ2_ERP_results: $(strip $(DIR_RECEIPT))/RQ2_estimate_model \
-									     scripts/RQ2/ERP/03_RQ2_model_diagnostics.R \
-									     scripts/RQ2/ERP/04_RQ2_hypothesis_testing.R \
+RQ2: $(strip $(DIR_RECEIPT))/RQ2_ERP_plots
+RQ2: $(strip $(DIR_RECEIPT))/RQ2_ERP_model_diagnostics
+RQ2: $(strip $(DIR_RECEIPT))/RQ2_ERP_hypothesis_tests
+RQ2: $(strip $(DIR_RECEIPT))/RQ2_ERP_figures
+
+$(strip $(DIR_RECEIPT))/RQ2_ERP_figures: $(strip $(DIR_RECEIPT))/RQ2_ERP_estimate_model \
 									     scripts/RQ2/ERP/05_RQ2_figures.R
 	$(print-target-and-prereq-info)
-	# first, check model diagnostics
-	Rscript scripts/RQ2/ERP/03_RQ2_model_diagnostics.R \
-			$(strip $(PROJECT_SEED)) \
-			$(strip $(DIR_local_files))/results_outside_repo/RQ2/
-	# second, check support for hypothesis
-	Rscript scripts/RQ2/ERP/04_RQ2_hypothesis_testing.R \
-			$(strip $(PROJECT_SEED)) \
-			$(strip $(DIR_local_files))/results_outside_repo/RQ2/
-	# third, prepare plots
 	Rscript scripts/RQ2/ERP/05_RQ2_figures.R \
 			$(strip $(PROJECT_SEED)) \
-			$(strip $(DIR_local_files))/results_outside_repo/RQ2/
-	date > $@
-	@echo "done with $@"
-	@echo "---------"
-
-RQ2: $(strip $(DIR_RECEIPT))/RQ2_estimate_model 
-$(strip $(DIR_RECEIPT))/RQ2_estimate_model: $(strip $(DIR_RECEIPT))/RQ2_ERP_plots \
-											scripts/RQ2/ERP/02_RQ2_parameter_estimation.R
-	$(print-target-and-prereq-info)
-	# estimation results are too large for GitHub, so they are saved outside the repository
-	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ2/
-	Rscript scripts/RQ2/ERP/02_RQ2_parameter_estimation.R \
-			$(strip $(PROJECT_SEED)) \
-			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ERP/ \
 			"informative"
-	Rscript scripts/RQ2/ERP/02_RQ2_parameter_estimation.R \
+	Rscript scripts/RQ2/ERP/05_RQ2_figures.R \
 			$(strip $(PROJECT_SEED)) \
-			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ERP/ \
 			"weaklyinformative"
-	Rscript scripts/RQ2/ERP/02_RQ2_parameter_estimation.R \
+	Rscript scripts/RQ2/ERP/05_RQ2_figures.R \
 			$(strip $(PROJECT_SEED)) \
-			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ERP/ \
 			"noninformative"
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
 
-$(strip $(DIR_RECEIPT))/RQ2_ERP_plots: $(strip $(DIR_RECEIPT))/RQ2_prep_data \
+$(strip $(DIR_RECEIPT))/RQ2_ERP_hypothesis_tests: $(strip $(DIR_RECEIPT))/RQ2_ERP_estimate_model \
+									              scripts/RQ2/ERP/04_RQ2_hypothesis_testing.R
+	$(print-target-and-prereq-info)
+	Rscript scripts/RQ2/ERP/04_RQ2_hypothesis_testing.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ERP/ \
+			"informative"
+	Rscript scripts/RQ2/ERP/04_RQ2_hypothesis_testing.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ERP/ \
+			"weaklyinformative"
+	Rscript scripts/RQ2/ERP/04_RQ2_hypothesis_testing.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ERP/ \
+			"noninformative"
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/RQ2_ERP_model_diagnostics: $(strip $(DIR_RECEIPT))/RQ2_ERP_estimate_model \
+											       scripts/RQ2/ERP/03_RQ2_model_diagnostics.R
+	$(print-target-and-prereq-info)
+	# model diagnostics need to be checked for all types of priors used in estimation
+	Rscript scripts/RQ2/ERP/03_RQ2_model_diagnostics.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ERP/ \
+			"informative"
+	Rscript scripts/RQ2/ERP/03_RQ2_model_diagnostics.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ERP/ \
+			"weaklyinformative"
+	Rscript scripts/RQ2/ERP/03_RQ2_model_diagnostics.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ERP/ \
+			"noninformative"
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/RQ2_ERP_estimate_model: $(strip $(DIR_RECEIPT))/RQ2_ERP_prep_data \
+											    scripts/RQ2/ERP/02_RQ2_parameter_estimation.R
+	$(print-target-and-prereq-info)
+	# estimation results are too large for GitHub, so they are saved outside the repository
+	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ2/ERP/
+	Rscript scripts/RQ2/ERP/02_RQ2_parameter_estimation.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ERP/ \
+			"informative"
+	Rscript scripts/RQ2/ERP/02_RQ2_parameter_estimation.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ERP/ \
+			"weaklyinformative"
+	Rscript scripts/RQ2/ERP/02_RQ2_parameter_estimation.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/ERP/ \
+			"noninformative"
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/RQ2_ERP_plots: $(strip $(DIR_RECEIPT))/RQ2_ERP_prep_data \
 									   scripts/RQ2/ERP/01_RQ2_ERP_plots.R
 	$(print-target-and-prereq-info)
 	mkdir -p results_in_repo/RQ2/ERP/
@@ -288,8 +329,8 @@ $(strip $(DIR_RECEIPT))/RQ2_ERP_plots: $(strip $(DIR_RECEIPT))/RQ2_prep_data \
 	@echo "done with $@"
 	@echo "---------"
 
-$(strip $(DIR_RECEIPT))/RQ2_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_step3 \
-								       scripts/RQ2/ERP/00_RQ2_data_preparation.R
+$(strip $(DIR_RECEIPT))/RQ2_ERP_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_step3 \
+								           scripts/RQ2/ERP/00_RQ2_data_preparation.R
 	$(print-target-and-prereq-info)
 	mkdir -p data_in_repo/processed_data/RQ2/ERP/
 	Rscript scripts/RQ2/ERP/00_RQ2_data_preparation.R \
@@ -306,9 +347,12 @@ $(strip $(DIR_RECEIPT))/RQ2_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_
 ##
 #################################################
 
+RQ1: $(strip $(DIR_RECEIPT))/RQ1_plots
+RQ1: $(strip $(DIR_RECEIPT))/RQ1_model_diagnostics
+RQ1: $(strip $(DIR_RECEIPT))/RQ1_hypothesis_tests
 RQ1: $(strip $(DIR_RECEIPT))/RQ1_figures
 
-$(strip $(DIR_RECEIPT))/RQ1_figures: $(strip $(DIR_RECEIPT))/RQ1_hypothesis_tests \
+$(strip $(DIR_RECEIPT))/RQ1_figures: $(strip $(DIR_RECEIPT))/RQ1_estimate_model \
 									 scripts/RQ1/05_RQ1_figures.R
 	$(print-target-and-prereq-info)
 	# generate plots
@@ -328,7 +372,7 @@ $(strip $(DIR_RECEIPT))/RQ1_figures: $(strip $(DIR_RECEIPT))/RQ1_hypothesis_test
 	@echo "done with $@"
 	@echo "---------"
 
-$(strip $(DIR_RECEIPT))/RQ1_hypothesis_tests: $(strip $(DIR_RECEIPT))/RQ1_model_diagnostics \
+$(strip $(DIR_RECEIPT))/RQ1_hypothesis_tests: $(strip $(DIR_RECEIPT))/RQ1_estimate_model \
 											  scripts/RQ1/04_RQ1_hypothesis_testing.R
 	$(print-target-and-prereq-info)
 	# check support for hypothesis
@@ -368,7 +412,7 @@ $(strip $(DIR_RECEIPT))/RQ1_model_diagnostics: $(strip $(DIR_RECEIPT))/RQ1_estim
 	@echo "done with $@"
 	@echo "---------"
 
-$(strip $(DIR_RECEIPT))/RQ1_estimate_model: $(strip $(DIR_RECEIPT))/RQ1_ERP_plots \
+$(strip $(DIR_RECEIPT))/RQ1_estimate_model: $(strip $(DIR_RECEIPT))/RQ1_prep_data \
 											scripts/RQ1/02_RQ1_parameter_estimation.R
 	$(print-target-and-prereq-info)
 	# estimation results are too large for GitHub, so they are saved outside the repository
@@ -390,8 +434,8 @@ $(strip $(DIR_RECEIPT))/RQ1_estimate_model: $(strip $(DIR_RECEIPT))/RQ1_ERP_plot
 	@echo "done with $@"
 	@echo "---------"
 
-$(strip $(DIR_RECEIPT))/RQ1_ERP_plots: $(strip $(DIR_RECEIPT))/RQ1_prep_data \
-									   scripts/RQ1/01_RQ1_ERP_plots.R
+$(strip $(DIR_RECEIPT))/RQ1_plots: $(strip $(DIR_RECEIPT))/RQ1_prep_data \
+								   scripts/RQ1/01_RQ1_ERP_plots.R
 	$(print-target-and-prereq-info)
 	mkdir -p results_in_repo/RQ1/
 	Rscript scripts/RQ1/01_RQ1_ERP_plots.R \
