@@ -53,6 +53,11 @@ ifeq "$(strip $(user_name))" "STAFF+67003ama"
 	DIR_local_files = D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics
 endif
 
+# this is Antonio's PC
+ifeq "$(strip $(user_name))" "aschetti"
+	DIR_local_files = /home/aschetti/Documents/Projects/code_mechanics_DROPBOX
+endif
+
 restore_file_timestamps:
 	@echo "restoring commit timestamps such that Make does not build based on git clone time"
 	bash scripts/restore_file_timestamps.sh
@@ -234,7 +239,7 @@ $(strip $(DIR_RECEIPT))/RQ2_TFR_results: $(strip $(DIR_RECEIPT))/TFR_process_dat
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
-
+RQ2_test: $(strip $(DIR_RECEIPT))/RQ2_ERP_plots
 RQ2: $(strip $(DIR_RECEIPT))/RQ2_ERP_plots
 RQ2: $(strip $(DIR_RECEIPT))/RQ2_ERP_model_diagnostics
 RQ2: $(strip $(DIR_RECEIPT))/RQ2_ERP_hypothesis_tests
