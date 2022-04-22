@@ -461,16 +461,29 @@ $(strip $(DIR_RECEIPT))/RQ1_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_
 ##
 #################################################
 
-TFR: $(strip $(DIR_RECEIPT))/TFR_process_data_step2
 
-$(strip $(DIR_RECEIPT))/TFR_process_data_step2: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
-										        scripts/TFR_preproc_step2.py
+TFR_OLD: $(strip $(DIR_RECEIPT))/OLDTFR_process_data_step2
+$(strip $(DIR_RECEIPT))/OLDTFR_process_data_step2: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
+										        scripts/no_functionTFR_preproc_step2.py
 	$(print-target-and-prereq-info)
 	mkdir -p $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step2/
-	python scripts/TFR_preproc_step2.py \
+	python scripts/no_functionTFR_preproc_step2.py \
 		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
 		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
 		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step2/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+TFR: $(strip $(DIR_RECEIPT))/TFR_process_data_step2
+$(strip $(DIR_RECEIPT))/TFR_process_data_step2: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
+										        scripts/TFR_preproc_step2.py \
+										        scripts/TFR_preproc_step2.Rmd
+	$(print-target-and-prereq-info)
+	mkdir -p $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step2/
+	Rscript scripts/render_Rmd.R \
+			scripts/TFR_preproc_step2.Rmd \
+			$(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step2/
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
