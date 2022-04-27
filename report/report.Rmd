@@ -1,40 +1,72 @@
 ---
-title             : "The title"
-shorttitle        : "Title"
-
-author: 
-  - name          : "First Author"
+title             : "ADD TITLE HERE"
+shorttitle        : "EEG Many Pipelines - Code Mechanics"
+author:
+  - name          : "Sebastian Speer"
     affiliation   : "1"
-    corresponding : yes    # Define only one corresponding author
-    address       : "Postal address"
-    email         : "my@email.com"
-    role:         # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
+    role: # CRediT contributorship roles (https://casrai.org/credit/), delete where appropriate
       - "Conceptualization"
-      - "Writing - Original Draft Preparation"
-      - "Writing - Review & Editing"
-  - name          : "Second Author"
-    affiliation   : "1,2"
-    role:
-      - "Writing - Review & Editing"
+      - "Data Curation"
+      - "Formal Analysis"
+      - "Funding Acquisition"
+      - "Investigation"
+      - "Methodology"
+      - "Project Administration"
+      - "Resources"
+      - "Software"
       - "Supervision"
-  - name          : "Third Author"
-    affiliation   : "1,2"
-    role:
-      - "Writing - Review & Editing"
+      - "Validation"
+      - "Visualization"
+      - "Writing – original draft"
+      - "Writing – review & editing"
+  - name          : "Antonio Schettino"
+    affiliation   : "2,3"
+    role: # CRediT contributorship roles (https://casrai.org/credit/), delete where appropriate
+      - "Conceptualization"
+      - "Data Curation"
+      - "Formal Analysis"
+      - "Funding Acquisition"
+      - "Investigation"
+      - "Methodology"
+      - "Project Administration"
+      - "Resources"
+      - "Software"
       - "Supervision"
-
+      - "Validation"
+      - "Visualization"
+      - "Writing – original draft"
+      - "Writing – review & editing"
+  - name          : "Ana Martinovici"
+    affiliation   : "2"
+    corresponding : yes # only one corresponding author
+    address       : "Burgemeester Oudlaan 50, 3062 PA Rotterdam, Netherlands"
+    email         : "martinovici@rsm.nl"
+    role: # CRediT contributorship roles (https://casrai.org/credit/), delete where appropriate
+      - "Conceptualization"
+      - "Data Curation"
+      - "Formal Analysis"
+      - "Funding Acquisition"
+      - "Investigation"
+      - "Methodology"
+      - "Project Administration"
+      - "Resources"
+      - "Software"
+      - "Supervision"
+      - "Validation"
+      - "Visualization"
+      - "Writing – original draft"
+      - "Writing – review & editing"
 affiliation:
   - id            : "1"
-    institution   : "Wilhelm-Wundt-University"
+    institution   : "ADD SEBASTIAN'S AFFILIATION"
   - id            : "2"
-    institution   : "Konstanz Business School"
-
+    institution   : "Erasmus University Rotterdam"    
+  - id            : "3"
+    institution   : "Institute for Globally Distributed Open Research and Education (IGDORE)"
 authornote: |
-  Add complete departmental affiliations for each author here. Each new line herein must be indented, like this line.
-
-  Enter author note here.
-
 abstract: |
+  <!-- https://tinyurl.com/ybremelq -->
+  
   One or two sentences providing a **basic introduction** to the field,  comprehensible to a scientist in any discipline.
   
   Two to three sentences of **more detailed background**, comprehensible  to scientists in related disciplines.
@@ -48,40 +80,47 @@ abstract: |
   One or two sentences to put the results into a more **general context**.
   
   Two or three sentences to provide a **broader perspective**, readily comprehensible to a scientist in any discipline.
-  
-  <!-- https://tinyurl.com/ybremelq -->
-  
-keywords          : "keywords"
-wordcount         : "X"
 
-bibliography      : "r-references.bib"
-
-floatsintext      : no
-linenumbers       : yes
-draft             : no
-mask              : no
-
-figurelist        : no
-tablelist         : no
-footnotelist      : no
-
-classoption       : "man"
-output            : papaja::apa6_pdf
+keywords          : ["EEG Many Pipelines", "scene categorization", "vision", "EEG", "ERP", "time-frequency analysis", "Bayesian multilevel linear regression", "TFCE"]
+wordcount         : "X" # to be added when the report is completed 
+bibliography      : ["references.bib", "r-references.bib"] # separate reference file for R/RStudio/packages
+floatsintext      : yes # place figures and tables in the text rather than at the end (default)?
+linenumbers       : yes # add line numbers in the margins?
+draft             : no # add “DRAFT” watermark to every page?
+mask              : no # omit identifying information from the title page?
+figurelist        : no # list of figure captions after the reference section?
+tablelist         : no # list of table captions after the reference section?
+footnotelist      : no # list of footnotes after the reference section?
+numbersections    : yes # are section headers numbered? 
+classoption       : "man" # option "doc" produces a non-APA-formatted document (single-spaced, single-column)
+output: 
+  papaja::apa6_pdf:
+    keep_tex: FALSE # delete the LaTeX source file after the PDF has been rendered
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r install-packages, include = FALSE, eval = FALSE}
 
-devtools::install_github("crsh/papaja")
-
+devtools::install_github("crsh/papaja") # to render document in APA format
+devtools::install_github("crsh/citr") # to insert references and bibliography from Zotero group library
 
 ```
 
+```{r install-latex, include = FALSE, eval = FALSE}
 
+# if LaTeX is not installed:
+install.packages("tinytex")
+library("tinytex")
+tinytex::install_tinytex()
+
+```
 
 ```{r setup, include = FALSE}
 
 # load packages
 library("papaja")
+library("citr")
 
 # load bibliography file
 r_refs("r-references.bib")
@@ -89,51 +128,65 @@ r_refs("r-references.bib")
 ```
 
 ```{r analysis-preferences}
-# Seed for random number generation
-set.seed(42)
+
+# set seed for random number generation
+seed_project <- 999
+set.seed(seed_project)
+
 knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
+
+```
+
+```{r authorship-order, include = FALSE, eval = FALSE}
+
+# procedure used to determine authorship order
+authors <- c("Ana Martinovici", "Antonio Schettino", "Sebastian Speer") # initial order is alphabetical
+authorship_order <- sample(authors)
+
+authorship_order
+
 ```
 
 
+# Introduction
+
+ADD INTRODUCTION HERE
 
 # Methods
 
 ## Preprocessing
 
-All preprocessing was done using MNE-Python software 1. EEG data were filtered with a low cutoff filter of 1 Hz to remove slow drifts, a high cutoff filter at 40 Hz to attenuate high frequency power. Subsequently, bad and noisy channels were detected using several different approaches as implemented in the PREP pipeline 2. First, by means of correlation, we checked how well a given channel is correlated with all other channels (categorized as bad at r , 0.4); second, we checked by using the robust z-score deviation aggregates per channel (categorized as bad at z . 5); third, by using the robust z-score estimates of high-frequency noise per channel (categorized as bad at z . 5); and finally, we checked by using the random sample consensus (RANSAC) channel correlations, which is the correlation for each channel with itself across the original data versus the RANSAC predicted data (categorized as bad at r , 0.75) as implemented in the PREP pipeline 2. After detection, these channels were removed from the data and subsequently interpolated (i.e., estimated from surrounding channels). Interpolation was performed using the spherical spline method 3 as implemented in MNE-Python, which projects the sensor locations onto a unit sphere and interpolates the signal at the channels identified as bad on the signals for the good channels. Afterwards, the EEG data were then rereferenced to the average signal across channels. Next, ocular artifacts were removed by performing an independent component analysis on the data and then correlating the resulting components with the EOG channels to see which of the components represented the ocular artifacts. The component that correlated the highest with the EOG channels was then removed from the EEG data.
+All preprocessing was done using MNE-Python software [@gramfortMEGEEGData2013]. EEG data were filtered with a low cutoff filter of 1 Hz to remove slow drifts, a high cutoff filter at 40 Hz to attenuate high frequency power. Subsequently, bad and noisy channels were detected using several different approaches as implemented in the PREP pipeline [@bigdely-shamloPREPPipelineStandardized2015]. First, by means of correlation, we checked how well a given channel is correlated with all other channels (categorized as bad at _r_ , 0.4); second, we checked by using the robust _z_-score deviation aggregates per channel (categorized as bad at _z_ . 5); third, by using the robust _z_-score estimates of high-frequency noise per channel (categorized as bad at _z_ . 5); and finally, we checked by using the random sample consensus (RANSAC) channel correlations, which is the correlation for each channel with itself across the original data versus the RANSAC predicted data (categorized as bad at _r_ , 0.75) as implemented in the PREP pipeline [@bigdely-shamloPREPPipelineStandardized2015]. After detection, these channels were removed from the data and subsequently interpolated (i.e., estimated from surrounding channels). Interpolation was performed using the spherical spline method [@perrinSphericalSplinesScalp1989] as implemented in MNE-Python, which projects the sensor locations onto a unit sphere and interpolates the signal at the channels identified as bad on the signals for the good channels. Afterwards, the EEG data were re-referenced to the average signal across channels. Next, ocular artifacts were removed by performing an independent component analysis on the data and then correlating the resulting components with the EOG channels to see which of the components represented the ocular artifacts. The component that correlated the highest with the EOG channels was then removed from the EEG data.
 
 ## Epoching
 
-The EEG data was then subsampled by a factor of four (i.e., 128 Hz; for more info, see https://mne.tools/stable/overview/faq.html#resampling-and-decimating) segmented into 800 ms epochs, with 300ms before stimulus onset (onset of the scene) until 500 ms after stimulus onset. The epochs were baseline corrected using the 300ms preceding the stimulus onset. The resulting epochs were then subjected to Autoreject, an automated artifact detection algorithm based on machine-learning classifiers, and cross-validation to estimate the optimal peak-to-peak threshold 4. This algorithm was implemented to remove artifacts not identified by previous preprocessing steps, and depending on the number of bad sensors for a given trial, either repairs the trial based on interpolation or excludes it from further analysis. The preprocessed data were then submitted to a morlet wavelet analysis to transform the data into the time-frequency domain with 18 log-scaled frequency bins ranging from 4 to 40 Hz to have higher sensitivity in lower frequency ranges such as the theta band. To optimize both spectral and temporal resolution, the number of cycles to include in the sliding time window were defined by dividing each individual frequency by two. After transforming the data to the time-frequency domain, the data were decimated by a factor of two (sampling every second time point) to increase computational efficiency.
-
-## Software
-We used `r cite_r("r-references.bib")` for all our analyses.
+The EEG data was then subsampled by a factor of four (i.e., 128 Hz; for more info, see https://mne.tools/stable/overview/faq.html#resampling-and-decimating) segmented into 800 ms epochs, with 300 ms before stimulus onset (onset of the scene) until 500 ms after stimulus onset. The epochs were baseline corrected using the 300 ms preceding the stimulus onset. The resulting epochs were then subjected to _Autoreject_, an automated artifact detection algorithm based on machine-learning classifiers, and cross-validation to estimate the optimal peak-to-peak threshold [@jasAutorejectAutomatedArtifact2017]. This algorithm was implemented to remove artifacts not identified by previous preprocessing steps, and depending on the number of bad sensors for a given trial, either repairs the trial based on interpolation or excludes it from further analysis. The preprocessed data were then submitted to a Morlet wavelet analysis to transform the data into the time-frequency domain with 18 log-scaled frequency bins ranging from 4 to 40 Hz to have higher sensitivity in lower frequency ranges such as the theta band. To optimize both spectral and temporal resolution, the number of cycles to include in the sliding time window were defined by dividing each individual frequency by two. After transforming the data to the time-frequency domain, the data were decimated by a factor of two (sampling every second time point) to increase computational efficiency.
 
 # Analysis
 
 ## RQ2 
 
-To test whether there are effects of image novelty (RQ2; i.e., between images shown for the first time/new vs. repeated/old images) we conducted a multilevel analysis contrasting the EEG data from trials with old images against trials with new images. To test for differences in theta power at fronto-central channels we focused on the frequency range from 4-8 Hz and all frontocentral channels (FC1, FCz, FC2). At the first level (i.e., the participant level), we computed the averaged time-frequency maps for each of the two conditions. We then tested the resulting averaged maps at the second level for significant group effects, using a paired sample t test. We used cluster-based permutation testing as a stringent control for multiple comparisons5. Specifically, for every sample across the three channels, we quantified the experimental effect by a t value. Selection of samples for inclusion in a cluster was implemented using threshold-free cluster enhancement (TFCE) 6. TFCE eliminates the free parameter initial threshold value that determines which points are included in clustering by approximating a continuous integration across possible threshold values with a standard Riemann sum.
-We subsequently clustered selected samples in connected sets based on temporal and spectral adjacency, and we computed cluster-level statistics by taking the sum of the t values within every cluster. Subsequently, we performed permutation testing using the Monte Carlo method to compute the posterior significance probability of our observed effect 5. This analysis results in a cluster of adjacent data points across time, frequencies, and channels, which significantly differs in activity between old and new images. To test for differences in alpha power at posterior channels we focused on the frequency range from 8-13 Hz and all posterior channels (P7, P5, P3, P1, P2, P4, P6). 
+To test whether there are effects of image novelty (RQ2; i.e., between images shown for the first time/new vs. repeated/old images) we conducted a multilevel analysis contrasting the EEG data from trials with old images against trials with new images. To test for differences in theta power at fronto-central channels we focused on the frequency range from 4-8 Hz and all frontocentral channels (FC1, FCz, FC2). At the first level (i.e., the participant level), we computed the averaged time-frequency maps for each of the two conditions. We then tested the resulting averaged maps at the second level for significant group effects, using a paired-sample _t_-test. We used cluster-based permutation testing as a stringent control for multiple comparisons [@marisNonparametricStatisticalTesting2007]. Specifically, for every sample across the three channels, we quantified the experimental effect by a _t_ value. Selection of samples for inclusion in a cluster was implemented using threshold-free cluster enhancement (TFCE) [@smithThresholdfreeClusterEnhancement2009]. TFCE eliminates the free parameter initial threshold value that determines which points are included in clustering by approximating a continuous integration across possible threshold values with a standard Riemann sum.
+We subsequently clustered selected samples in connected sets based on temporal and spectral adjacency, and we computed cluster-level statistics by taking the sum of the _t_ values within every cluster. Subsequently, we performed permutation testing using the Monte Carlo method to compute the posterior significance probability of our observed effect[@marisNonparametricStatisticalTesting2007]. This analysis results in a cluster of adjacent data points across time, frequencies, and channels, which significantly differs in activity between old and new images. To test for differences in alpha power at posterior channels we focused on the frequency range from 8-13 Hz and all posterior channels (P7, P5, P3, P1, P2, P4, P6). 
 
 ## RQ3
 
-The same analysis approach as described for RQ2 was implemented for RQ3. Specifically, to test whether there are effects of successful recognition of old images on spectral power, at any frequencies, at any channel, at any time, we contraste time-frequency decomposed EEG data from trials containing old images that were correctly recognized as old with old images incorrectly recognized as new. Here we included all frequencies, timepoints and channels in the analysis. The same thresholding procedure and permutation testing approach as above was used. 
+The same analysis approach as described for RQ2 was implemented for RQ3. Specifically, to test whether there are effects of successful recognition of old images on spectral power, at any frequencies, at any channel, at any time, we contrasted time-frequency decomposed EEG data from trials containing old images that were correctly recognized as old with old images incorrectly recognized as new. Here we included all frequencies, timepoints, and channels in the analysis. The same thresholding procedure and permutation testing approach as above was used. 
 
 ## RQ4
 
-To test whether there are effects of subsequent memory we conducted exactly the same analysis as described in RQ3 with the only difference that here we contrasted trial containing images that will be successfully remembered vs. forgotten on a subsequent repetition.
+To test whether there are effects of subsequent memory, we conducted exactly the same analysis as described in RQ3, with the only difference that here we contrasted trial containing images that will be successfully remembered vs. forgotten on a subsequent repetition.
 
 # Results
 
-No significant clusters were identified for any of the research questions (at 𝝰 = 0.05).
+No significant clusters were identified for any of the research questions (at $\alpha$ = 0.05).
+
+## Software
+We used `r cite_r("r-references.bib")` for all our analyses.
 
 # Discussion
 
-
-
-
-
+ADD DISCUSSION HERE
 
 \newpage
 
