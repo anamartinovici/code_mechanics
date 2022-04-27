@@ -12,7 +12,12 @@ author:
       - "Conceptualization"
       - "Writing - Original Draft Preparation"
       - "Writing - Review & Editing"
-  - name          : "Ernst-August Doelle"
+  - name          : "Second Author"
+    affiliation   : "1,2"
+    role:
+      - "Writing - Review & Editing"
+      - "Supervision"
+  - name          : "Third Author"
     affiliation   : "1,2"
     role:
       - "Writing - Review & Editing"
@@ -64,7 +69,7 @@ classoption       : "man"
 output            : papaja::apa6_pdf
 ---
 
-```{r install_packages, include = FALSE, eval = FALSE}
+```{r install-packages, include = FALSE, eval = FALSE}
 
 devtools::install_github("crsh/papaja")
 
@@ -92,21 +97,42 @@ knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
 
 
 # Methods
-We report how we determined our sample size, all data exclusions (if any), all manipulations, and all measures in the study. <!-- 21-word solution (Simmons, Nelson & Simonsohn, 2012; retrieved from http://ssrn.com/abstract=2160588) -->
 
-## Participants
+## Preprocessing
 
-## Material
+All preprocessing was done using MNE-Python software 1. EEG data were filtered with a low cutoff filter of 1 Hz to remove slow drifts, a high cutoff filter at 40 Hz to attenuate high frequency power. Subsequently, bad and noisy channels were detected using several different approaches as implemented in the PREP pipeline 2. First, by means of correlation, we checked how well a given channel is correlated with all other channels (categorized as bad at r , 0.4); second, we checked by using the robust z-score deviation aggregates per channel (categorized as bad at z . 5); third, by using the robust z-score estimates of high-frequency noise per channel (categorized as bad at z . 5); and finally, we checked by using the random sample consensus (RANSAC) channel correlations, which is the correlation for each channel with itself across the original data versus the RANSAC predicted data (categorized as bad at r , 0.75) as implemented in the PREP pipeline 2. After detection, these channels were removed from the data and subsequently interpolated (i.e., estimated from surrounding channels). Interpolation was performed using the spherical spline method 3 as implemented in MNE-Python, which projects the sensor locations onto a unit sphere and interpolates the signal at the channels identified as bad on the signals for the good channels. Afterwards, the EEG data were then rereferenced to the average signal across channels. Next, ocular artifacts were removed by performing an independent component analysis on the data and then correlating the resulting components with the EOG channels to see which of the components represented the ocular artifacts. The component that correlated the highest with the EOG channels was then removed from the EEG data.
 
-## Procedure
+## Epoching
 
-## Data analysis
+The EEG data was then subsampled by a factor of four (i.e., 128 Hz; for more info, see https://mne.tools/stable/overview/faq.html#resampling-and-decimating) segmented into 800 ms epochs, with 300ms before stimulus onset (onset of the scene) until 500 ms after stimulus onset. The epochs were baseline corrected using the 300ms preceding the stimulus onset. The resulting epochs were then subjected to Autoreject, an automated artifact detection algorithm based on machine-learning classifiers, and cross-validation to estimate the optimal peak-to-peak threshold 4. This algorithm was implemented to remove artifacts not identified by previous preprocessing steps, and depending on the number of bad sensors for a given trial, either repairs the trial based on interpolation or excludes it from further analysis. The preprocessed data were then submitted to a morlet wavelet analysis to transform the data into the time-frequency domain with 18 log-scaled frequency bins ranging from 4 to 40 Hz to have higher sensitivity in lower frequency ranges such as the theta band. To optimize both spectral and temporal resolution, the number of cycles to include in the sliding time window were defined by dividing each individual frequency by two. After transforming the data to the time-frequency domain, the data were decimated by a factor of two (sampling every second time point) to increase computational efficiency.
+
+## Software
 We used `r cite_r("r-references.bib")` for all our analyses.
 
+# Analysis
+
+## RQ2 
+
+To test whether there are effects of image novelty (RQ2; i.e., between images shown for the first time/new vs. repeated/old images) we conducted a multilevel analysis contrasting the EEG data from trials with old images against trials with new images. To test for differences in theta power at fronto-central channels we focused on the frequency range from 4-8 Hz and all frontocentral channels (FC1, FCz, FC2). At the first level (i.e., the participant level), we computed the averaged time-frequency maps for each of the two conditions. We then tested the resulting averaged maps at the second level for significant group effects, using a paired sample t test. We used cluster-based permutation testing as a stringent control for multiple comparisons5. Specifically, for every sample across the three channels, we quantified the experimental effect by a t value. Selection of samples for inclusion in a cluster was implemented using threshold-free cluster enhancement (TFCE) 6. TFCE eliminates the free parameter initial threshold value that determines which points are included in clustering by approximating a continuous integration across possible threshold values with a standard Riemann sum.
+We subsequently clustered selected samples in connected sets based on temporal and spectral adjacency, and we computed cluster-level statistics by taking the sum of the t values within every cluster. Subsequently, we performed permutation testing using the Monte Carlo method to compute the posterior significance probability of our observed effect 5. This analysis results in a cluster of adjacent data points across time, frequencies, and channels, which significantly differs in activity between old and new images. To test for differences in alpha power at posterior channels we focused on the frequency range from 8-13 Hz and all posterior channels (P7, P5, P3, P1, P2, P4, P6). 
+
+## RQ3
+
+The same analysis approach as described for RQ2 was implemented for RQ3. Specifically, to test whether there are effects of successful recognition of old images on spectral power, at any frequencies, at any channel, at any time, we contraste time-frequency decomposed EEG data from trials containing old images that were correctly recognized as old with old images incorrectly recognized as new. Here we included all frequencies, timepoints and channels in the analysis. The same thresholding procedure and permutation testing approach as above was used. 
+
+## RQ4
+
+To test whether there are effects of subsequent memory we conducted exactly the same analysis as described in RQ3 with the only difference that here we contrasted trial containing images that will be successfully remembered vs. forgotten on a subsequent repetition.
 
 # Results
 
+No significant clusters were identified for any of the research questions (at 𝝰 = 0.05).
+
 # Discussion
+
+
+
+
 
 
 \newpage
