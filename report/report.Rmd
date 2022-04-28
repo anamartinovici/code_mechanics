@@ -84,7 +84,7 @@ abstract: |
 
 keywords          : ["EEG Many Pipelines", "scene categorization", "vision", "EEG", "ERP", "time-frequency analysis", "Bayesian multilevel linear regression", "TFCE"]
 wordcount         : "X" # to be added when the report is completed 
-bibliography      : ["references.bib", "r-references.bib"] # separate reference file for R/RStudio/packages
+bibliography      : ["references.bib"] # "r-references.bib": separate reference file for R/RStudio/packages, but does not correctly visualize some references (e.g., RStudio, brms)
 floatsintext      : yes # place figures and tables in the text rather than at the end (default)?
 linenumbers       : no # add line numbers in the margins?
 draft             : no # add “DRAFT” watermark to every page?
@@ -125,18 +125,16 @@ library("here")
 library("papaja")
 library("citr")
 
-# load bibliography file
-r_refs("r-references.bib")
+# # load bibliography file of R packages
+# # commented out because it does not correctly visualize 
+# # some references (e.g., RStudio, brms)
+# r_refs("r-references.bib")
 
 # knitr global chunk options
 knitr::opts_chunk$set(
 	# cache.extra = knitr::rand_seed # found in papaja template, perhaps not necessary?
 	out.width = '90%' # plot size in the output document
 	)
- 
-```
-
-```{r analysis-preferences}
 
 # set seed for random number generation
 seed_project <- 999
@@ -162,7 +160,7 @@ ADD INTRODUCTION HERE
 
 ## Preprocessing
 
-All preprocessing was done using MNE-Python software [@gramfortMEGEEGData2013]. EEG data were filtered with a low cutoff filter of 1 Hz to remove slow drifts, a high cutoff filter at 40 Hz to attenuate high frequency power. Subsequently, bad and noisy channels were detected using several different approaches as implemented in the PREP pipeline [@bigdely-shamloPREPPipelineStandardized2015]. First, by means of correlation, we checked how well a given channel is correlated with all other channels (categorized as bad at _r_ , 0.4); second, we checked by using the robust _z_-score deviation aggregates per channel (categorized as bad at _z_ . 5); third, by using the robust _z_-score estimates of high-frequency noise per channel (categorized as bad at _z_ . 5); and finally, we checked by using the random sample consensus (RANSAC) channel correlations, which is the correlation for each channel with itself across the original data versus the RANSAC predicted data (categorized as bad at _r_ , 0.75) as implemented in the PREP pipeline [@bigdely-shamloPREPPipelineStandardized2015]. After detection, these channels were removed from the data and subsequently interpolated (i.e., estimated from surrounding channels). Interpolation was performed using the spherical spline method [@perrinSphericalSplinesScalp1989] as implemented in MNE-Python, which projects the sensor locations onto a unit sphere and interpolates the signal at the channels identified as bad on the signals for the good channels. Afterwards, the EEG data were re-referenced to the average signal across channels. Next, ocular artifacts were removed by performing an independent component analysis on the data and then correlating the resulting components with the EOG channels to see which of the components represented the ocular artifacts. The component that correlated the highest with the EOG channels was then removed from the EEG data.
+EEG data were filtered with a low cutoff filter of 1 Hz to remove slow drifts, a high cutoff filter at 40 Hz to attenuate high frequency power. Subsequently, bad and noisy channels were detected using several different approaches as implemented in the PREP pipeline [@bigdely-shamloPREPPipelineStandardized2015]. First, by means of correlation, we checked how well a given channel is correlated with all other channels (categorized as bad at _r_ , 0.4); second, we checked by using the robust _z_-score deviation aggregates per channel (categorized as bad at _z_ . 5); third, by using the robust _z_-score estimates of high-frequency noise per channel (categorized as bad at _z_ . 5); and finally, we checked by using the random sample consensus (RANSAC) channel correlations, which is the correlation for each channel with itself across the original data versus the RANSAC predicted data (categorized as bad at _r_ , 0.75) as implemented in the PREP pipeline [@bigdely-shamloPREPPipelineStandardized2015]. After detection, these channels were removed from the data and subsequently interpolated (i.e., estimated from surrounding channels). Interpolation was performed using the spherical spline method [@perrinSphericalSplinesScalp1989] as implemented in MNE-Python, which projects the sensor locations onto a unit sphere and interpolates the signal at the channels identified as bad on the signals for the good channels. Afterwards, the EEG data were re-referenced to the average signal across channels. Next, ocular artifacts were removed by performing an independent component analysis on the data and then correlating the resulting components with the EOG channels to see which of the components represented the ocular artifacts. The component that correlated the highest with the EOG channels was then removed from the EEG data.
 
 ## Epoching
 
@@ -179,7 +177,7 @@ The first hypothesis we were asked to test was the following:
 To address this question, we fit a Bayesian multilevel linear model on N1 amplitude values, with _condition_ (2 levels: _man-made_, _natural_) as _constant_ (a.k.a. fixed) effect and participant and trial as _varying_ (a.k.a. random) effects. We allowed intercepts and slopes to vary as a function of participant and trials, to model general and condition-specific inter-individual differences. As a likelihood function, we chose a Gaussian distribution.		
 An important aspect of Bayesian analysis is the choice of priors [e.g., @natarajanReferenceBayesianMethods2000]. Given the susceptibility of the electrophysiological signal to inter-individual differences (e.g., skull thickness, skin conductance, or hair), we decided to base our priors on the current data by visually inspecting the grand average ERP waveform, i.e., collapsed across _man-made_ and _natural_ condition. This procedure follows the same logic of _collapsed localizers_, useful when prior research does not allow to reliably identify scalp electrodes and time windows related to ERP components of interest [e.g., @luckHowGetStatistically2017, p. 150].		
 For the main analysis, we placed **informative priors** on the _intercept_ -- a normal distribution with mean $\mu$ = 4 and standard deviation $\sigma$ = 2: $Normal(4,2)$ -- and $\beta$ coefficient, $Normal(0,1)$. To assess whether our chosen informative prior would bias parameter estimates (and, consequently, the interpretation of the results; @depaoliImprovingTransparencyReplication2017), we ran the same multilevel linear model with **weakly informative** priors (_intercept_: $Normal(4,4)$ ; $\beta$: $Normal(0,4)$) and **uninformative** priors (_intercept_: $Normal(4,10)$ ; $\beta$: $Normal(0,10)$). We anticipated that the choice of prior would have negligible effects on the posterior distributions, because the influence of the prior washes out with a large amount of data [@edwardsBayesianStatisticalInference1963].		
-Since we had no prior knowledge regarding the standard deviation of participant and trials, we placed a **weakly informative prior** on these varying effects: a _t_-distribution with degrees of freedom $\nu$ = 3, location $\mu$ = 0, and scale $\sigma$ = 2, $Student(3,0,2)$.		
+Since we had no prior knowledge regarding the standard deviation of participant and trials, we placed a **weakly informative prior** on these varying effects: a _t_-distribution with degrees of freedom $\nu$ = 3, location $\mu$ = 0, and scale $\sigma$ = 2, $Student(3,0,2)$.	
 Models were fitted in _R_ using the `brms` package [@burknerAdvancedBayesianMultilevel2018], which employs the probabilistic programming language _Stan_ [@carpenterStanProbabilisticProgramming2017] to implement a Markov chain Monte Carlo (MCMC) algorithm (i.e., No-U-Turn sampler; @homanNoUturnSamplerAdaptively2014) to estimate posterior distributions of the parameters of interest. Four MCMC chains with 4000 iterations (2000 warm-up) and no thinning were run to estimate parameters in each of the fitted models. Model convergence was assessed as follows: (_i_) visual inspection of trace plots, rank plots, and graphical posterior predictive checks [@gabryVisualizationBayesianWorkflow2019]; (_ii_) Gelman-Rubin $\hat{R}$ statistic [@gelmanBayesianDataAnalysis2013] -- comparing the between-chains variability to the within-chain variability -- between 1 and 1.05 [see also @nalborczykIntroductionBayesianMultilevel2019].		
 Posterior distributions of the model parameters were summarized using the mean and 95% credible interval (CI). Differences between conditions were calculated by computing the mean and the 95% CI of the difference between posterior distributions of the respective conditions [@kruschkeDoingBayesianData2014].		
 Statistical inference was performed using the **HDI + ROPE** decision rule [@kruschkeRejectingAcceptingParameter2018]: values were accepted or rejected against a null hypothesis considering a small effect as practically equivalent to zero (Region of Practical Equivalence; _ROPE_). To mitigate the inevitable subjectivity intrinsic in arbitrarily choosing the range of negligible values, we explored a range of ROPEs, from ±0.05$\mu$_V_ to ±0.5$\mu$_V_ in steps of 0.01$\mu$_V_. If the percentage of the posterior differences within the full ROPE was smaller than 5%, the null hypothesis was rejected.
@@ -211,7 +209,13 @@ knitr::include_graphics(here("results_in_repo/RQ1/timeseries_grand_average_ROI.p
 No significant clusters were identified for any of the research questions (at $\alpha$ = 0.05).
 
 ## Software
-We used `r cite_r("r-references.bib")`.
+EEG preprocessing was carried out using `MNE-Python` [@gramfortMEGEEGData2013] in _Python_ v.3.9.7 [@10.5555/1593511] and _Spyder IDE_ v.5.1.5 [@raybaut2009spyder]. Analysis, visualization, and report generation were carried out in _R_ v.4.1.3 [@R-base] and _RStudio IDE_ v.2022.02.1+461 [@R-studio]. We used the following _R_ packages:
+
+* **analysis**: tibble, tidyr, readr, dplyr
+
+* **visualization**: ggplot2, 
+
+* **report generation**: knitr
 
 # Discussion
 
