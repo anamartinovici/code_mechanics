@@ -58,7 +58,7 @@ author:
       - "Writing – review & editing"
 affiliation:
   - id            : "1"
-    institution   : "ADD SEBASTIAN'S AFFILIATION"
+    institution   : "Social Brain Lab, Netherlands Institute for Neuroscience"
   - id            : "2"
     institution   : "Erasmus University Rotterdam"    
   - id            : "3"
