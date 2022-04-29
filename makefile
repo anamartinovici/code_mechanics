@@ -223,27 +223,28 @@ $(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_d
 ##
 #################################################
 
-# RQ2: $(strip $(DIR_RECEIPT))/RQ2_TFR_results
+RQ2 : RQ2_ERP RQ2_TFR
 
+RQ2_TFR: $(strip $(DIR_RECEIPT))/RQ2_TFR_results
 $(strip $(DIR_RECEIPT))/RQ2_TFR_results: $(strip $(DIR_RECEIPT))/TFR_process_data_step2 \
-										 scripts/RQ2/TFR/TFR_RQ2.py
+										 scripts/RQ2/TFR/TFR_RQ2.py \
+										 scripts/RQ2/TFR/TFR_RQ2.Rmd
 	$(print-target-and-prereq-info)
 	mkdir -p results_in_repo/RQ2/TFR/
 	mkdir -p tmp/
-	python scripts/RQ2/TFR/TFR_RQ2.py \
-		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
-		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
-		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step2/ \
-		   results_in_repo/RQ2/TFR/ \
-		   tmp/
+	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ2/TFR/
+	Rscript scripts/render_Rmd.R \
+			scripts/RQ2/TFR/TFR_RQ2.Rmd \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/TFR/ 
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
-RQ2_test: $(strip $(DIR_RECEIPT))/RQ2_ERP_plots
-RQ2: $(strip $(DIR_RECEIPT))/RQ2_ERP_plots
-RQ2: $(strip $(DIR_RECEIPT))/RQ2_ERP_model_diagnostics
-RQ2: $(strip $(DIR_RECEIPT))/RQ2_ERP_hypothesis_tests
-RQ2: $(strip $(DIR_RECEIPT))/RQ2_ERP_figures
+
+
+RQ2_ERP: $(strip $(DIR_RECEIPT))/RQ2_ERP_plots
+RQ2_ERP: $(strip $(DIR_RECEIPT))/RQ2_ERP_model_diagnostics
+RQ2_ERP: $(strip $(DIR_RECEIPT))/RQ2_ERP_hypothesis_tests
+RQ2_ERP: $(strip $(DIR_RECEIPT))/RQ2_ERP_figures
 
 $(strip $(DIR_RECEIPT))/RQ2_ERP_figures: $(strip $(DIR_RECEIPT))/RQ2_ERP_estimate_model \
 									     scripts/RQ2/ERP/05_RQ2_figures.R
@@ -466,21 +467,6 @@ $(strip $(DIR_RECEIPT))/RQ1_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_
 ##
 #################################################
 
-
-TFR_OLD: $(strip $(DIR_RECEIPT))/OLDTFR_process_data_step2
-$(strip $(DIR_RECEIPT))/OLDTFR_process_data_step2: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
-										        scripts/no_functionTFR_preproc_step2.py
-	$(print-target-and-prereq-info)
-	mkdir -p $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step2/
-	python scripts/no_functionTFR_preproc_step2.py \
-		   $(strip $(DIR_local_files))/data_outside_repo/original_data/eeg_BIDS/ \
-		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step1/ \
-		   $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step2/
-	date > $@
-	@echo "done with $@"
-	@echo "---------"
-
-TFR: $(strip $(DIR_RECEIPT))/TFR_process_data_step2
 $(strip $(DIR_RECEIPT))/TFR_process_data_step2: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
 										        scripts/TFR_preproc_step2.py \
 										        scripts/TFR_preproc_step2.Rmd
