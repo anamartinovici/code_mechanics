@@ -1,9 +1,11 @@
 def f_TFR_RQ3b_analysis_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_output, path_to_TFR_RQ3_output, path_to_cache_dir):
     import mne
+    import random
+    import time
+    
     import numpy as np
-    import os
     import matplotlib.pyplot as plt
-    from datetime import datetime, date, time
+    
     from os.path import join as opj
     from glob import glob
     from numpy.random import randn 
@@ -11,10 +13,7 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_out
     from mne.epochs import equalize_epoch_counts
     from scipy.stats import spearmanr, ttest_ind, describe, normaltest, pearsonr
     from mne.stats import permutation_cluster_1samp_test, permutation_cluster_test
-    import time
     from mne.viz import plot_tfr_topomap
-    import random
-    import joblib
     
     # set seed to ensure computational reproducibility
     random.seed(project_seed) 
