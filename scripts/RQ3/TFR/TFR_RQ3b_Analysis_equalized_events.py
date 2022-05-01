@@ -4,15 +4,11 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_out
     import time
     
     import numpy as np
-    import matplotlib.pyplot as plt
     
     from os.path import join as opj
     from glob import glob
-    from numpy.random import randn 
-    from mne.time_frequency import tfr_morlet, write_tfrs
-    from mne.epochs import equalize_epoch_counts
-    from scipy.stats import spearmanr, ttest_ind, describe, normaltest, pearsonr
-    from mne.stats import permutation_cluster_1samp_test, permutation_cluster_test
+    from scipy.stats import ttest_ind
+    from mne.stats import permutation_cluster_test
     from mne.viz import plot_tfr_topomap
     
     # set seed to ensure computational reproducibility
