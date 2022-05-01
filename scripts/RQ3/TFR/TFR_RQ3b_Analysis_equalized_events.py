@@ -20,20 +20,8 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_out
     import random
     import joblib
     
-    def ensure_dir(ed):
-        import os
-        try:
-            os.makedirs(ed)
-        except OSError:
-            if not os.path.isdir(ed):
-                raise
-    
-    
-    '''
-    loading subs after fitting
-    '''
-    
-    random.seed(project_seed) # set seed to ensure computational reproducibility
+    # set seed to ensure computational reproducibility
+    random.seed(project_seed) 
     
     decim = 1 
     subject = 'sub-001'
