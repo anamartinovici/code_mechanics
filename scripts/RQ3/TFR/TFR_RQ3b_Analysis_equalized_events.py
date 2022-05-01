@@ -8,8 +8,6 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_out
     from os.path import join as opj
     from glob import glob
     from scipy.stats import ttest_ind
-    from mne.stats import permutation_cluster_test
-    from mne.viz import plot_tfr_topomap
     
     # set seed to ensure computational reproducibility
     random.seed(project_seed) 
@@ -45,7 +43,7 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_out
                                                     nave = power_all_subj_old_hit.data.shape[0])
     
     # take 0.3s to 0.5s after stim onset
-    plot_tfr_topomap(OldHitVsOldMiss, 
+    mne.viz.plot_tfr_topomap(OldHitVsOldMiss, 
                      colorbar = False, 
                      size = 10, 
                      show_names = False, 
@@ -59,7 +57,7 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_out
     
     start_time = time.time()
     T_obs, clusters, cluster_p_values, H0 = \
-        permutation_cluster_test([power_all_subj_old_hit.data,
+        mne.stats.permutation_cluster_test([power_all_subj_old_hit.data,
                                   power_all_subj_old_miss.data],
                                  n_jobs = 1,
                                  n_permutations = 10,
