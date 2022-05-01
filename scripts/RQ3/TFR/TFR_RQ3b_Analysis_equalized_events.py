@@ -1,4 +1,4 @@
-def f_TFR_RQ3b_analysis_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_output, path_to_TFR_RQ3_output, path_to_cache_dir):
+def f_TFR_RQ3b_analysis_eq(project_seed, path_to_TFR_step1_output, path_to_TFR_RQ3_output, path_to_cache_dir):
     import mne
     import random
     import time
@@ -35,7 +35,7 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_out
                                                            equal_var = False, 
                                                            nan_policy = 'propagate')
     
-     # take only the freqs from 4-8HZ
+    # take only the freqs from 4-8HZ
     OldHitVsOldMiss = mne.time_frequency.AverageTFR(power_all_subj_old_hit.info, 
                                                     stat_old_hit_vs_miss, 
                                                     power_all_subj_old_hit.times, 
@@ -44,11 +44,11 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_out
     
     # take 0.3s to 0.5s after stim onset
     mne.viz.plot_tfr_topomap(OldHitVsOldMiss, 
-                     colorbar = False, 
-                     size = 10, 
-                     show_names = False, 
-                     unit = None,
-                     cbar_fmt = '%1.2f')
+                             colorbar = False, 
+                             size = 10, 
+                             show_names = False, 
+                             unit = None,
+                             cbar_fmt = '%1.2f')
     
     # Cluster-Based Permutation test over all channels and freqs
     print(path_to_cache_dir)
@@ -57,15 +57,14 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_out
     
     start_time = time.time()
     T_obs, clusters, cluster_p_values, H0 = \
-        mne.stats.permutation_cluster_test([power_all_subj_old_hit.data,
-                                  power_all_subj_old_miss.data],
-                                 n_jobs = 1,
-                                 n_permutations = 10,
-                                 threshold = threshold_tfce,
-                                 tail = 0, 
-                                 buffer_size = 1000,
-                                 verbose = 'error', 
-                                 seed = 888)
+        mne.stats.permutation_cluster_test([power_all_subj_old_hit.data, power_all_subj_old_miss.data],
+                                           n_jobs = 1,
+                                           n_permutations = 10,
+                                           threshold = threshold_tfce,
+                                           tail = 0, 
+                                           buffer_size = 1000,
+                                           verbose = 'error', 
+                                           seed = 888)
     
     print("--- %s seconds ---" % (time.time() - start_time))
     print(cluster_p_values[cluster_p_values < 0.05])
