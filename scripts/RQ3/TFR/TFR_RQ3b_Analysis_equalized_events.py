@@ -1,5 +1,4 @@
 def f_TFR_RQ3b_analysis_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_output, path_to_TFR_RQ3_output, path_to_cache_dir):
-    import sys
     import mne
     import pandas as pd
     import scipy.io
