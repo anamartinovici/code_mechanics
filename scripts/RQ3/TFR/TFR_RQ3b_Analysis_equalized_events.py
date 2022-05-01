@@ -1,9 +1,7 @@
 def f_TFR_RQ3b_analysis_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_output, path_to_TFR_RQ3_output, path_to_cache_dir):
     import mne
-    import scipy.io
-    import os
     import numpy as np
-    from scipy.io import loadmat  # this is the SciPy module that loads mat-files
+    import os
     import matplotlib.pyplot as plt
     from datetime import datetime, date, time
     from os.path import join as opj
