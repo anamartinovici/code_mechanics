@@ -23,17 +23,46 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_TFR_step1_output, path_to_TFR_R
     info = epochs_old_hit.info
     logged_freqs = np.logspace(np.log10(4), np.log10(40), 18)
     
+    print("here")
+    
     power_all_subj_old_hit = np.load(opj(path_to_TFR_RQ3_output, 'equalized', 'power_all_subj_old_hit.npy'))
     power_all_subj_old_miss = np.load(opj(path_to_TFR_RQ3_output, 'equalized', 'power_all_subj_old_miss.npy'))
     
+    print("cat 1")
+    
+    start_time = time.time()
     power_all_subj_old_hit = mne.time_frequency.EpochsTFR(info, power_all_subj_old_hit, times, logged_freqs)
+    print("--- %s seconds ---" % (time.time() - start_time))
+    
+    print("power")
+    print(power_all_subj_old_hit)
+    
+    print("cat 2")
+    start_time = time.time()
     power_all_subj_old_miss = mne.time_frequency.EpochsTFR(info, power_all_subj_old_miss, times, logged_freqs)
+    print("--- %s seconds ---" % (time.time() - start_time))
+    
+    print("info: ")
+    print(info)
+    
+    print("power")
+    print(power_all_subj_old_miss)
+    
+    print("times")
+    print(times)
+    
+    print("logged_freqs")
+    print(logged_freqs)
+    
+    print("A")
     
     stat_old_hit_vs_miss, pval_old_hit_vs_miss = ttest_ind(power_all_subj_old_hit.data,
                                                            power_all_subj_old_miss.data, 
                                                            axis = 0, 
                                                            equal_var = False, 
                                                            nan_policy = 'propagate')
+    
+    print("B")
     
     # take only the freqs from 4-8HZ
     OldHitVsOldMiss = mne.time_frequency.AverageTFR(power_all_subj_old_hit.info, 
@@ -43,12 +72,14 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_TFR_step1_output, path_to_TFR_R
                                                     nave = power_all_subj_old_hit.data.shape[0])
     
     # take 0.3s to 0.5s after stim onset
-    mne.viz.plot_tfr_topomap(OldHitVsOldMiss, 
-                             colorbar = False, 
-                             size = 10, 
-                             show_names = False, 
-                             unit = None,
-                             cbar_fmt = '%1.2f')
+    #mne.viz.plot_tfr_topomap(OldHitVsOldMiss, 
+    #                         colorbar = False, 
+    #                         size = 10, 
+    #                         show_names = False, 
+    #                         unit = None,
+    #                         cbar_fmt = '%1.2f')
+    
+    print("C")
     
     # Cluster-Based Permutation test over all channels and freqs
     print(path_to_cache_dir)
@@ -58,7 +89,7 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_TFR_step1_output, path_to_TFR_R
     start_time = time.time()
     T_obs, clusters, cluster_p_values, H0 = \
         mne.stats.permutation_cluster_test([power_all_subj_old_hit.data, power_all_subj_old_miss.data],
-                                           n_jobs = 1,
+                                           n_jobs = 2,
                                            n_permutations = 10,
                                            threshold = threshold_tfce,
                                            tail = 0, 
