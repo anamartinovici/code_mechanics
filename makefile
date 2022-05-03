@@ -189,7 +189,7 @@ $(strip $(DIR_RECEIPT))/RQ4_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_d
 RQ3: RQ3_ERP RQ3_TFR
 
 RQ3_ERP: $(strip $(DIR_RECEIPT))/RQ3_ERP_results
-#RQ3_TFR: $(strip $(DIR_RECEIPT))/RQ3_TFR_analysis_NOTeq	
+RQ3_TFR: $(strip $(DIR_RECEIPT))/RQ3_TFR_analysis_NOTeq	
 RQ3_TFR: $(strip $(DIR_RECEIPT))/RQ3_TFR_analysis_eq
 
 $(strip $(DIR_RECEIPT))/RQ3_ERP_results: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
