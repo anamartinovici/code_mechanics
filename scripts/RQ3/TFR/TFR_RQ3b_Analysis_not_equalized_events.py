@@ -1,107 +1,72 @@
-def f_TFR_RQ3b_analysis_NOTeq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_output, path_to_TFR_RQ3_output, path_to_cache_dir):
-    import sys
+def f_TFR_RQ3b_analysis_NOTeq(project_seed, path_to_TFR_step1_output, path_to_TFR_RQ3_output, path_to_cache_dir):
     import mne
-    import pandas as pd
-    import scipy.io
-    import os
+    import random
+    import time
+    
     import numpy as np
-    from scipy.io import loadmat  # this is the SciPy module that loads mat-files
-    import matplotlib.pyplot as plt
-    from datetime import datetime, date, time
+    
     from os.path import join as opj
     from glob import glob
-    from numpy.random import randn 
-    from mne.time_frequency import tfr_morlet, write_tfrs
-    from mne.epochs import equalize_epoch_counts
-    from scipy.stats import spearmanr, ttest_ind, describe, normaltest, pearsonr
-    from mne.stats import permutation_cluster_1samp_test, permutation_cluster_test
-    import time
-    from mne.viz import plot_tfr_topomap
-    import random
-    
-    def ensure_dir(ed):
-        import os
-        try:
-            os.makedirs(ed)
-        except OSError:
-            if not os.path.isdir(ed):
-                raise
-    
-    
-    '''
-    loading subs after fitting
-    '''
-    
-    random.seed(project_seed) # set seed to ensure computational reproducibility
+    from scipy.stats import ttest_ind
+
+    # set seed to ensure computational reproducibility
+    random.seed(project_seed) 
                 
-    #bids_root = '../eeg_BIDS/'
-    #prepro_root = '../Preprocessed/'
-    
-    # bids_root = path_to_eeg_BIDS
-    # prepro_root = path_to_TFR_step1_output
-    
-    # directory with eeg_BIDS data received from the EEG_manypipelines team
-    #path_to_eeg_BIDS = sys.argv[1] 
-    # directory where the output of the previous step is saved
-    #path_to_TFR_step1_output = sys.argv[2]
-    #path_to_TFR_RQ3_output   = sys.argv[3]
-    #path_to_cache_dir = sys.argv[4]
-    
     decim = 1 
+    subject = "sub-001"
+    epochs_old_hit = mne.read_epochs(glob(opj(path_to_TFR_step1_output, subject, subject + "*old_hit*epo.fif"))[0],
+                                     preload = True,
+                                     verbose = "error")
     
-    subject = 'sub-001'
-    epochs_old_hit = mne.read_epochs(glob(opj(path_to_TFR_step1_output, subject,subject+'*old_hit*epo.fif'))[0],
-                                     preload=True,
-                                     verbose='error')
-    
-    
-    times = epochs_old_hit.crop(0,0.5).decimate(decim).times
+    times = epochs_old_hit.crop(0, 0.5).decimate(decim).times
     epochs_old_hit.pick_types(eeg = True)
     info = epochs_old_hit.info
-    logged_freqs = np.logspace(np.log10(4),np.log10(40),18)
+    logged_freqs = np.logspace(np.log10(4), np.log10(40), 18)
     
-    power_all_subj_old_hit = np.load(opj(path_to_TFR_RQ3_output, 'not_equalized', 'power_all_subj_old_hit.npy'))
-    power_all_subj_old_miss = np.load(opj(path_to_TFR_RQ3_output, 'not_equalized', 'power_all_subj_old_miss.npy'))
+    power_all_subj_old_hit = np.load(opj(path_to_TFR_RQ3_output, "not_equalized", "power_all_subj_old_hit.npy"))
+    power_all_subj_old_miss = np.load(opj(path_to_TFR_RQ3_output, "not_equalized", "power_all_subj_old_miss.npy"))
     
-    power_all_subj_old_hit = mne.time_frequency.EpochsTFR(info, power_all_subj_old_hit, times,logged_freqs)
-    power_all_subj_old_miss = mne.time_frequency.EpochsTFR(info, power_all_subj_old_miss, times,logged_freqs)
+    power_all_subj_old_hit = mne.time_frequency.EpochsTFR(info, power_all_subj_old_hit, times, logged_freqs)
+    power_all_subj_old_miss = mne.time_frequency.EpochsTFR(info, power_all_subj_old_miss, times, logged_freqs)
     
+    stat_old_hit_vs_miss, pval_old_hit_vs_miss = ttest_ind(power_all_subj_old_hit.data,
+                                                           power_all_subj_old_miss.data, 
+                                                           axis = 0,
+                                                           equal_var = False,
+                                                           nan_policy = "propagate")
     
-    '''
-    topo-plot 
-    '''
-    stat_old_hit_vs_miss, pval_old_hit_vs_miss = ttest_ind(power_all_subj_old_hit.data,power_all_subj_old_miss.data, axis=0, equal_var=False, nan_policy='propagate')
+    # take only the freqs from 4-8HZ
+    OldHitVsOldMiss = mne.time_frequency.AverageTFR(power_all_subj_old_hit.info, 
+                                                    stat_old_hit_vs_miss,
+                                                    power_all_subj_old_hit.times, 
+                                                    power_all_subj_old_hit.freqs,
+                                                    nave = power_all_subj_old_hit.data.shape[0])
     
-    OldHitVsOldMiss = mne.time_frequency.AverageTFR(power_all_subj_old_hit.info, stat_old_hit_vs_miss[:,:,:], power_all_subj_old_hit.times, power_all_subj_old_hit.freqs, nave=power_all_subj_old_hit.data.shape[0]) # take only the freqs from 4-8HZ
-    # plot_tfr_topomap(OldHitVsOldMiss, colorbar=False, size=10, show_names=False, unit=None,  cbar_fmt='%1.2f') # take 0.3s to 0.5s after stim onset
+    # take 0.3s to 0.5s after stim onset
+    mne.viz.plot_tfr_topomap(OldHitVsOldMiss, 
+                             colorbar = False,
+                             size = 10,
+                             show_names = False, 
+                             unit = None,
+                             cbar_fmt = "%1.2f")
     
-    ################
-    #
-    # Cluster-Based Permutation tests
-    
+    # Cluster-Based Permutation test over all channels and freqs
+    print(path_to_cache_dir)
     mne.set_cache_dir(path_to_cache_dir)
-    
-    # all cluster-based permutations tests use the same threshhold
     threshold_tfce = dict(start = 0, step = 0.2)
-    # all cluster-based permutations tests use the same number of jobs (cores)
-    n_cores = 1
-    # all cluster-based permutations tests use the same number of permutations (1000)
-    n_perm = 10
     
-    '''
-    Cluster-Based Permutation test over all channels and freqs
-    '''
     start_time = time.time()
     T_obs, clusters, cluster_p_values, H0 = \
-        permutation_cluster_test([power_all_subj_old_hit.data[:,:,:,:], power_all_subj_old_miss.data[:,:,:,:]], 
-                                 n_jobs = n_cores,
-                                 n_permutations = n_perm,
+        mne.stats.permutation_cluster_test([power_all_subj_old_hit.data,
+                                  power_all_subj_old_miss.data], 
+                                 n_jobs = 4,
+                                 n_permutations = 100,
                                  threshold = threshold_tfce,
                                  tail = 0, 
                                  buffer_size = 100,
-                                 verbose = 'error', 
+                                 verbose = "error", 
                                  seed = 888)
     
     print("--- %s seconds ---" % (time.time() - start_time))
-    print(cluster_p_values[cluster_p_values<0.05])
+    print(cluster_p_values[cluster_p_values < 0.05])
     

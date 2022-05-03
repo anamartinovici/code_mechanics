@@ -59,7 +59,7 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_TFR_step1_output, path_to_TFR_R
     T_obs, clusters, cluster_p_values, H0 = \
         mne.stats.permutation_cluster_test([power_all_subj_old_hit.data, power_all_subj_old_miss.data],
                                            n_jobs = 4,
-                                           n_permutations = 10,
+                                           n_permutations = 1000,
                                            threshold = threshold_tfce,
                                            tail = 0, 
                                            buffer_size = 1000,
