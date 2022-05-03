@@ -1,0 +1,18 @@
+---
+title: "Test if make, reticulate, and Rmd work together"
+author: "Ana Martinovici"
+date: "Last compiled on `r Sys.Date()`"
+output: html_document
+---
+
+```{r, setup}
+
+library("reticulate")
+
+```
+
+
+```{python}
+exec(open("test_make.py", encoding="utf-8").read())
+
+```

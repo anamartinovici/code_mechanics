@@ -1,11 +1,22 @@
 # if you type 'make' in the terminal test make
 # if the test is succesfull, then you can go ahead and start building targets as needed
-all: test_make
+all: initial_setup
 
 # targets in this file:
-#		restore_file_timestamps
-#		RQ1 RQ2 RQ3 RQ4
-#		analysis
+#		first_target
+#			is called "first" because it needs to be built before any processing and analysis
+#			contains:
+#				create_receipt_directory
+#				restore_file_timestamps
+#				initial_setup
+#				test_make
+#		analysis 
+#			contains:
+#				RQ1 
+#				RQ2
+#				RQ3
+#				RQ4
+
 # to build a target, you need to write "make name_of_target"" explicitly in the terminal
 # analysis builds RQ1, RQ2, RQ3, and RQ4. If you want to build the targets associated with
 #		a specific research question, then type "make name_of_target" in the terminal
@@ -58,19 +69,34 @@ ifeq "$(strip $(user_name))" "aschetti"
 	DIR_local_files = /home/aschetti/Documents/Projects/code_mechanics_DROPBOX
 endif
 
-restore_file_timestamps:
+initial_setup: tmp/initial_setup
+
+tmp/initial_setup: scripts/get_path_to_local_files.R \
+				   scripts/render_Rmd.R \
+				   scripts/test_make.Rmd \
+				   scripts/test_make.py
+	@echo "before you can start the analysis, you first need to set up the repo"
+	@echo "---------------"
+	@echo "create the receipt and tmp folders within the repo"
+	mkdir -p $(strip $(DIR_RECEIPT))/
+	mkdir -p tmp/
+	@echo "---------------"	
 	@echo "restoring commit timestamps such that Make does not build based on git clone time"
 	bash scripts/restore_file_timestamps.sh
 	date > $@
-
-test_make: create_receipt_directory
-	@echo "Check if success_test_make.txt is created in DIR_RECEIPT"
-	$(file > $(strip $(DIR_RECEIPT))/success_test_make.txt, 'make works just fine')
-	@echo "Check if saved_from_test_make_py.txt is created in DIR_RECEIPT"
-	python scripts/test_make.py $(strip $(DIR_RECEIPT))
-
-create_receipt_directory:
-	mkdir -p $(strip $(DIR_RECEIPT))
+	@echo "---------------"
+	@echo "create an .Rdata file that store info about paths to local files"
+	Rscript scripts/get_path_to_local_files.R \
+			$(strip $(PROJECT_SEED)) \
+			$(strip $(DIR_local_files))
+	@echo "---------------"
+	@echo "Check if test_make.html is created in tmp/"
+	Rscript scripts/render_Rmd.R \
+			scripts/test_make.Rmd \
+			tmp/
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
 
 #################################################
 ##
@@ -536,16 +562,6 @@ $(strip $(DIR_RECEIPT))/ERP_process_data_step1: scripts/ERP_preproc_step1.py \
 	Rscript scripts/render_Rmd.R \
 			scripts/ERP_preproc_step1.Rmd \
 			$(strip $(DIR_local_files))/data_outside_repo/processed_data/ERP/step1/
-	date > $@
-	@echo "done with $@"
-	@echo "---------"
-
-$(strip $(DIR_RECEIPT))/initial_setup: scripts/initial_setup.R
-	$(print-target-and-prereq-info)
-	mkdir -p tmp/
-	Rscript scripts/initial_setup.R \
-			$(strip $(PROJECT_SEED)) \
-			$(strip $(DIR_local_files))
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
