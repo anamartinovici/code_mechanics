@@ -156,6 +156,25 @@ authorship_order
 
 ADD INTRODUCTION HERE
 
+## Example - how to include lines of code from external scripts
+This example shows how to print specific lines from a python script.
+
+```{r}
+file_name <- here("scripts", "RQ3", "TFR", "TFR_RQ3b_Analysis_equalized_events.py")
+start_line <- 3
+end_line <- 6
+knitr::read_chunk(path = file_name, labels = "foo-py", from = start_line, to = end_line)
+
+file_in_repo <- stringr::str_sub(file_name, start = stringr::str_locate(file_name, "/code_mechanics")[1, "start"])
+
+```
+
+Specifically, we are including lines `r start_line`:`r end_line` from `r file_in_repo`:
+
+```{r, foo-py, eval = FALSE, echo = TRUE}
+```
+
+
 # Methods
 
 ## Preprocessing
