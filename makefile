@@ -143,7 +143,7 @@ $(strip $(DIR_RECEIPT))/RQ4_TFR_analysis_NOTeq: $(strip $(DIR_RECEIPT))/RQ4_TFR_
 	@echo "done with $@"
 	@echo "---------"
 
-$(strip $(DIR_RECEIPT))/RQ4_TFR_decomp_NOTeq: $(strip $(DIR_RECEIPT))/TFR_process_data_step2 \
+$(strip $(DIR_RECEIPT))/RQ4_TFR_decomp_NOTeq: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
 										      scripts/RQ4/TFR/TFR_RQ4b_Decomposition_not_equalized_events.py \
 										      scripts/RQ4/TFR/TFR_RQ4b_Decomposition_not_equalized_events.Rmd
 	$(print-target-and-prereq-info)
@@ -168,7 +168,7 @@ $(strip $(DIR_RECEIPT))/RQ4_TFR_analysis_eq: $(strip $(DIR_RECEIPT))/RQ4_TFR_dec
 	@echo "done with $@"
 	@echo "---------"
 
-$(strip $(DIR_RECEIPT))/RQ4_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_data_step2 \
+$(strip $(DIR_RECEIPT))/RQ4_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
 										   scripts/RQ4/TFR/TFR_RQ4b_Decomposition_equalized_events.py \
 										   scripts/RQ4/TFR/TFR_RQ4b_Decomposition_equalized_events.Rmd
 	$(print-target-and-prereq-info)
@@ -216,7 +216,7 @@ $(strip $(DIR_RECEIPT))/RQ3_TFR_analysis_NOTeq: $(strip $(DIR_RECEIPT))/RQ3_TFR_
 	@echo "done with $@"
 	@echo "---------"
 
-$(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_NOTeq: $(strip $(DIR_RECEIPT))/TFR_process_data_step2 \
+$(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_NOTeq: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
 										      scripts/RQ3/TFR/TFR_RQ3b_Decomposition_not_equalized_events.py \
 										      scripts/RQ3/TFR/TFR_RQ3b_Decomposition_not_equalized_events.Rmd
 	$(print-target-and-prereq-info)
@@ -240,8 +240,7 @@ $(strip $(DIR_RECEIPT))/RQ3_TFR_analysis_eq: $(strip $(DIR_RECEIPT))/RQ3_TFR_dec
 	@echo "done with $@"
 	@echo "---------"
 
-my_test: $(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq
-$(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_data_step2 \
+$(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
 										   scripts/RQ3/TFR/TFR_RQ3b_Decomposition_equalized_events.py \
 										   scripts/RQ3/TFR/TFR_RQ3b_Decomposition_equalized_events.Rmd
 	$(print-target-and-prereq-info)
@@ -261,21 +260,31 @@ $(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_d
 
 RQ2 : RQ2_ERP RQ2_TFR
 
-RQ2_TFR: $(strip $(DIR_RECEIPT))/RQ2_TFR_results
-$(strip $(DIR_RECEIPT))/RQ2_TFR_results: $(strip $(DIR_RECEIPT))/TFR_process_data_step2 \
-										 scripts/RQ2/TFR/TFR_RQ2.py \
-										 scripts/RQ2/TFR/TFR_RQ2.Rmd
+RQ2_TFR: $(strip $(DIR_RECEIPT))/RQ2_TFR_analysis_eq
+$(strip $(DIR_RECEIPT))/RQ2_TFR_analysis_eq: $(strip $(DIR_RECEIPT))/RQ2_TFR_decomp_eq \
+										     scripts/RQ2/TFR/TFR_RQ2_Analysis_equalized_events.py \
+										     scripts/RQ2/TFR/TFR_RQ2_Analysis_equalized_events.Rmd
 	$(print-target-and-prereq-info)
-	mkdir -p results_in_repo/RQ2/TFR/
 	mkdir -p tmp/
-	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ2/TFR/
+	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ2/TFR/equalized
 	Rscript scripts/render_Rmd.R \
-			scripts/RQ2/TFR/TFR_RQ2.Rmd \
-			$(strip $(DIR_local_files))/results_outside_repo/RQ2/TFR/ 
+			scripts/RQ2/TFR/TFR_RQ2_Analysis_equalized_events.Rmd \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/TFR/equalized/ 
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
 
+$(strip $(DIR_RECEIPT))/RQ2_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
+										   scripts/RQ2/TFR/TFR_RQ2_Decomposition_equalized_events.py \
+										   scripts/RQ2/TFR/TFR_RQ2_Decomposition_equalized_events.Rmd
+	$(print-target-and-prereq-info)
+	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ2/TFR/equalized
+	Rscript scripts/render_Rmd.R \
+			scripts/RQ2/TFR/TFR_RQ2_Decomposition_equalized_events.Rmd \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/TFR/equalized/ 
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
 
 RQ2_ERP: $(strip $(DIR_RECEIPT))/RQ2_ERP_plots
 RQ2_ERP: $(strip $(DIR_RECEIPT))/RQ2_ERP_model_diagnostics
@@ -502,18 +511,6 @@ $(strip $(DIR_RECEIPT))/RQ1_prep_data: $(strip $(DIR_RECEIPT))/ERP_process_data_
 ## process data for TFR
 ##
 #################################################
-
-$(strip $(DIR_RECEIPT))/TFR_process_data_step2: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
-										        scripts/TFR_preproc_step2.py \
-										        scripts/TFR_preproc_step2.Rmd
-	$(print-target-and-prereq-info)
-	mkdir -p $(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step2/
-	Rscript scripts/render_Rmd.R \
-			scripts/TFR_preproc_step2.Rmd \
-			$(strip $(DIR_local_files))/data_outside_repo/processed_data/TFR/step2/
-	date > $@
-	@echo "done with $@"
-	@echo "---------"
 
 $(strip $(DIR_RECEIPT))/TFR_process_data_step1: scripts/TFR_preproc_step1.py \
 												scripts/TFR_preproc_step1.Rmd

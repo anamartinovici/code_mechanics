@@ -1,114 +1,70 @@
 def f_TFR_RQ4b_decomp_NOTeq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_output, path_to_TFR_RQ4_output):
-    import sys
     import mne
-    import pandas as pd
-    import scipy.io
-    import os
+    import random
+    
     import numpy as np
-    from scipy.io import loadmat  # this is the SciPy module that loads mat-files
-    import matplotlib.pyplot as plt
-    from datetime import datetime, date, time
+    
     from os.path import join as opj
     from glob import glob
     from numpy.random import randn 
-    from mne.time_frequency import tfr_morlet, write_tfrs
-    from mne.epochs import equalize_epoch_counts
-    from scipy.stats import spearmanr, ttest_ind, describe, normaltest, pearsonr
-    from mne.stats import permutation_cluster_1samp_test, permutation_cluster_test
-    import time
-    from mne.viz import plot_tfr_topomap
-    import random
     
-    def ensure_dir(ed):
-        import os
-        try:
-            os.makedirs(ed)
-        except OSError:
-            if not os.path.isdir(ed):
-                raise
+    # set seed to ensure computational reproducibility
+    random.seed(project_seed) 
     
-    # directory with eeg_BIDS data received from the EEG_manypipelines team
-    #path_to_eeg_BIDS = sys.argv[1] 
-    # directory where the output of the previous step is saved
-    #path_to_TFR_step1_output = sys.argv[2]
-    #path_to_TFR_RQ4_output   = sys.argv[3]
+    subs = [ name for name in os.listdir(path_to_eeg_BIDS) if name.startswith("sub") ]
     
-    random.seed(project_seed) # set seed to ensure computational reproducibility
-    
-    subs = [ name for name in os.listdir(path_to_eeg_BIDS) if name.startswith('sub') ]
-    
-    #=========================================================================
-    # === just for initiating some params, I need to read one epoch to fill them out
-    logged_freqs=np.logspace(np.log10(4),np.log10(40),18)
-    
+    # just for initiating some params, I need to read one epoch to fill them out
+    logged_freqs = np.logspace(np.log10(4), np.log10(40), 18)
     n_cycles = logged_freqs / 2.
-    
-    decim = 1 # specify decimation factor - decimation occors after TFR estimation
-    
-    njobs = 1
+    # specify decimation factor - decimation occurs after TFR estimation
+    decim = 1 
+    njobs = 4
     n_subj = len(subs)
-    n_freqs      = len(logged_freqs)
-    power_all    = dict();itc_all     = dict()#[subj * chan * freqs * time]
-    power_avgAll = dict(); itc_avgAll = dict()#[chan * freqs * time]
-    
-    subject=subs[0]
-    epochs_RQ4 = mne.read_epochs(glob(opj(path_to_TFR_step1_output,subject,subject+'*remembered*epo.fif'))[0],
-                                 preload=True,
-                                 verbose='error')
+    n_freqs = len(logged_freqs)
+
+    subject = subs[0]
+    epochs_RQ4 = mne.read_epochs(glob(opj(path_to_TFR_step1_output, subject, subject + "*remembered*epo.fif"))[0],
+                                 preload = True,
+                                 verbose = "error")
     epochs_RQ4.decimate(decim)
     
-    
     # preallocate matrices
-    n_epochs, n_chan, n_times = epochs_RQ4.pick_types(eeg=True).crop(0, 0.5).get_data().shape
+    n_epochs, n_chan, n_times = epochs_RQ4.pick_types(eeg = True).crop(0, 0.5).get_data().shape
     power_all_subj_rem = randn(n_subj, n_chan, n_freqs, n_times) * 0
-    
-    n_epochs, n_chan, n_times = epochs_RQ4.pick_types(eeg=True).crop(0, 0.5).get_data().shape
     power_all_subj_forg = randn(n_subj, n_chan, n_freqs, n_times) * 0
     
     
-    """
-    ==============================================================================
-        Read all subject
-        Apply tfr_morlet
-    ==============================================================================
-    """
-    subj_num_id=0
-    
+    # Read all subjects
     # loop over subjects to transform to the time-frequency domain
+    # Apply tfr_morlet
     
+    subj_num_id = 0
     for subject in subs:
         print(subject)
-        '''
-        epochs_old_hit
-        '''
-        #picks = mne.pick_channels(raw.info["ch_names"], ["C3", "Cz", "C4"]) # In case specific channels are to be picked - also need to add the picks parameter to the next function
-        epochs_rem = mne.read_epochs(glob(opj(path_to_TFR_step1_output,subject,subject+'*remembered*epo.fif'))[0],
-                                         preload=True,
-                                         verbose='error')
+        # In case specific channels are to be picked - also need to add the picks parameter to the next function
+        # picks = mne.pick_channels(raw.info["ch_names"], ["C3", "Cz", "C4"]) 
+        epochs_rem = mne.read_epochs(glob(opj(path_to_TFR_step1_output, subject, subject + "*remembered*epo.fif"))[0],
+                                         preload = True,
+                                         verbose = "error")
         
-        epochs_forg = mne.read_epochs(glob(opj(path_to_TFR_step1_output,subject,subject+'*forgotten*epo.fif'))[0],
-                                          preload=True,
-                                          verbose='error')
+        epochs_forg = mne.read_epochs(glob(opj(path_to_TFR_step1_output,subject,subject + "*forgotten*epo.fif"))[0],
+                                          preload = True,
+                                          verbose = "error")
     
-        #print(epochs_rem.get_data().shape[0])
-        #print(epochs_forg.get_data().shape[0])
-        
-        #equalize_epoch_counts([epochs_rem, epochs_forg])  
-        
-        #print(epochs_rem.get_data().shape[0])
-        #print(epochs_forg.get_data().shape[0])
+        print(epochs_rem.get_data().shape[0])
+        print(epochs_forg.get_data().shape[0])
         
         # Run TF decomposition overall epochs
-        tfr_pwr_rem = tfr_morlet(epochs_rem,
-                                     freqs=logged_freqs,
-                                     n_cycles=n_cycles,
-                                     return_itc=False,
-                                     n_jobs=njobs,
-                                     average=True,
-                                     decim=decim)
+        tfr_pwr_rem = mne.time_frequency.tfr_morlet(epochs_rem,
+                                                    freqs = logged_freqs,
+                                                    n_cycles = n_cycles,
+                                                    return_itc = False,
+                                                    n_jobs = njobs,
+                                                    average = True,
+                                                    decim = decim)
         
         # Baseline power
-        tfr_pwr_rem.apply_baseline(mode='logratio', baseline=(-0.3, 0))
+        tfr_pwr_rem.apply_baseline(mode = "logratio", baseline = (-0.3, 0))
         tfr_pwr_rem.crop(0, 0.5)
         power_all_subj_rem[subj_num_id,:,:,:] = tfr_pwr_rem.data
     
@@ -116,40 +72,28 @@ def f_TFR_RQ4b_decomp_NOTeq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_ou
         times = tfr_pwr_rem.times
         
         # plot all channels averaged
-        # tfr_pwr_rem.plot_joint(title='All Channels New')
-    
+        tfr_pwr_rem.plot_joint(title = "All Channels Remembered")
         
-        '''
-        old_miss
-        '''
         # Run TF decomposition overall epochs
-        tfr_pwr_forg = tfr_morlet(epochs_forg,
-                                      freqs=logged_freqs,
-                                      n_cycles=n_cycles,
-                                      return_itc=False,
-                                      n_jobs=njobs,
-                                      average=True,
-                                      decim=decim)
+        tfr_pwr_forg = mne.time_frequency.tfr_morlet(epochs_forg,
+                                                     freqs = logged_freqs,
+                                                     n_cycles = n_cycles,
+                                                     return_itc = False,
+                                                     n_jobs = njobs,
+                                                     average = True,
+                                                     decim = decim)
         
         # Baseline power
-        tfr_pwr_forg.apply_baseline(mode='logratio', baseline=(-0.3, 0))
+        tfr_pwr_forg.apply_baseline(mode = "logratio", baseline = (-0.3, 0))
         tfr_pwr_forg.crop(0, 0.5)
         power_all_subj_forg[subj_num_id,:,:,:] = tfr_pwr_forg.data
     
         # plot all channels averaged
-        # tfr_pwr_forg.plot_joint(title='All Channels Old')
+        tfr_pwr_forg.plot_joint(title = "All Channels Forgotten")
         
         subj_num_id+=1
     
-    # save TFR data for all subs as numpy array
-    # put data across subs in containers
-    np.save(opj(path_to_TFR_RQ4_output, 'not_equalized', 'power_all_subj_rem'), power_all_subj_rem)
-    np.save(opj(path_to_TFR_RQ4_output, 'not_equalized', 'power_all_subj_forg'), power_all_subj_forg)
     
-    power_all_rem = mne.time_frequency.EpochsTFR(info, power_all_subj_rem, times, logged_freqs)
-    power_all_forg = mne.time_frequency.EpochsTFR(info, power_all_subj_forg, times, logged_freqs)
-    
-    write_tfrs(opj(path_to_TFR_RQ4_output, 'not_equalized', 'pwr_rem-tfr.h5'), power_all_rem, overwrite=True )
-    write_tfrs(opj(path_to_TFR_RQ4_output, 'not_equalized', 'pwr_forg-tfr.h5'), power_all_forg, overwrite=True)
-    
+    np.save(opj(path_to_TFR_RQ4_output, "not_equalized", "power_all_subj_rem"), power_all_subj_rem)
+    np.save(opj(path_to_TFR_RQ4_output, "not_equalized", "power_all_subj_forg"), power_all_subj_forg)
     

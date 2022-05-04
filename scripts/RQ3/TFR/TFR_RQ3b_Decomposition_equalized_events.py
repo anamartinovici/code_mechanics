@@ -1,34 +1,24 @@
 def f_TFR_RQ3b_decomp_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_output, path_to_TFR_RQ3_output):
-    import os
     import mne
     import random
     
     import numpy as np
     
-    import scipy.io
-    from scipy.io import loadmat  # this is the SciPy module that loads mat-files
-    import matplotlib.pyplot as plt
-    from datetime import datetime, date, time
     from os.path import join as opj
     from glob import glob
     from numpy.random import randn 
-    from mne.time_frequency import tfr_morlet, write_tfrs
-    from mne.epochs import equalize_epoch_counts
-    from scipy.stats import spearmanr, ttest_ind, describe, normaltest, pearsonr
-    from mne.stats import permutation_cluster_1samp_test, permutation_cluster_test
-    from mne.viz import plot_tfr_topomap
     
     # set seed to ensure computational reproducibility
     random.seed(project_seed) 
     
-    subs = [ name for name in os.listdir(path_to_eeg_BIDS) if name.startswith('sub') ]
+    subs = [ name for name in os.listdir(path_to_eeg_BIDS) if name.startswith("sub") ]
     
     # just for initiating some params, I need to read one epoch to fill them out
     logged_freqs = np.logspace(np.log10(4), np.log10(40), 18)
     n_cycles = logged_freqs / 2.
     # specify decimation factor - decimation occurs after TFR estimation
     decim = 1 
-    njobs = 1
+    njobs = 4
     n_subj = len(subs)
     n_freqs = len(logged_freqs)
     
@@ -47,8 +37,8 @@ def f_TFR_RQ3b_decomp_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_outpu
     # loop over subjects to transform to the time-frequency domain
     # Apply tfr_morlet
     
-    subj_num_id=0
-    for subject in subs[:1]:
+    subj_num_id = 0
+    for subject in subs:
         print(subject)
         
         # epochs_old_hit
@@ -66,22 +56,22 @@ def f_TFR_RQ3b_decomp_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_outpu
         print(epochs_old_hit.get_data().shape[0])
         print(epochs_old_miss.get_data().shape[0])
         
-        equalize_epoch_counts([epochs_old_hit, epochs_old_miss])  
+        mne.epochs.equalize_epoch_counts([epochs_old_hit, epochs_old_miss])  
         
         print(epochs_old_hit.get_data().shape[0])
         print(epochs_old_miss.get_data().shape[0])
         
         # Run TF decomposition overall epochs
-        tfr_pwr_old_hit = tfr_morlet(epochs_old_hit,
-                                     freqs = logged_freqs,
-                                     n_cycles = n_cycles,
-                                     return_itc = False,
-                                     n_jobs = njobs,
-                                     average = True,
-                                     decim = decim)
+        tfr_pwr_old_hit = mne.time_frequency.tfr_morlet(epochs_old_hit,
+                                                        freqs = logged_freqs,
+                                                        n_cycles = n_cycles,
+                                                        return_itc = False,
+                                                        n_jobs = njobs,
+                                                        average = True,
+                                                        decim = decim)
         
         # Baseline power
-        tfr_pwr_old_hit.apply_baseline(mode = "logratio", baseline=(-0.3, 0))
+        tfr_pwr_old_hit.apply_baseline(mode = "logratio", baseline = (-0.3, 0))
         tfr_pwr_old_hit.crop(0, 0.5)
         power_all_subj_old_hit[subj_num_id,:,:,:] = tfr_pwr_old_hit.data
     
@@ -93,16 +83,16 @@ def f_TFR_RQ3b_decomp_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_outpu
     
         # old_miss
         # Run TF decomposition overall epochs
-        tfr_pwr_old_miss = tfr_morlet(epochs_old_miss,
-                                      freqs = logged_freqs,
-                                      n_cycles = n_cycles,
-                                      return_itc = False,
-                                      n_jobs = njobs,
-                                      average = True,
-                                      decim = decim)
+        tfr_pwr_old_miss = mne.time_frequency.tfr_morlet(epochs_old_miss,
+                                                         freqs = logged_freqs,
+                                                         n_cycles = n_cycles,
+                                                         return_itc = False,
+                                                         n_jobs = njobs,
+                                                         average = True,
+                                                         decim = decim)
         
         # Baseline power
-        tfr_pwr_old_miss.apply_baseline(mode = "logratio", baseline=(-0.3, 0))
+        tfr_pwr_old_miss.apply_baseline(mode = "logratio", baseline = (-0.3, 0))
         tfr_pwr_old_miss.crop(0, 0.5)
         power_all_subj_old_miss[subj_num_id,:,:,:] = tfr_pwr_old_miss.data
     
@@ -114,11 +104,5 @@ def f_TFR_RQ3b_decomp_eq(project_seed, path_to_eeg_BIDS, path_to_TFR_step1_outpu
     
     np.save(opj(path_to_TFR_RQ3_output, "equalized", "power_all_subj_old_hit"), power_all_subj_old_hit)
     np.save(opj(path_to_TFR_RQ3_output, "equalized", "power_all_subj_old_miss"), power_all_subj_old_miss)
-    
-    power_all_old_hit = mne.time_frequency.EpochsTFR(info, power_all_subj_old_hit, times, logged_freqs)
-    write_tfrs(opj(path_to_TFR_RQ3_output, "equalized", "pwr_old_hit-tfr.h5"), power_all_old_hit, overwrite=True )
-    
-    power_all_old_miss = mne.time_frequency.EpochsTFR(info, power_all_subj_old_miss, times, logged_freqs)
-    write_tfrs(opj(path_to_TFR_RQ3_output, "equalized", "pwr_old_miss-tfr.h5"), power_all_old_miss, overwrite=True)
     
     

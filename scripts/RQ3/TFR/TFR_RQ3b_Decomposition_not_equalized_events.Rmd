@@ -1,7 +1,7 @@
 ---
 title: "RQ3b - Decomposition NOT equalized events"
 author: "Ana Martinovici"
-date: "Last compiled on `r Sys.Date()`"
+date: "Last compiled on `r Sys.time()`"
 output: html_document
 ---
 
@@ -20,6 +20,13 @@ path_to_eeg_BIDS <- paste0(DIR_local_files, "/data_outside_repo/original_data/ee
 path_to_TFR_step1_output <- paste0(DIR_local_files, "/data_outside_repo/processed_data/TFR/step1/")
 path_to_TFR_RQ3_output <- paste0(DIR_local_files, "/results_outside_repo/RQ3/TFR/")
 
+# I need this fix because otherwise when python uses parallel processes, reticulate opens multiple Rterm processes instead of python. 
+# for more info, see: https://github.com/rstudio/reticulate/issues/517#issuecomment-580189041
+# and for the fix: https://github.com/rstudio/reticulate/issues/517#issuecomment-580305649
+sys <- import("sys")
+exe <- file.path(sys$exec_prefix, "pythonw.exe")
+sys$executable <- exe
+sys$`_base_executable` <- exe
 
 ```
 
