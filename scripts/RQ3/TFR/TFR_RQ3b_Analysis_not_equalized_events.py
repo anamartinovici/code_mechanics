@@ -55,17 +55,24 @@ def f_TFR_RQ3b_analysis_NOTeq(project_seed, path_to_TFR_step1_output, path_to_TF
     mne.set_cache_dir(path_to_cache_dir)
     threshold_tfce = dict(start = 0, step = 0.2)
     
+    n_j = 4
+    n_perm = 100
+    
+    print("%s%s" % ("starting at: ", time.time()))
+    print("%s%s" % ("number of cores: ", n_j))
+    print("%s%s" % ("number of permutations: ", n_perm))
+    
     start_time = time.time()
     T_obs, clusters, cluster_p_values, H0 = \
         mne.stats.permutation_cluster_test([power_all_subj_old_hit.data,
-                                  power_all_subj_old_miss.data], 
-                                 n_jobs = 4,
-                                 n_permutations = 100,
-                                 threshold = threshold_tfce,
-                                 tail = 0, 
-                                 buffer_size = 100,
-                                 verbose = "error", 
-                                 seed = 888)
+                                            power_all_subj_old_miss.data], 
+                                           n_jobs = n_j,
+                                           n_permutations = n_perm,
+                                           threshold = threshold_tfce,
+                                           tail = 0, 
+                                           buffer_size = 100,
+                                           verbose = "error", 
+                                           seed = 888)
     
     print("--- %s seconds ---" % (time.time() - start_time))
     print(cluster_p_values[cluster_p_values < 0.05])

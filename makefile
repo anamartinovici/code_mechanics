@@ -240,6 +240,7 @@ $(strip $(DIR_RECEIPT))/RQ3_TFR_analysis_eq: $(strip $(DIR_RECEIPT))/RQ3_TFR_dec
 	@echo "done with $@"
 	@echo "---------"
 
+my_test: $(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq
 $(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_data_step2 \
 										   scripts/RQ3/TFR/TFR_RQ3b_Decomposition_equalized_events.py \
 										   scripts/RQ3/TFR/TFR_RQ3b_Decomposition_equalized_events.Rmd
