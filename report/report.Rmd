@@ -156,34 +156,106 @@ authorship_order
 
 ADD INTRODUCTION HERE
 
-## Example - how to include lines of code from external scripts
-This example shows how to print specific lines from a python script.
+
+# Methods
+
+## Preprocessing - TFR
+
+EEG data were filtered with a low cutoff filter of 1 Hz to remove slow drifts, a high cutoff filter at 40 Hz to attenuate high frequency power. Subsequently, bad and noisy channels were detected using several different approaches as implemented in the PREP pipeline [@bigdely-shamloPREPPipelineStandardized2015]. First, by means of correlation, we checked how well a given channel is correlated with all other channels (categorized as bad at *r* , 0.4); second, we checked by using the robust *z*-score deviation aggregates per channel (categorized as bad at *z* . 5); third, by using the robust *z*-score estimates of high-frequency noise per channel (categorized as bad at *z* . 5); and finally, we checked by using the random sample consensus (RANSAC) channel correlations, which is the correlation for each channel with itself across the original data versus the RANSAC predicted data (categorized as bad at *r* , 0.75) as implemented in the PREP pipeline [@bigdely-shamloPREPPipelineStandardized2015]. After detection, these channels were removed from the data and subsequently interpolated (i.e., estimated from surrounding channels). Interpolation was performed using the spherical spline method [@perrinSphericalSplinesScalp1989] as implemented in MNE-Python, which projects the sensor locations onto a unit sphere and interpolates the signal at the channels identified as bad on the signals for the good channels. Afterwards, the EEG data were re-referenced to the average signal across channels. Next, ocular artifacts were removed by performing an independent component analysis on the data and then correlating the resulting components with the EOG channels to see which of the components represented the ocular artifacts. The component that correlated the highest with the EOG channels was then removed from the EEG data.
+
+### Cutoffs
 
 ```{r}
-file_name <- here("scripts", "RQ3", "TFR", "TFR_RQ3b_Analysis_equalized_events.py")
-start_line <- 3
-end_line <- 6
-knitr::read_chunk(path = file_name, labels = "foo-py", from = start_line, to = end_line)
+file_name <- here("scripts", "TFR_preproc_step1.py")
+start_line <- 30
+end_line <- 32
+knitr::read_chunk(path = file_name, labels = "ex-1", from = start_line, to = end_line)
 
 file_in_repo <- stringr::str_sub(file_name, start = stringr::str_locate(file_name, "/code_mechanics")[1, "start"])
 
 ```
 
-Specifically, we are including lines `r start_line`:`r end_line` from `r file_in_repo`:
+Implemented in file: `r file_in_repo`, lines `r start_line`:`r end_line`.
 
-```{r, foo-py, eval = FALSE, echo = TRUE}
+```{r, ex-1, eval = FALSE, echo = TRUE}
+```
+
+### Bad Channels at 0.4
+
+```{r}
+file_name <- here("scripts", "TFR_preproc_step1.py")
+start_line <- 279
+end_line <- 298
+knitr::read_chunk(path = file_name, labels = "ex-2", from = start_line, to = end_line)
+
+file_in_repo <- stringr::str_sub(file_name, start = stringr::str_locate(file_name, "/code_mechanics")[1, "start"])
+
+```
+
+Implemented in file: `r file_in_repo`, lines `r start_line`:`r end_line`.
+
+```{r, ex-2, eval = FALSE, echo = TRUE}
+```
+
+### Questions for Sebastian
+
+- Where do you check the "robust *z*-score deviation aggregates per channel (categorized as bad at *z* . 5)"?
+
+- Is the "do not apply 1 Hz high-pass filter" comment accurate? If so, isn't that what happens at lines 242:247?
+
+```{r}
+file_name <- here("scripts", "TFR_preproc_step1.py")
+start_line <- 241
+end_line <- 247
+knitr::read_chunk(path = file_name, labels = "ex-3", from = start_line, to = end_line)
+
+file_in_repo <- stringr::str_sub(file_name, start = stringr::str_locate(file_name, "/code_mechanics")[1, "start"])
+
+```
+
+Implemented in file: `r file_in_repo`, lines `r start_line`:`r end_line`.
+
+```{r, ex-3, eval = FALSE, echo = TRUE}
 ```
 
 
-# Methods
+```{r}
+file_name <- here("scripts", "TFR_preproc_step1.py")
+start_line <- 269
+end_line <- 277
+knitr::read_chunk(path = file_name, labels = "ex-4", from = start_line, to = end_line)
 
-## Preprocessing
+file_in_repo <- stringr::str_sub(file_name, start = stringr::str_locate(file_name, "/code_mechanics")[1, "start"])
 
-EEG data were filtered with a low cutoff filter of 1 Hz to remove slow drifts, a high cutoff filter at 40 Hz to attenuate high frequency power. Subsequently, bad and noisy channels were detected using several different approaches as implemented in the PREP pipeline [@bigdely-shamloPREPPipelineStandardized2015]. First, by means of correlation, we checked how well a given channel is correlated with all other channels (categorized as bad at *r* , 0.4); second, we checked by using the robust *z*-score deviation aggregates per channel (categorized as bad at *z* . 5); third, by using the robust *z*-score estimates of high-frequency noise per channel (categorized as bad at *z* . 5); and finally, we checked by using the random sample consensus (RANSAC) channel correlations, which is the correlation for each channel with itself across the original data versus the RANSAC predicted data (categorized as bad at *r* , 0.75) as implemented in the PREP pipeline [@bigdely-shamloPREPPipelineStandardized2015]. After detection, these channels were removed from the data and subsequently interpolated (i.e., estimated from surrounding channels). Interpolation was performed using the spherical spline method [@perrinSphericalSplinesScalp1989] as implemented in MNE-Python, which projects the sensor locations onto a unit sphere and interpolates the signal at the channels identified as bad on the signals for the good channels. Afterwards, the EEG data were re-referenced to the average signal across channels. Next, ocular artifacts were removed by performing an independent component analysis on the data and then correlating the resulting components with the EOG channels to see which of the components represented the ocular artifacts. The component that correlated the highest with the EOG channels was then removed from the EEG data.
+```
+
+Implemented in file: `r file_in_repo`, lines `r start_line`:`r end_line`.
+
+```{r, ex-4, eval = FALSE, echo = TRUE}
+```
+
 
 ## Epoching
 
 The EEG data was then subsampled by a factor of four (i.e., from 512 Hz to 128 Hz and segmented into 800 ms epochs, with 300 ms before stimulus onset (onset of the scene) until 500 ms after stimulus onset. The epochs were baseline corrected using the 300 ms preceding the stimulus onset. The resulting epochs were then subjected to *Autoreject*, an automated artifact detection algorithm based on machine-learning classifiers, and cross-validation to estimate the optimal peak-to-peak threshold [@jasAutorejectAutomatedArtifact2017]. This algorithm was implemented to remove artifacts not identified by previous preprocessing steps, and depending on the number of bad sensors for a given trial, either repairs the trial based on interpolation or excludes it from further analysis. The preprocessed data were then submitted to a Morlet wavelet analysis to transform the data into the time-frequency domain with 18 log-scaled frequency bins ranging from 4 to 40 Hz to have higher sensitivity in lower frequency ranges such as the theta band. To optimize both spectral and temporal resolution, the number of cycles to include in the sliding time window were defined by dividing each individual frequency by two. After transforming the data to the time-frequency domain, the data were decimated by a factor of two (sampling every second time point) to increase computational efficiency.
+
+### downsample and segmentation
+
+```{r}
+file_name <- here("scripts", "TFR_preproc_step1.py")
+start_line <- 413
+end_line <- 427
+knitr::read_chunk(path = file_name, labels = "ex-5", from = start_line, to = end_line)
+
+file_in_repo <- stringr::str_sub(file_name, start = stringr::str_locate(file_name, "/code_mechanics")[1, "start"])
+
+```
+
+Implemented in file: `r file_in_repo`, lines `r start_line`:`r end_line`.
+
+```{r, ex-5, eval = FALSE, echo = TRUE}
+```
+
 
 # Analysis
 
