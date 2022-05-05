@@ -77,7 +77,7 @@ def f_TFR_RQ2_analysis_eq(project_seed, path_to_TFR_step1_output, path_to_TFR_RQ
     mne.set_cache_dir(path_to_cache_dir)
     threshold_tfce = dict(start = 0, step = 0.2)
     n_cores = 4
-    n_perm = 100
+    n_perm = 1000
     print("--------------------")
     print("%s%s" % ("number of cores: ", n_cores))
     print("%s%s" % ("number of permutations: ", n_perm))

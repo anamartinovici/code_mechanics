@@ -56,7 +56,7 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_TFR_step1_output, path_to_TFR_R
     threshold_tfce = dict(start = 0, step = 0.2)
     
     n_j = 4
-    n_perm = 100
+    n_perm = 1000
     
     print("%s%s" % ("starting at: ", time.time()))
     print("%s%s" % ("number of cores: ", n_j))
@@ -70,7 +70,7 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_TFR_step1_output, path_to_TFR_R
                                            n_permutations = n_perm,
                                            threshold = threshold_tfce,
                                            tail = 0, 
-                                           buffer_size = 1000,
+                                           buffer_size = 100,
                                            verbose = "error", 
                                            seed = 888)
     
