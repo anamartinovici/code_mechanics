@@ -71,7 +71,7 @@ def f_TFR_RQ3b_analysis_eq(project_seed, path_to_TFR_step1_output, path_to_TFR_R
                                            threshold = threshold_tfce,
                                            tail = 0, 
                                            buffer_size = 100,
-                                           verbose = "error", 
+                                           verbose = "debug", 
                                            seed = 888)
     
     print("--- %s seconds ---" % (time.time() - start_time))
