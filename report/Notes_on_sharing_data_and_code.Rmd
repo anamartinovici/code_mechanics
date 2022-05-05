@@ -65,6 +65,16 @@ After logging in to the platform, we see: ![platform after log in](platform1.PNG
 
 - `Excluded sensors (txt files)`
 
+### Question
+
+Should there be two folders, one for ERP and one for TFR? for `Pre-processed time series data`
+
+For removed ICA components:
+
+- two folders?
+
+- which files?
+
 
 
 

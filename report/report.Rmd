@@ -154,7 +154,8 @@ authorship_order
 
 # Introduction
 
-ADD INTRODUCTION HERE
+Explain how we got the data and instructions.
+
 
 
 # Methods
