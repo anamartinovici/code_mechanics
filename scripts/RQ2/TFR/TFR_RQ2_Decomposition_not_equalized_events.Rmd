@@ -1,0 +1,43 @@
+---
+title: "RQ2 - Decomposition NOT equalized events"
+author: "Ana Martinovici"
+date: "Last compiled on `r Sys.time()`"
+output: html_document
+---
+
+```{r, setup}
+
+library("here")
+library("reticulate")
+
+# load project_info list
+load(here("tmp", "initial_setup.RData"))
+
+project_seed    <- as.integer(project_info[["project_seed"]])
+DIR_local_files <- project_info[["DIR_local_files"]]
+
+path_to_eeg_BIDS <- paste0(DIR_local_files, "/data_outside_repo/original_data/eeg_BIDS/")
+path_to_TFR_step1_output <- paste0(DIR_local_files, "/data_outside_repo/processed_data/TFR/step1/")
+path_to_TFR_RQ2_output <- paste0(DIR_local_files, "/results_outside_repo/RQ2/TFR/")
+
+# I need this fix because otherwise when python uses parallel processes, reticulate opens multiple Rterm processes instead of python. 
+# for more info, see: https://github.com/rstudio/reticulate/issues/517#issuecomment-580189041
+# and for the fix: https://github.com/rstudio/reticulate/issues/517#issuecomment-580305649
+sys <- import("sys")
+exe <- file.path(sys$exec_prefix, "pythonw.exe")
+sys$executable <- exe
+sys$`_base_executable` <- exe
+
+```
+
+We are using `.Rmd` files because then all the output that the `.py` scripts print in the console is saved in the corresponding `.html` file. Note that this `.Rmd` file uses as a current working directory the directory in which the file is located. If I change this to the root of the `git` repo / `R` project, then image files will not be accessible (pandoc error 99).
+
+```{python}
+exec(open("TFR_RQ2_Decomposition_not_equalized_events.py", encoding="utf-8").read())
+
+f_TFR_RQ2_decomp_NOTeq(project_seed = r.project_seed, 
+                       path_to_eeg_BIDS = r.path_to_eeg_BIDS,
+                       path_to_TFR_step1_output = r.path_to_TFR_step1_output, 
+                       path_to_TFR_RQ2_output = r.path_to_TFR_RQ2_output)
+
+```
