@@ -126,7 +126,11 @@ Timeline of our contribution to the EEGManyPipelines project:
 
 ## Preprocessing - TFR
 
-EEG data were filtered with a low cutoff filter of 1 Hz to remove slow drifts, a high cutoff filter at 40 Hz to attenuate high frequency power. Subsequently, bad and noisy channels were detected using several different approaches as implemented in the PREP pipeline [@bigdely-shamloPREPPipelineStandardized2015]. First, by means of correlation, we checked how well a given channel is correlated with all other channels (categorized as bad at *r* , 0.4); second, we checked by using the robust *z*-score deviation aggregates per channel (categorized as bad at *z* . 5); third, by using the robust *z*-score estimates of high-frequency noise per channel (categorized as bad at *z* . 5); and finally, we checked by using the random sample consensus (RANSAC) channel correlations, which is the correlation for each channel with itself across the original data versus the RANSAC predicted data (categorized as bad at *r* , 0.75) as implemented in the PREP pipeline [@bigdely-shamloPREPPipelineStandardized2015]. After detection, these channels were removed from the data and subsequently interpolated (i.e., estimated from surrounding channels). Interpolation was performed using the spherical spline method [@perrinSphericalSplinesScalp1989] as implemented in MNE-Python, which projects the sensor locations onto a unit sphere and interpolates the signal at the channels identified as bad on the signals for the good channels. Afterwards, the EEG data were re-referenced to the average signal across channels. Next, ocular artifacts were removed by performing an independent component analysis on the data and then correlating the resulting components with the EOG channels to see which of the components represented the ocular artifacts. The component that correlated the highest with the EOG channels was then removed from the EEG data.
+EEG data were filtered with a low cutoff filter of 1 Hz to remove slow drifts, a high cutoff filter at 40 Hz to attenuate high frequency power. Subsequently, bad and noisy channels were detected using several different approaches as implemented in the PREP pipeline [@bigdely-shamloPREPPipelineStandardized2015]. First, by means of correlation, we checked how well a given channel is correlated with all other channels (categorized as bad at *r* smaller than 0.4); second, we checked by using the robust *z*-score deviation aggregates per channel (categorized as bad at *z* larger than 5); third, by using the robust *z*-score estimates of high-frequency noise per channel (categorized as bad at *z* larger than 5); and finally, we checked by using the random sample consensus (RANSAC) channel correlations, which is the correlation for each channel with itself across the original data versus the RANSAC predicted data (categorized as bad at *r* , 0.75) as implemented in the PREP pipeline [@bigdely-shamloPREPPipelineStandardized2015]. After detection, these channels were removed from the data and subsequently interpolated (i.e., estimated from surrounding channels). Interpolation was performed using the spherical spline method [@perrinSphericalSplinesScalp1989] as implemented in MNE-Python, which projects the sensor locations onto a unit sphere and interpolates the signal at the channels identified as bad on the signals for the good channels. Afterwards, the EEG data were re-referenced to the average signal across channels. Next, ocular artifacts were removed by performing an independent component analysis on the data and then correlating the resulting components with the EOG channels to see which of the components represented the ocular artifacts. The component that correlated the highest with the EOG channels was then removed from the EEG data.
+
+add: https://pyprep.readthedocs.io/en/stable/generated/pyprep.NoisyChannels.html#pyprep.NoisyChannels
+
+
 
 ### Cutoffs
 
@@ -166,7 +170,11 @@ Implemented in file: `r file_in_repo`, lines `r start_line`:`r end_line`.
 
 - Where do you check the "robust *z*-score deviation aggregates per channel (categorized as bad at *z* . 5)"?
 
+This is in the default setting of the function.
+
 - Is the "do not apply 1 Hz high-pass filter" comment accurate? If so, isn't that what happens at lines 242:247?
+
+the comments from lines 272:274 can and should be deleted
 
 ```{r}
 file_name <- here("scripts", "TFR_preproc_step1.py")
