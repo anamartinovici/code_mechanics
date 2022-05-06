@@ -111,8 +111,15 @@ authorship_order
 
 # Introduction
 
-Explain how we got the data and instructions.
+Timeline of our contribution to the EEGManyPipelines project:
 
+- we registered for the EEGManyPipelines project on 2021-09-15, and received the confirmation email 2021-09-20.
+
+- instructions for downloading the data and for analysis were sent 2021-10-08. These are saved within the repository at `data_in_repo/original_data/instructions`.
+
+- we received the link to the submission portal on 2022-05-02
+
+- we've submitted the pre-processed data on 
 
 
 # Methods
