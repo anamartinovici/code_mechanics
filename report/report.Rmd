@@ -60,7 +60,6 @@ output:
     keep_tex: FALSE # delete the LaTeX source file after the PDF has been rendered
 editor_options: 
   chunk_output_type: console
-bibliography: references.bib
 ---
 
 ```{r install-latex, include = FALSE, eval = FALSE}
@@ -122,7 +121,7 @@ Timeline of our contribution to the EEGManyPipelines project:
 
 ## Preprocessing - ERP
 
-For eachparticipant, the continuous EEG data was assigned electrode coordinates and filtered with two consecutive Hamming windowed sinc FIR filters (high-pass 0.1 Hz, low-pass 40 Hz). Bad or noisy channels were detected using several approaches implemented in the PREP pipeline [@bigdely-shamlo2015], including flat or missing signal, "bad-by-high-frequency-noise" (frequency components above 50 Hz considerably higher than median channel noisiness, as calculated using a robust *Z*-scoring method and default threshold *z* \> 5), "bad-by-correlation" (maximum correlation with another channel below the default *r* = .4; fraction of bad correlation windows above the default threshold of 0.01), "bad-by-deviation" (amplitude deviates from the median channel amplitude, as calculated using a robust *Z*-scoring method and default threshold *z* \> 5), and signal prediction based on signals and spatial locations of other channels lower than default threshold of *r* = .75 (random sample consensus approach, *RANSAC*; @fischler1987).[^1] Channels identified as noisy using this procedure were removed from the data and subsequently interpolated via a spherical spline procedure [@perrin1989].\
+For each participant, the continuous EEG data was assigned electrode coordinates and filtered with two consecutive Hamming windowed sinc FIR filters (high-pass 0.1 Hz, low-pass 40 Hz). Bad or noisy channels were detected using several approaches implemented in the PREP pipeline [@bigdely-shamlo2015], including flat or missing signal, "bad-by-high-frequency-noise" (frequency components above 50 Hz considerably higher than median channel noisiness, as calculated using a robust *Z*-scoring method and default threshold *z* > 5), "bad-by-correlation" (maximum correlation with another channel below the default *r* = .4; fraction of bad correlation windows above the default threshold of 0.01), "bad-by-deviation" (amplitude deviates from the median channel amplitude, as calculated using a robust *Z*-scoring method and default threshold *z* > 5), and signal prediction based on signals and spatial locations of other channels lower than default threshold of *r* = .75 (random sample consensus approach, *RANSAC*; @fischler1987).[^1] Channels identified as noisy using this procedure were removed from the data and subsequently interpolated via a spherical spline procedure [@perrin1989].\
 
 [^1]: For more details, see the documentation of [`NoisyChannels`](https://pyprep.readthedocs.io/en/latest/generated/pyprep.NoisyChannels.html#pyprep.NoisyChannels).
 
@@ -146,100 +145,10 @@ Finally, the clean epoched data were separated into 8 conditions to investigate 
   7. *remembered*: `man-made` and `natural` scenes, `new` and `old`, `subsequent_remembered`, include all behavior
   8. *forgotten*: `man-made` and `natural` scenes, `new` and `old`, `subsequent_forgotten`, include all behavior
 
-
-
-
-
-
-
 ## Preprocessing - TFR
 
-### Cutoffs
-
-```{r}
-file_name <- here("scripts", "TFR_preproc_step1.py")
-start_line <- 30
-end_line <- 32
-knitr::read_chunk(path = file_name, labels = "ex-1", from = start_line, to = end_line)
-
-file_in_repo <- stringr::str_sub(file_name, start = stringr::str_locate(file_name, "/code_mechanics")[1, "start"])
-
-```
-
-Implemented in file: `r file_in_repo`, lines `r start_line`:`r end_line`.
-
-```{r, ex-1, eval = FALSE, echo = TRUE}
-```
-
-### Bad Channels at 0.4
-
-```{r}
-file_name <- here("scripts", "TFR_preproc_step1.py")
-start_line <- 279
-end_line <- 298
-knitr::read_chunk(path = file_name, labels = "ex-2", from = start_line, to = end_line)
-
-file_in_repo <- stringr::str_sub(file_name, start = stringr::str_locate(file_name, "/code_mechanics")[1, "start"])
-
-```
-
-Implemented in file: `r file_in_repo`, lines `r start_line`:`r end_line`.
-
-```{r, ex-2, eval = FALSE, echo = TRUE}
-```
-
-
-
-```{r}
-file_name <- here("scripts", "TFR_preproc_step1.py")
-start_line <- 241
-end_line <- 247
-knitr::read_chunk(path = file_name, labels = "ex-3", from = start_line, to = end_line)
-
-file_in_repo <- stringr::str_sub(file_name, start = stringr::str_locate(file_name, "/code_mechanics")[1, "start"])
-
-```
-
-Implemented in file: `r file_in_repo`, lines `r start_line`:`r end_line`.
-
-```{r, ex-3, eval = FALSE, echo = TRUE}
-```
-
-```{r}
-file_name <- here("scripts", "TFR_preproc_step1.py")
-start_line <- 269
-end_line <- 277
-knitr::read_chunk(path = file_name, labels = "ex-4", from = start_line, to = end_line)
-
-file_in_repo <- stringr::str_sub(file_name, start = stringr::str_locate(file_name, "/code_mechanics")[1, "start"])
-
-```
-
-Implemented in file: `r file_in_repo`, lines `r start_line`:`r end_line`.
-
-```{r, ex-4, eval = FALSE, echo = TRUE}
-```
-
-## Epoching
-
-The EEG data was then subsampled by a factor of four (i.e., from 512 Hz to 128 Hz and segmented into 800 ms epochs, with 300 ms before stimulus onset (onset of the scene) until 500 ms after stimulus onset. The epochs were baseline corrected using the 300 ms preceding the stimulus onset. The resulting epochs were then subjected to *Autoreject*, an automated artifact detection algorithm based on machine-learning classifiers, and cross-validation to estimate the optimal peak-to-peak threshold [@jas2017]. This algorithm was implemented to remove artifacts not identified by previous preprocessing steps, and depending on the number of bad sensors for a given trial, either repairs the trial based on interpolation or excludes it from further analysis. The preprocessed data were then submitted to a Morlet wavelet analysis to transform the data into the time-frequency domain with 18 log-scaled frequency bins ranging from 4 to 40 Hz to have higher sensitivity in lower frequency ranges such as the theta band. To optimize both spectral and temporal resolution, the number of cycles to include in the sliding time window were defined by dividing each individual frequency by two. After transforming the data to the time-frequency domain, the data were decimated by a factor of two (sampling every second time point) to increase computational efficiency.
-
-### downsample and segmentation
-
-```{r}
-file_name <- here("scripts", "TFR_preproc_step1.py")
-start_line <- 413
-end_line <- 427
-knitr::read_chunk(path = file_name, labels = "ex-5", from = start_line, to = end_line)
-
-file_in_repo <- stringr::str_sub(file_name, start = stringr::str_locate(file_name, "/code_mechanics")[1, "start"])
-
-```
-
-Implemented in file: `r file_in_repo`, lines `r start_line`:`r end_line`.
-
-```{r, ex-5, eval = FALSE, echo = TRUE}
-```
+Signal preprocessing for time-frequency analysis followed a similar procedure, with the following exceptions: (*i*) high-pass filter cut-off 1 Hz; (*ii*) continuous data segmented into 800 ms epochs (-300ms to +500ms time-locked to scene onset) and baseline corrected using the pre-stimulus interval.\
+The preprocessed data were then submitted to a Morlet wavelet analysis to transform the data into the time-frequency domain with 18 log-scaled frequency bins ranging from 4 to 40 Hz, to increase sensitivity at lower frequency ranges such as the theta band. To optimize both spectral and temporal resolution, the number of cycles to include in the sliding time window were defined by dividing each individual frequency by two. After transforming the data to the time-frequency domain, the data were decimated by a factor of two (sampling every second time point) to increase computational efficiency.
 
 # Analysis
 
@@ -249,7 +158,11 @@ The first hypothesis we were asked to test was the following:
 
 > *There is an effect of scene category (i.e., a difference between images showing man-made vs. natural environments) on the amplitude of the N1 component, i.e. the first major negative EEG voltage deflection.*
 
-To address this question, we fit a Bayesian multilevel linear model on N1 amplitude values, with *condition* (2 levels: *man-made*, *natural*) as *constant* (a.k.a. fixed) effect and participant and trial as *varying* (a.k.a. random) effects. We allowed intercepts and slopes to vary as a function of participant and trials, to model general and condition-specific inter-individual differences. As a likelihood function, we chose a Gaussian distribution.\
+To address this question, we first identified the N1 ERP component 
+
+
+
+we fit a Bayesian multilevel linear model on N1 amplitude values, with *condition* (2 levels: *man-made*, *natural*) as *constant* (a.k.a. fixed) effect and participant and trial as *varying* (a.k.a. random) effects. We allowed intercepts and slopes to vary as a function of participant and trials, to model general and condition-specific inter-individual differences. As a likelihood function, we chose a Gaussian distribution.\
 An important aspect of Bayesian analysis is the choice of priors [e.g., @natarajan2000]. Given the susceptibility of the electrophysiological signal to inter-individual differences (e.g., skull thickness, skin conductance, or hair), we decided to base our priors on the current data by visually inspecting the grand average ERP waveform, i.e., collapsed across *man-made* and *natural* condition. This procedure follows the same logic of *collapsed localizers*, useful when prior research does not allow to reliably identify scalp electrodes and time windows related to ERP components of interest [e.g., @Luck2017, p. 150]. For the main analysis, we placed **informative priors** on the *intercept* -- a normal distribution with mean $\mu$ = 4 and standard deviation $\sigma$ = 2: $Normal(4,2)$ -- and $\beta$ coefficient, $Normal(0,1)$. To assess whether our chosen informative prior would bias parameter estimates (and, consequently, the interpretation of the results; @depaoli2017), we ran the same multilevel linear model with **weakly informative** priors (*intercept*: $Normal(4,4)$ ; $\beta$: $Normal(0,4)$) and **uninformative** priors (*intercept*: $Normal(4,10)$ ; $\beta$: $Normal(0,10)$). We anticipated that the choice of prior would have negligible effects on the posterior distributions, because the influence of the prior washes out with a large amount of data [@edwards1963].\
 Since we had no prior knowledge regarding the standard deviation of participant and trials, we placed a **weakly informative prior** on these varying effects: a *t*-distribution with degrees of freedom $\nu$ = 3, location $\mu$ = 0, and scale $\sigma$ = 2, $Student(3,0,2)$.\
 Models were fitted in *R* using the `brms` package [@bürkner2018], which employs the probabilistic programming language *Stan* [@carpenter2017] to implement a Markov chain Monte Carlo (MCMC) algorithm (i.e., No-U-Turn sampler; @homan2014) to estimate posterior distributions of the parameters of interest. Four MCMC chains with 4000 iterations (2000 warm-up) and no thinning were run to estimate parameters in each of the fitted models. Model convergence was assessed as follows: (*i*) visual inspection of trace plots, rank plots, and graphical posterior predictive checks [@gabry2019]; (*ii*) Gelman-Rubin $\hat{R}$ statistic [@gelman2013] -- comparing the between-chains variability to the within-chain variability -- between 1 and 1.05 [see also @Nalborczyk2019].\
