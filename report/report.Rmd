@@ -166,8 +166,6 @@ Models were fitted in *R* using the `brms` package [@bürkner2018], which employ
 Posterior distributions of the model parameters were summarized using the mean and 95% credible interval (CI). Differences between conditions were calculated by computing the difference between posterior distributions of the respective conditions.\
 Statistical inference was performed using the **HDI + ROPE** decision rule [@kruschke2018]: values were accepted or rejected against a null hypothesis considering a small effect as practically equivalent to zero (Region of Practical Equivalence; *ROPE*). To mitigate the inevitable subjectivity intrinsic in arbitrarily choosing the range of negligible values, we explored a range of plausible ROPEs, from ±0.05$\mu$*V* to ±0.5$\mu$*V* in steps of 0.01$\mu$*V*. If the percentage of the posterior differences within the full ROPE was smaller than 5%, the null hypothesis was rejected.
 
-### ADD SCORING OF N1
-
 ## RQ2
 
 To test whether there are effects of image novelty (RQ2; i.e., between images shown for the first time/new vs. repeated/old images) we conducted a multilevel analysis contrasting the EEG data from trials with old images against trials with new images. To test for differences in theta power at fronto-central channels we focused on the frequency range from 4-8 Hz and all frontocentral channels (FC1, FCz, FC2). At the first level (i.e., the participant level), we computed the averaged time-frequency maps for each of the two conditions. We then tested the resulting averaged maps at the second level for significant group effects, using a paired-sample *t*-test. We used cluster-based permutation testing as a stringent control for multiple comparisons [@maris2007]. Specifically, for every sample across the three channels, we quantified the experimental effect by a *t* value. Selection of samples for inclusion in a cluster was implemented using threshold-free cluster enhancement (TFCE) [@smith2009]. TFCE eliminates the free parameter initial threshold value that determines which points are included in clustering by approximating a continuous integration across possible threshold values with a standard Riemann sum. We subsequently clustered selected samples in connected sets based on temporal and spectral adjacency, and we computed cluster-level statistics by taking the sum of the *t* values within every cluster. Subsequently, we performed permutation testing using the Monte Carlo method to compute the posterior significance probability of our observed effect[@maris2007]. This analysis results in a cluster of adjacent data points across time, frequencies, and channels, which significantly differs in activity between old and new images. To test for differences in alpha power at posterior channels we focused on the frequency range from 8-13 Hz and all posterior channels (P7, P5, P3, P1, P2, P4, P6).
@@ -205,6 +203,10 @@ EEG preprocessing was carried out using `MNE-Python` [@gramfort2013] in *Python*
 -   **visualization**: `ggplot2` *v*3.3.6 [@ggplot2], `eegUtils` *v*0.7.0 [@eegUtils], `bayesplot` *v*1.9.0 [@bayesplot], `viridis` *v*0.6.2 [@garnier2021], `tidybayes` *v*3.0.2 [@tidybayes], `patchwork` *v*1.1.1 [@patchwork]
 
 -   **report generation**: `knitr` *v*1.39 [@knitr], `rmarkdown` *v*2.14 [@rmarkdown], `papaja` *v*0.1.0.9999 [@papaja]
+
+
+# ANA COULD YOU PLEASE ADD HERE INFORMATION ABOUT MAKE AND THE R PACKAGES YOU USED FOR REPRODUCIBILITY (E.G., RETICULATE)? NO NEED TO ADD REFERENCES VIA RSTUDIO, BUT IF YOU WRITE DOWN DOIs YOU'LL MAKE MY LIFE EASIER :) 
+
 
 \newpage
 
