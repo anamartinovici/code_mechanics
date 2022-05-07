@@ -83,7 +83,6 @@ tmp/initial_setup: scripts/get_path_to_local_files.R \
 	@echo "---------------"	
 	@echo "restoring commit timestamps such that Make does not build based on git clone time"
 	bash scripts/restore_file_timestamps.sh
-	date > $@
 	@echo "---------------"
 	@echo "create an .Rdata file that store info about paths to local files"
 	Rscript scripts/get_path_to_local_files.R \
@@ -94,7 +93,6 @@ tmp/initial_setup: scripts/get_path_to_local_files.R \
 	Rscript scripts/render_Rmd.R \
 			scripts/test_make.Rmd \
 			tmp/
-	date > $@
 	@echo "done with $@"
 	@echo "---------"
 
@@ -188,18 +186,31 @@ $(strip $(DIR_RECEIPT))/RQ4_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_d
 
 RQ3: RQ3_ERP RQ3_TFR
 
-RQ3_ERP: $(strip $(DIR_RECEIPT))/RQ3_ERP_results
+RQ3_ERP: $(strip $(DIR_RECEIPT))/RQ3_ERP_results_NOTeq
+RQ3_ERP: $(strip $(DIR_RECEIPT))/RQ3_ERP_results_eq
 RQ3_TFR: $(strip $(DIR_RECEIPT))/RQ3_TFR_analysis_NOTeq	
 RQ3_TFR: $(strip $(DIR_RECEIPT))/RQ3_TFR_analysis_eq
 
-$(strip $(DIR_RECEIPT))/RQ3_ERP_results: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
-								  	     scripts/RQ3/ERP/RQ3_group_analysis.py \
-								  	     scripts/RQ3/ERP/RQ3_group_analysis.Rmd
+$(strip $(DIR_RECEIPT))/RQ3_ERP_results_NOTeq: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
+								  	           scripts/RQ3/ERP/RQ3_group_analysis_not_equalized.py \
+								  	           scripts/RQ3/ERP/RQ3_group_analysis_not_equalized.Rmd
 	$(print-target-and-prereq-info)
-	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ3/ERP
+	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ3/ERP/not_equalized
 	Rscript scripts/render_Rmd.R \
-			scripts/RQ3/ERP/RQ3_group_analysis.Rmd \
-			$(strip $(DIR_local_files))/results_outside_repo/RQ3/ERP/ 
+			scripts/RQ3/ERP/RQ3_group_analysis_not_equalized.Rmd \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ3/ERP/not_equalized/ 
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+	
+$(strip $(DIR_RECEIPT))/RQ3_ERP_results_eq: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
+								  	        scripts/RQ3/ERP/RQ3_group_analysis_equalized.py \
+								  	        scripts/RQ3/ERP/RQ3_group_analysis_equalized.Rmd
+	$(print-target-and-prereq-info)
+	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ3/ERP/equalized
+	Rscript scripts/render_Rmd.R \
+			scripts/RQ3/ERP/RQ3_group_analysis_equalized.Rmd \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ3/ERP/equalized/ 
 	date > $@
 	@echo "done with $@"
 	@echo "---------"
@@ -261,6 +272,33 @@ $(strip $(DIR_RECEIPT))/RQ3_TFR_decomp_eq: $(strip $(DIR_RECEIPT))/TFR_process_d
 RQ2 : RQ2_ERP RQ2_TFR
 
 RQ2_TFR: $(strip $(DIR_RECEIPT))/RQ2_TFR_analysis_eq
+RQ2_TFR: $(strip $(DIR_RECEIPT))/RQ2_TFR_analysis_NOTeq
+
+$(strip $(DIR_RECEIPT))/RQ2_TFR_analysis_NOTeq: $(strip $(DIR_RECEIPT))/RQ2_TFR_decomp_NOTeq \
+										        scripts/RQ2/TFR/TFR_RQ2_Analysis_not_equalized_events.py \
+										        scripts/RQ2/TFR/TFR_RQ2_Analysis_not_equalized_events.Rmd
+	$(print-target-and-prereq-info)
+	mkdir -p tmp/
+	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ2/TFR/not_equalized
+	Rscript scripts/render_Rmd.R \
+			scripts/RQ2/TFR/TFR_RQ2_Analysis_not_equalized_events.Rmd \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/TFR/not_equalized/ 
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/RQ2_TFR_decomp_NOTeq: $(strip $(DIR_RECEIPT))/TFR_process_data_step1 \
+										      scripts/RQ2/TFR/TFR_RQ2_Decomposition_not_equalized_events.py \
+										      scripts/RQ2/TFR/TFR_RQ2_Decomposition_not_equalized_events.Rmd
+	$(print-target-and-prereq-info)
+	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ2/TFR/not_equalized
+	Rscript scripts/render_Rmd.R \
+			scripts/RQ2/TFR/TFR_RQ2_Decomposition_not_equalized_events.Rmd \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ2/TFR/not_equalized/ 
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+	
 $(strip $(DIR_RECEIPT))/RQ2_TFR_analysis_eq: $(strip $(DIR_RECEIPT))/RQ2_TFR_decomp_eq \
 										     scripts/RQ2/TFR/TFR_RQ2_Analysis_equalized_events.py \
 										     scripts/RQ2/TFR/TFR_RQ2_Analysis_equalized_events.Rmd

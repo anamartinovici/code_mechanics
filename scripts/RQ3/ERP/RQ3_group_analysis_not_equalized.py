@@ -1,4 +1,4 @@
-def f_RQ3_group_analysis_eq(project_seed, path_to_ERP_step1_output):
+def f_RQ3_group_analysis_NOTeq(project_seed, path_to_ERP_step1_output):
     #!/usr/bin/env python3
     # -*- coding: utf-8 -*-
     '''
@@ -67,8 +67,6 @@ def f_RQ3_group_analysis_eq(project_seed, path_to_ERP_step1_output):
                 opj(path_to_ERP_step1_output + ssj, ssj + '_old_miss_epo.fif'), preload = True
                 )
         
-        # equalize epoch counts
-        equalize_epoch_counts([old_hit, old_miss]) 
         
         # 'old_hit': extract data
         old_hit_data = old_hit.average( # average across trials
