@@ -121,29 +121,29 @@ Timeline of our contribution to the EEGManyPipelines project:
 
 ## Preprocessing - ERP
 
-For each participant, the continuous EEG data was assigned electrode coordinates and filtered with two consecutive Hamming windowed sinc FIR filters (high-pass 0.1 Hz, low-pass 40 Hz). Bad or noisy channels were detected using several approaches implemented in the PREP pipeline [@bigdely-shamlo2015], including flat or missing signal, "bad-by-high-frequency-noise" (frequency components above 50 Hz considerably higher than median channel noisiness, as calculated using a robust *Z*-scoring method and default threshold *z* > 5), "bad-by-correlation" (maximum correlation with another channel below the default *r* = .4; fraction of bad correlation windows above the default threshold of 0.01), "bad-by-deviation" (amplitude deviates from the median channel amplitude, as calculated using a robust *Z*-scoring method and default threshold *z* > 5), and signal prediction based on signals and spatial locations of other channels lower than default threshold of *r* = .75 (random sample consensus approach, *RANSAC*; @fischler1987).[^1] Channels identified as noisy using this procedure were removed from the data and subsequently interpolated via a spherical spline procedure [@perrin1989].\
+For each participant, the continuous EEG data was assigned electrode coordinates and filtered with two consecutive Hamming windowed sinc FIR filters (high-pass 0.1 Hz, low-pass 40 Hz). Bad or noisy channels were detected using several approaches implemented in the PREP pipeline [@bigdely-shamlo2015], including flat or missing signal, "bad-by-high-frequency-noise" (frequency components above 50 Hz considerably higher than median channel noisiness, as calculated using a robust *Z*-scoring method and default threshold *z* \> 5), "bad-by-correlation" (maximum correlation with another channel below the default *r* = .4; fraction of bad correlation windows above the default threshold of 0.01), "bad-by-deviation" (amplitude deviates from the median channel amplitude, as calculated using a robust *Z*-scoring method and default threshold *z* \> 5), and signal prediction based on signals and spatial locations of other channels lower than default threshold of *r* = .75 (random sample consensus approach, *RANSAC*; @fischler1987).[^1] Channels identified as noisy were removed from the data and subsequently interpolated via a spherical spline procedure [@perrin1989].\
 
 [^1]: For more details, see the documentation of [`NoisyChannels`](https://pyprep.readthedocs.io/en/latest/generated/pyprep.NoisyChannels.html#pyprep.NoisyChannels).
 
-Afterwards, the EEG data were re-referenced to the average signal across channels. Ocular artifacts were then corrected by means of independent component analysis via the `picard` algorithm [@ablin2018] and then correlating the resulting components with the EOG channels to identify which components best represented horizontal eye movements and blinks. The components that correlated the highest with the EOG channels were then removed from the EEG data before re-conversion into channel space.\
+Afterwards, the EEG data were re-referenced to the average signal across channels. Ocular artifacts were then corrected by means of independent component analysis via the `picard` algorithm [@ablin2018] and the resulting components were correlated with activity recorded from the EOG channels, in order to identify which components best represented horizontal eye movements and blinks. The components that correlated the highest with the EOG channels were then removed from the EEG data before re-conversion into channel space.\
 The EEG data was subsampled by a factor of four (i.e., from 512 Hz to 128 Hz) and segmented into epochs extending from -200ms to +500ms time-locked to scene onset, and baseline correction was applied using the pre-stimulus interval. The epoched data was then subjected to *Autoreject*, an automated artifact detection algorithm based on machine-learning classifiers and cross-validation to estimate the optimal peak-to-peak threshold [@jas2017]. This algorithm was implemented to remove artifacts not identified by previous preprocessing steps and, depending on the number of bad sensors for a given trial, either repairs the trial based on spherical spline interpolation or excludes it from further analysis.[^2]\
 
 [^2]: For more details, see the documentation of [`autoreject`](https://autoreject.github.io/stable/index.html).
 
-Finally, the clean epoched data were separated into 8 conditions to investigate each research question: 
+Finally, the clean epoched data were separated into 8 conditions to investigate each research question:
 
-* **RQ1**
-  1. *manmade*: scenes categorized as `man-made`, presented for the first time or previously (`new` and `old`), subsequently remembered or forgotten (`subsequent_remembered` and `subsequent_forgotten`), excluding `NA` in behavioral responses (although scene category is independent from response, `NA` may reflect drops in attention and, consequently, incomplete stimulus perception)
-  2. *natural*: scenes categorized as `natural`, `new` and `old`, `subsequent_remembered` and `subsequent_forgotten`, excluding `NA` in behavior
-* **RQ2**
-  3. *new*: `man-made` and `natural` scenes, presented for the first time (`new`), `subsequent_remembered` and `subsequent_forgotten`, excluding `NA` in behavior
-  4. *old*: `man-made` and `natural` scenes, presented previously (`old`), `subsequent_remembered` and `subsequent_forgotten`, excluding `NA` in behavior
-* **RQ3**
-  5. *old-hit*: `man-made` and `natural` scenes, presented previously (`old`), successfully recognized as such (`hit`), can include `NA` in memory (the image has been successfully categorized as old, regardless of whether it is recognized as such in subsequent presentations)
-  6. *old-miss*: `man-made` and `natural` scenes, presented previously (`old`), not recognized as such (`miss`), can include `NA` in memory
-* **RQ4**
-  7. *remembered*: `man-made` and `natural` scenes, `new` and `old`, `subsequent_remembered`, include all behavior
-  8. *forgotten*: `man-made` and `natural` scenes, `new` and `old`, `subsequent_forgotten`, include all behavior
+-   **RQ1**
+    1.  *manmade*: scenes categorized as `man-made`, presented for the first time or previously (`new` and `old`), subsequently remembered or forgotten (`subsequent_remembered` and `subsequent_forgotten`), excluding `NA` in behavioral responses (although scene category is independent from response, `NA` may reflect drops in attention and, consequently, incomplete stimulus perception)
+    2.  *natural*: scenes categorized as `natural`, `new` and `old`, `subsequent_remembered` and `subsequent_forgotten`, excluding `NA` in behavior
+-   **RQ2**
+    3.  *new*: `man-made` and `natural` scenes, presented for the first time (`new`), `subsequent_remembered` and `subsequent_forgotten`, excluding `NA` in behavior
+    4.  *old*: `man-made` and `natural` scenes, presented previously (`old`), `subsequent_remembered` and `subsequent_forgotten`, excluding `NA` in behavior
+-   **RQ3**
+    5.  *old-hit*: `man-made` and `natural` scenes, presented previously (`old`), successfully recognized as such (`hit`), can include `NA` in memory (the image has been successfully categorized as old, regardless of whether it is recognized as such in subsequent presentations)
+    6.  *old-miss*: `man-made` and `natural` scenes, presented previously (`old`), not recognized as such (`miss`), can include `NA` in memory
+-   **RQ4**
+    7.  *remembered*: `man-made` and `natural` scenes, `new` and `old`, `subsequent_remembered`, include all behavior
+    8.  *forgotten*: `man-made` and `natural` scenes, `new` and `old`, `subsequent_forgotten`, include all behavior
 
 ## Preprocessing - TFR
 
@@ -154,9 +154,9 @@ The preprocessed data were then submitted to a Morlet wavelet analysis to transf
 
 ## RQ1
 
-The first hypothesis we were asked to test was the following:
+We were asked to test the following:
 
-> *There is an effect of scene category (i.e., a difference between images showing man-made vs. natural environments) on the amplitude of the N1 component, i.e. the first major negative EEG voltage deflection.*
+> *RQ1. There is an effect of scene category (i.e., a difference between images showing man-made vs. natural environments) on the amplitude of the N1 component, i.e. the first major negative EEG voltage deflection.*
 
 To address this question, we identified the N1 ERP component by visually inspecting topographies and waveforms of the grand-average signal (i.e., collapsed across all participants and both *man-made* and *natural* conditions). This unbiased *collapsed localizer* approach [@Luck2017, p. 150] revealed a negative deflection at electrodes *PO7*, *PO3*, *O1*, *PO4*, *PO8*, *O2* (region of interest, *ROI*), and a time window between 130 - 180 ms after stimulus onset. Participant- and condition-specific N1 amplitude was extracted by averaging values recorded at this ROI and time window.\
 Subsequently, we fit a Bayesian multilevel linear model on N1 amplitude values, with *condition* (2 levels: *man-made*, *natural*) as *constant* (a.k.a. fixed) effect and participant and trial as *varying* (a.k.a. random) effects. We allowed intercepts and slopes to vary as a function of participant and trials, to model general and condition-specific inter-individual differences. As a likelihood function, we chose a Gaussian distribution.\
@@ -164,19 +164,61 @@ An important aspect of Bayesian analysis is the choice of priors [e.g., @nataraj
 Since we had no prior knowledge regarding the standard deviation of participant and trials, we placed a **weakly informative prior** on these varying effects: a *t*-distribution with degrees of freedom $\nu$ = 3, location $\mu$ = 0, and scale $\sigma$ = 2, $Student(3,0,2)$.\
 Models were fitted in *R* using the `brms` package [@bürkner2018], which employs the probabilistic programming language *Stan* [@carpenter2017] to implement a Markov chain Monte Carlo (MCMC) algorithm (i.e., No-U-Turn sampler; @homan2014) to estimate posterior distributions of the parameters of interest. Four MCMC chains with 4000 iterations (2000 warm-up) and no thinning were run to estimate parameters in each of the fitted models. Model convergence was assessed as follows: (*i*) visual inspection of trace plots, rank plots, and graphical posterior predictive checks [@gabry2019]; (*ii*) Gelman-Rubin $\hat{R}$ statistic [@gelman2013] -- comparing the between-chains variability to the within-chain variability -- between 1 and 1.05 [see also @Nalborczyk2019].\
 Posterior distributions of the model parameters were summarized using the mean and 95% credible interval (CI). Differences between conditions were calculated by computing the difference between posterior distributions of the respective conditions.\
-Statistical inference was performed using the **HDI + ROPE** decision rule [@kruschke2018]: values were accepted or rejected against a null hypothesis considering a small effect as practically equivalent to zero (Region of Practical Equivalence; *ROPE*). To mitigate the inevitable subjectivity intrinsic in arbitrarily choosing the range of negligible values, we explored a range of plausible ROPEs, from ±0.05$\mu$*V* to ±0.5$\mu$*V* in steps of 0.01$\mu$*V*. If the percentage of the posterior differences within the full ROPE was smaller than 5%, the null hypothesis was rejected.
+Statistical inference was performed using the **HDI + ROPE** decision rule [@kruschke2018]: values were accepted or rejected against a null hypothesis considering a small effect as practically equivalent to zero (Region of Practical Equivalence; *ROPE*). To mitigate the inevitable subjectivity intrinsic in arbitrarily choosing the range of negligible values, we explored a range of plausible ROPEs, from ±0.05 $\mu$*V* to ±0.5 $\mu$*V* in steps of 0.01 $\mu$*V*. If the percentage of the posterior differences within the full ROPE was smaller than 5%, the null hypothesis was rejected.
 
-## RQ2
+## RQ2a
 
-To test whether there are effects of image novelty (RQ2; i.e., between images shown for the first time/new vs. repeated/old images) we conducted a multilevel analysis contrasting the EEG data from trials with old images against trials with new images. To test for differences in theta power at fronto-central channels we focused on the frequency range from 4-8 Hz and all frontocentral channels (FC1, FCz, FC2). At the first level (i.e., the participant level), we computed the averaged time-frequency maps for each of the two conditions. We then tested the resulting averaged maps at the second level for significant group effects, using a paired-sample *t*-test. We used cluster-based permutation testing as a stringent control for multiple comparisons [@maris2007]. Specifically, for every sample across the three channels, we quantified the experimental effect by a *t* value. Selection of samples for inclusion in a cluster was implemented using threshold-free cluster enhancement (TFCE) [@smith2009]. TFCE eliminates the free parameter initial threshold value that determines which points are included in clustering by approximating a continuous integration across possible threshold values with a standard Riemann sum. We subsequently clustered selected samples in connected sets based on temporal and spectral adjacency, and we computed cluster-level statistics by taking the sum of the *t* values within every cluster. Subsequently, we performed permutation testing using the Monte Carlo method to compute the posterior significance probability of our observed effect[@maris2007]. This analysis results in a cluster of adjacent data points across time, frequencies, and channels, which significantly differs in activity between old and new images. To test for differences in alpha power at posterior channels we focused on the frequency range from 8-13 Hz and all posterior channels (P7, P5, P3, P1, P2, P4, P6).
+We were asked to test the following:
 
-## RQ3
+> *RQ2a. There are effects of image novelty (i.e., between images shown for the first time/new vs. repeated/old images) within the time-range from 300--500 ms on EEG voltage at fronto-central channels.*
 
-The same analysis approach as described for RQ2 was implemented for RQ3. Specifically, to test whether there are effects of successful recognition of old images on spectral power, at any frequencies, at any channel, at any time, we contrasted time-frequency decomposed EEG data from trials containing old images that were correctly recognized as old with old images incorrectly recognized as new. Here we included all frequencies, timepoints, and channels in the analysis. The same thresholding procedure and permutation testing approach as above was used.
+To address this question, for each participant and *new*/*old* condition (see section \@ref(preprocessing---erp)) we averaged activity in the time window between 300 - 500 ms after stimulus onset and electrodes *FC1*, *FC2*, *FCz*, i.e., electrodes strictly classified as fronto-central according to the international 10/10 electrode system [@chatrian1985].\
+We fit Bayesian multilevel linear models following the procedure described in section \@ref(rq1), with the following differences in priors: (*i*) **informative priors**: $Normal(-8,2)$ on intercept, $Normal(0,1)$ on $\beta$; (*ii*) **weakly informative priors**: $Normal(-8,4)$ on intercept, $Normal(0,4)$ on $\beta$; (*iii*) **uninformative priors**: $Normal(-8,10)$ on intercept, $Normal(0,10)$ on $\beta$.\
+Summaries of the posterior distributions of model parameters and statistical inference were performed as described in section \@ref(rq1).
+
+## RQ2b and RQ2c
+
+We were asked to test the following:
+
+> *RQ2b. There are effects of image novelty (i.e., between images shown for the first time/new vs. repeated/old images) within the time-range from 300--500 ms on theta power at fronto-central channels.*
+
+> *RQ2c. There are effects of image novelty (i.e., between images shown for the first time/new vs. repeated/old images) within the time-range from 300--500 ms on alpha power at posterior channels.*
+
+To address these questions, we conducted a multilevel analysis contrasting the EEG data from trials with old images against trials with new images (see section \@ref(preprocessing---erp)). At the first level (i.e., the participant level), we computed the averaged time-frequency maps for each of the two conditions. We then tested the resulting averaged maps at the second level for significant group effects using a paired-sample *t*-test. We used cluster-based permutation testing, due to its stringent control of familywise error rates [@maris2007]. Specifically, for every sample across the three channels, we quantified the experimental effect by a *t*-value. Selection of samples for inclusion in a cluster was implemented using threshold-free cluster enhancement (*TFCE*) [@smith2009]. TFCE eliminates the free parameter initial threshold value that determines which points are included in clustering by approximating a continuous integration across possible threshold values with a standard Riemann sum. We subsequently clustered selected samples in connected sets based on temporal and spectral adjacency and computed cluster-level statistics by taking the sum of the *t*-values within every cluster. Subsequently, we performed permutation testing using the Monte Carlo method to compute the posterior significance probability of our observed effect [@maris2007]. This analysis results in a cluster of adjacent data points across time, frequencies, and channels, which significantly differs in activity between old and new images.\
+To test for differences in **theta** power at fronto-central channels, we focused on the frequency range from 4 - 8 Hz and all frontocentral channels (FC1, FCz, FC2).\
+To test for differences in **alpha** power at posterior channels, we focused on the frequency range from 8 - 13 Hz and all posterior channels (P7, P5, P3, P1, P2, P4, P6).
+
+## RQ3a
+
+We were asked to test the following:
+
+> *RQ3a. There are effects of successful recognition of old images (i.e., a difference between old images correctly recognized as old [hits] vs. old images incorrectly judged as new [misses]) on EEG voltage at any channels, at any time.*
+
+
+
+## RQ3b
+
+We were asked to test the following:
+
+> *RQ3b. There are effects of successful recognition of old images (i.e., a difference between old images correctly recognized as old [hits] vs. old images incorrectly judged as new [misses]) on spectral power, at any frequencies, at any channels, at any time.*
+
+## RQ4a
+
+We were asked to test the following:
+
+> *RQ4a. There are effects of subsequent memory (i.e., a difference between images that will be successfully remembered vs. forgotten on a subsequent repetition) on EEG voltage at any channels, at any time.*
+
+## RQ4b
+
+We were asked to test the following:
+
+> *RQ4b. There are effects of subsequent memory (i.e., a difference between images that will be successfully remembered vs. forgotten on a subsequent repetition) on spectral power, at any frequencies, at any channels, at any time.*
+
+The same analysis approach as described for RQ2 was implemented for RQ3. Specifically, to test whether there are effects of successful recognition of old images on spectral power, at any frequencies, at any channel, at any time, we contrasted time-frequency decomposed EEG data from trials containing old images that were correctly recognized as old with old images incorrectly recognized as new (see section \@ref(preprocessing---erp)). Here we included all frequencies, timepoints, and channels in the analysis. The same thresholding procedure and permutation testing approach as above was used.
 
 ## RQ4
 
-To test whether there are effects of subsequent memory, we conducted exactly the same analysis as described in RQ3, with the only difference that here we contrasted trial containing images that will be successfully remembered vs. forgotten on a subsequent repetition.
+To test whether there are effects of subsequent memory, we conducted exactly the same analysis as described in RQ3, with the only difference that here we contrasted trial containing images that will be successfully remembered vs. forgotten on a subsequent repetition (see section \@ref(preprocessing---erp)).
 
 # Results
 
@@ -196,7 +238,7 @@ ADD DISCUSSION HERE
 
 # Software
 
-EEG preprocessing was carried out using `MNE-Python` [@gramfort2013] in *Python* *v*3.9.7 [@vanrossum-2009] and *Spyder IDE* *v*5.1.5 [@raybaut2009]. Analysis, visualization, and report generation were carried out in *R* *v*4.1.3 [@R-base] and *RStudio IDE* *v*2022.02.1+461 [@R-studio]. We used the following *R* packages:
+EEG preprocessing was carried out using `MNE-Python` *v*0.24.1 [@gramfort2013] in *Python* *v*3.9.7 [@vanrossum-2009] and *Spyder IDE* *v*5.1.5 [@raybaut2009]. Analysis, visualization, and report generation were carried out in *R* *v*4.1.3 [@R-base] and *RStudio IDE* *v*2022.02.1+461 [@R-studio]. We used the following *R* packages:
 
 -   **data wrangling and analysis**: `here` *v*1.0.1 [@here], `Rmisc` *v*1.5 [@Rmisc], `tidyverse` *v*1.3.1 [@tidyverse] -- in particular `tibble` *v*3.1.6 [@tibble], `tidyr` *v*1.2.0 [@tidyr], `readr` *v*2.1.2 [@readr], `dplyr` *v*1.0.9 [@dplyr] --, `brms` *v*2.17.0 [@bürkner2018], `eegUtils` *v*0.7.0 [@eegUtils], `emmeans` *v*1.7.3 [@emmeans], `bayestestR` *v*0.11.5.1 [@bayestestR]
 
@@ -204,9 +246,7 @@ EEG preprocessing was carried out using `MNE-Python` [@gramfort2013] in *Python*
 
 -   **report generation**: `knitr` *v*1.39 [@knitr], `rmarkdown` *v*2.14 [@rmarkdown], `papaja` *v*0.1.0.9999 [@papaja]
 
-
-# ANA COULD YOU PLEASE ADD HERE INFORMATION ABOUT MAKE AND THE R PACKAGES YOU USED FOR REPRODUCIBILITY (E.G., RETICULATE)? NO NEED TO ADD REFERENCES VIA RSTUDIO, BUT IF YOU WRITE DOWN DOIs YOU'LL MAKE MY LIFE EASIER :) 
-
+# ANA COULD YOU PLEASE ADD HERE INFORMATION ABOUT MAKE AND THE R PACKAGES YOU USED FOR REPRODUCIBILITY (E.G., RETICULATE)? NO NEED TO ADD REFERENCES VIA RSTUDIO, BUT IF YOU WRITE DOWN DOIs YOU'LL MAKE MY LIFE EASIER :)
 
 \newpage
 
