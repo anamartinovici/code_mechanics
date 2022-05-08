@@ -119,7 +119,9 @@ Timeline of our contribution to the EEGManyPipelines project:
 
 # Methods
 
-## Preprocessing - ERP
+## Preprocessing
+
+### ERP
 
 For each participant, the continuous EEG data was assigned electrode coordinates and filtered with two consecutive Hamming windowed sinc FIR filters (high-pass 0.1 Hz, low-pass 40 Hz). Bad or noisy channels were detected using several approaches implemented in the PREP pipeline [@bigdely-shamlo2015], including flat or missing signal, "bad-by-high-frequency-noise" (frequency components above 50 Hz considerably higher than median channel noisiness, as calculated using a robust *Z*-scoring method and default threshold *z* \> 5), "bad-by-correlation" (maximum correlation with another channel below the default *r* = .4; fraction of bad correlation windows above the default threshold of 0.01), "bad-by-deviation" (amplitude deviates from the median channel amplitude, as calculated using a robust *Z*-scoring method and default threshold *z* \> 5), and signal prediction based on signals and spatial locations of other channels lower than default threshold of *r* = .75 (random sample consensus approach, *RANSAC*; @fischler1987).[^1] Channels identified as noisy were removed from the data and subsequently interpolated via a spherical spline procedure [@perrin1989].\
 
@@ -130,7 +132,14 @@ The EEG data was subsampled by a factor of four (i.e., from 512 Hz to 128 Hz) an
 
 [^2]: For more details, see the documentation of [`autoreject`](https://autoreject.github.io/stable/index.html).
 
-Finally, the clean epoched data were separated into 8 conditions to investigate each research question:
+### TFR
+
+Signal preprocessing for time-frequency analysis followed a similar procedure, with the following exceptions: (*i*) high-pass filter cut-off 1 Hz; (*ii*) continuous data segmented into 800 ms epochs (-300ms to +500ms time-locked to scene onset) and baseline corrected using the pre-stimulus interval.\
+The preprocessed data were then submitted to a Morlet wavelet analysis to transform the data into the time-frequency domain with 18 log-scaled frequency bins ranging from 4 to 40 Hz, to increase sensitivity at lower frequency ranges. To optimize both spectral and temporal resolution, the number of cycles to include in the sliding time window were defined by dividing each individual frequency by two. After transforming the data to the time-frequency domain, the data were decimated by a factor of two (sampling every second time point) to increase computational efficiency.
+
+### Epoching
+
+The clean epoched data were separated into 8 conditions to investigate each research question:
 
 -   **RQ1**
     1.  *manmade*: scenes categorized as `man-made`, presented for the first time or previously (`new` and `old`), subsequently remembered or forgotten (`subsequent_remembered` and `subsequent_forgotten`), excluding `NA` in behavioral responses (although scene category is independent from response, `NA` may reflect drops in attention and, consequently, incomplete stimulus perception)
@@ -145,11 +154,6 @@ Finally, the clean epoched data were separated into 8 conditions to investigate 
     7.  *remembered*: `man-made` and `natural` scenes, `new` and `old`, `subsequent_remembered`, include all behavior
     8.  *forgotten*: `man-made` and `natural` scenes, `new` and `old`, `subsequent_forgotten`, include all behavior
 
-## Preprocessing - TFR
-
-Signal preprocessing for time-frequency analysis followed a similar procedure, with the following exceptions: (*i*) high-pass filter cut-off 1 Hz; (*ii*) continuous data segmented into 800 ms epochs (-300ms to +500ms time-locked to scene onset) and baseline corrected using the pre-stimulus interval.\
-The preprocessed data were then submitted to a Morlet wavelet analysis to transform the data into the time-frequency domain with 18 log-scaled frequency bins ranging from 4 to 40 Hz, to increase sensitivity at lower frequency ranges such as the theta band. To optimize both spectral and temporal resolution, the number of cycles to include in the sliding time window were defined by dividing each individual frequency by two. After transforming the data to the time-frequency domain, the data were decimated by a factor of two (sampling every second time point) to increase computational efficiency.
-
 # Analysis
 
 ## RQ1
@@ -158,13 +162,40 @@ We were asked to test the following:
 
 > *RQ1. There is an effect of scene category (i.e., a difference between images showing man-made vs. natural environments) on the amplitude of the N1 component, i.e. the first major negative EEG voltage deflection.*
 
-To address this question, we identified the N1 ERP component by visually inspecting topographies and waveforms of the grand-average signal (i.e., collapsed across all participants and both *man-made* and *natural* conditions). This unbiased *collapsed localizer* approach [@Luck2017, p. 150] revealed a negative deflection at electrodes *PO7*, *PO3*, *O1*, *PO4*, *PO8*, *O2* (region of interest, *ROI*), and a time window between 130 - 180 ms after stimulus onset. Participant- and condition-specific N1 amplitude was extracted by averaging values recorded at this ROI and time window.\
-Subsequently, we fit a Bayesian multilevel linear model on N1 amplitude values, with *condition* (2 levels: *man-made*, *natural*) as *constant* (a.k.a. fixed) effect and participant and trial as *varying* (a.k.a. random) effects. We allowed intercepts and slopes to vary as a function of participant and trials, to model general and condition-specific inter-individual differences. As a likelihood function, we chose a Gaussian distribution.\
-An important aspect of Bayesian analysis is the choice of priors [e.g., @natarajan2000]. Given the susceptibility of the electrophysiological signal to inter-individual differences (e.g., skull thickness, skin conductance, or hair), we decided to base our priors on the current data by visually inspecting the *collapsed localizer* (see above). For the main analysis, we placed **informative priors** on the *intercept* -- a normal distribution with mean $\mu$ = 4 and standard deviation $\sigma$ = 2: $Normal(4,2)$ -- and $\beta$ coefficient, $Normal(0,1)$. To assess whether our chosen informative prior would bias parameter estimates (and, consequently, the interpretation of the results; @depaoli2017), we ran the same multilevel linear model with **weakly informative** priors (*intercept*: $Normal(4,4)$ ; $\beta$: $Normal(0,4)$) and **uninformative** priors (*intercept*: $Normal(4,10)$ ; $\beta$: $Normal(0,10)$). We anticipated that the choice of prior would have negligible effects on the posterior distributions, because the influence of the prior washes out with a large amount of data [@edwards1963].\
+To address this question, we identified the N1 ERP component by visually inspecting topographies and waveforms of the grand-average signal (i.e., collapsed across all participants and both *man-made* and *natural* conditions). This unbiased *collapsed localizer* approach [@Luck2017, p. 150] revealed a negative deflection at a region of interest (*ROI*) comprising electrodes *PO7*, *PO3*, *O1*, *PO4*, *PO8*, and *O2* (see Figure \@ref(fig:figure01)), and a time window between 130 - 180 ms after stimulus onset (see Figure \@ref(fig:figure02)).\
+
+(ref:figure01-caption) Collapsed localizer (i.e., amplitude averaged across *manmade* and *natural* conditions between 130 - 180 ms after stimulus onset) used to identify the electrodes best representing the expected topography of the N1 ERP component (*PO7*, *PO3*, *O1*, *PO4*, *PO8*, *O2*).
+
+```{r figure01, fig.cap = "(ref:figure01-caption)"}
+
+knitr::include_graphics(here("results_in_repo/RQ1/topo_grand_average_ROI.png"))
+
+```
+
+(ref:figure02-caption) Collapsed localizer (i.e., amplitude averaged across *manmade* and *natural* conditions at electrodes *PO7*, *PO3*, *O1*, *PO4*, *PO8*, *O2*) used to identify the time window of the N1 ERP component between 130 - 180 ms after stimulus onset (red box).
+
+```{r figure02, fig.cap = "(ref:figure02-caption)"}
+
+knitr::include_graphics(here("results_in_repo/RQ1/timeseries_grand_average_ROI.png"))
+
+```
+
+Participant- and condition-specific N1 amplitude was extracted by averaging values recorded at this ROI and time window (see Figure \@ref(fig:figure03)).\
+
+(ref:figure03-caption) Raincloud plot [@allen2021] showing trial-averaged N1 amplitude values -- extracted from the electrode ROI and time window identified via visual inspection of the collapsed localizer --, separately for each participant and condition.
+
+```{r figure03, fig.cap = "(ref:figure03-caption)"}
+
+knitr::include_graphics(here("results_in_repo/RQ1/raincloud_ERP_avg_trials_informative_prior.png"))
+
+```
+
+Subsequently, we fit a Bayesian multilevel linear model on N1 amplitude values, with *condition* (2 levels: *man-made*, *natural*) as *constant* (a.k.a. fixed) effect and participant and trial as *varying* (a.k.a. random) effects. We allowed intercepts and slopes to vary as a function of participant and trials, to model general and condition-specific inter-individual differences. As likelihood function, we chose a Gaussian distribution.\
+An important aspect of Bayesian analysis is the choice of priors [e.g., @natarajan2000]. Given the susceptibility of the electrophysiological signal to inter-individual differences (e.g., skull thickness, skin conductance, or hair), we decided to base our priors on the current data by visually inspecting the *collapsed localizer* (see above). For the main analysis, we placed **informative priors** on the *intercept* -- a normal distribution with mean $\mu$ = 4 and standard deviation $\sigma$ = 2: $Normal(4,2)$ -- and $\beta$ coefficient, $Normal(0,1)$. To assess whether our chosen informative prior would bias parameter estimates (and, consequently, the interpretation of the results; @depaoli2017), we ran the same multilevel linear model with **weakly informative** priors (*intercept*: $Normal(4,4)$ ; $\beta$: $Normal(0,4)$) and **uninformative** priors (*intercept*: $Normal(4,10)$ ; $\beta$: $Normal(0,10)$). The choice of prior had negligible effects on the posterior distributions, because the influence of the prior washes out with a large amount of data [@edwards1963]. Therefore, all reported results refer to the model with informative priors.\
 Since we had no prior knowledge regarding the standard deviation of participant and trials, we placed a **weakly informative prior** on these varying effects: a *t*-distribution with degrees of freedom $\nu$ = 3, location $\mu$ = 0, and scale $\sigma$ = 2, $Student(3,0,2)$.\
 Models were fitted in *R* using the `brms` package [@bürkner2018], which employs the probabilistic programming language *Stan* [@carpenter2017] to implement a Markov chain Monte Carlo (MCMC) algorithm (i.e., No-U-Turn sampler; @homan2014) to estimate posterior distributions of the parameters of interest. Four MCMC chains with 4000 iterations (2000 warm-up) and no thinning were run to estimate parameters in each of the fitted models. Model convergence was assessed as follows: (*i*) visual inspection of trace plots, rank plots, and graphical posterior predictive checks [@gabry2019]; (*ii*) Gelman-Rubin $\hat{R}$ statistic [@gelman2013] -- comparing the between-chains variability to the within-chain variability -- between 1 and 1.05 [see also @Nalborczyk2019].\
 Posterior distributions of the model parameters were summarized using the mean and 95% credible interval (CI). Differences between conditions were calculated by computing the difference between posterior distributions of the respective conditions.\
-Statistical inference was performed using the **HDI + ROPE** decision rule [@kruschke2018]: values were accepted or rejected against a null hypothesis considering a small effect as practically equivalent to zero (Region of Practical Equivalence; *ROPE*). To mitigate the inevitable subjectivity intrinsic in arbitrarily choosing the range of negligible values, we explored a range of plausible ROPEs, from ±0.05 $\mu$*V* to ±0.5 $\mu$*V* in steps of 0.01 $\mu$*V*. If the percentage of the posterior differences within the full ROPE was smaller than 5%, the null hypothesis was rejected.
+Statistical inference was performed using the **HDI + ROPE** decision rule [@kruschke2018]: values were accepted or rejected against a null hypothesis considering a small effect as practically equivalent to zero (Region of Practical Equivalence; *ROPE*). To mitigate the inevitable subjectivity intrinsic in arbitrarily choosing the values practically equivalent to zero, we explored a range of plausible ROPEs, from ±0.05 $\mu$*V* to ±0.5 $\mu$*V* in steps of 0.01 $\mu$*V*. If the percentage of the posterior differences within the full ROPE was smaller than 5%, the null hypothesis was rejected.
 
 ## RQ2a
 
@@ -172,7 +203,7 @@ We were asked to test the following:
 
 > *RQ2a. There are effects of image novelty (i.e., between images shown for the first time/new vs. repeated/old images) within the time-range from 300--500 ms on EEG voltage at fronto-central channels.*
 
-To address this question, for each participant and *new*/*old* condition (see section \@ref(preprocessing---erp)) we averaged activity in the time window between 300 - 500 ms after stimulus onset and electrodes *FC1*, *FC2*, *FCz*, i.e., electrodes strictly classified as fronto-central according to the international 10/10 electrode system [@chatrian1985].\
+To address this question, for each participant and *new*/*old* condition we averaged activity in the time window between 300 - 500 ms after stimulus onset and electrodes *FC1*, *FC2*, *FCz*, i.e., electrodes strictly classified as fronto-central according to the international 10/10 electrode system [@chatrian1985].\
 We fit Bayesian multilevel linear models following the procedure described in section \@ref(rq1), with the following differences in priors: (*i*) **informative priors**: $Normal(-8,2)$ on intercept, $Normal(0,1)$ on $\beta$; (*ii*) **weakly informative priors**: $Normal(-8,4)$ on intercept, $Normal(0,4)$ on $\beta$; (*iii*) **uninformative priors**: $Normal(-8,10)$ on intercept, $Normal(0,10)$ on $\beta$.\
 Summaries of the posterior distributions of model parameters and statistical inference were performed as described in section \@ref(rq1).
 
@@ -184,7 +215,7 @@ We were asked to test the following:
 
 > *RQ2c. There are effects of image novelty (i.e., between images shown for the first time/new vs. repeated/old images) within the time-range from 300--500 ms on alpha power at posterior channels.*
 
-To address these questions, we conducted a multilevel analysis contrasting the EEG data from trials with *old* images against trials with *new* images (see section \@ref(preprocessing---erp)). At the first level (i.e., the participant level), we computed the averaged time-frequency maps for each of the two conditions. We then tested the resulting averaged maps at the second level for significant group effects using a paired-sample *t*-test. We used cluster-based permutation testing, due to its stringent control of familywise error rates [@maris2007]. Specifically, for every sample across the three channels, we quantified the experimental effect by a *t*-value. Selection of samples for inclusion in a cluster was implemented using threshold-free cluster enhancement (*TFCE*) [@smith2009]. TFCE eliminates the free parameter initial threshold value that determines which points are included in clustering by approximating a continuous integration across possible threshold values with a standard Riemann sum. We subsequently clustered selected samples in connected sets based on temporal and spectral adjacency and computed cluster-level statistics by taking the sum of the *t*-values within every cluster. Subsequently, we performed permutation testing using the Monte Carlo method (1000 permutations) to compute the significance probability of our observed effect [@maris2007] ($\alpha$ = 0.05). This analysis results in a cluster of adjacent data points across time, frequencies, and channels, which significantly differs in activity between old and new images.\
+To address these questions, we conducted a multilevel analysis contrasting the EEG data from trials with *old* images against trials with *new* images. At the first level (i.e., the participant level), we computed the averaged time-frequency maps for each of the two conditions. We then tested the resulting averaged maps at the second level for significant group effects using a paired-sample *t*-test. We used cluster-based permutation testing, due to its stringent control of familywise error rates [@maris2007]. Specifically, for every sample across the three channels, we quantified the experimental effect by a *t*-value. Selection of samples for inclusion in a cluster was implemented using threshold-free cluster enhancement (*TFCE*) [@smith2009]. TFCE eliminates the free parameter initial threshold value that determines which points are included in clustering by approximating a continuous integration across possible threshold values with a standard Riemann sum. We subsequently clustered selected samples in connected sets based on temporal and spectral adjacency and computed cluster-level statistics by taking the sum of the *t*-values within every cluster. Subsequently, we performed permutation testing using the Monte Carlo method (1000 permutations) to compute the significance probability of our observed effect [@maris2007] ($\alpha$ = 0.05). This analysis results in a cluster of adjacent data points across time, frequencies, and channels, which significantly differs in activity between old and new images.\
 To test for differences in **theta** ($\theta$) power at fronto-central channels, we focused on the frequency range from 4 - 8 Hz and all frontocentral channels (FC1, FCz, FC2).\
 To test for differences in **alpha** ($\alpha$) power at posterior channels, we focused on the frequency range from 8 - 13 Hz and all posterior channels (P7, P5, P3, P1, P2, P4, P6).
 
@@ -194,7 +225,7 @@ We were asked to test the following:
 
 > *RQ3a. There are effects of successful recognition of old images (i.e., a difference between old images correctly recognized as old [hits] vs. old images incorrectly judged as new [misses]) on EEG voltage at any channels, at any time.*
 
-We followed the same analysis approach described in section \@ref(rq2b-and-rq2c) but on time-series data, comparing *old-hit*/*old-miss* conditions (see section \@ref(preprocessing---erp)) and including all timepoints and channels.
+We followed the same analysis approach described in section \@ref(rq2b-and-rq2c) but on time-series data, comparing *old-hit*/*old-miss* conditions and including all timepoints and channels.
 
 ## RQ3b
 
@@ -202,7 +233,7 @@ We were asked to test the following:
 
 > *RQ3b. There are effects of successful recognition of old images (i.e., a difference between old images correctly recognized as old [hits] vs. old images incorrectly judged as new [misses]) on spectral power, at any frequencies, at any channels, at any time.*
 
-We followed the same analysis approach described in section \@ref(rq2b-and-rq2c), this time on *old-hit*/*old-miss* conditions (see section \@ref(preprocessing---erp)) and including all frequencies, timepoints, and channels.
+We followed the same analysis approach described in section \@ref(rq2b-and-rq2c), this time on *old-hit*/*old-miss* conditions and including all frequencies, timepoints, and channels.
 
 ## RQ4a
 
@@ -210,7 +241,7 @@ We were asked to test the following:
 
 > *RQ4a. There are effects of subsequent memory (i.e., a difference between images that will be successfully remembered vs. forgotten on a subsequent repetition) on EEG voltage at any channels, at any time.*
 
-We followed the same analysis approach described in section \@ref(rq3a), comparing *remembered*/*forgotten* conditions (see section \@ref(preprocessing---erp)) and including all timepoints and channels.
+We followed the same analysis approach described in section \@ref(rq3a), comparing *remembered*/*forgotten* conditions and including all timepoints and channels.
 
 ## RQ4b
 
@@ -218,17 +249,15 @@ We were asked to test the following:
 
 > *RQ4b. There are effects of subsequent memory (i.e., a difference between images that will be successfully remembered vs. forgotten on a subsequent repetition) on spectral power, at any frequencies, at any channels, at any time.*
 
-We followed the same analysis approach described in section \@ref(rq3b), this time on *remembered*/*forgotten* conditions (see section \@ref(preprocessing---erp)) and including all frequencies, timepoints, and channels.
+We followed the same analysis approach described in section \@ref(rq3b), this time on *remembered*/*forgotten* conditions and including all frequencies, timepoints, and channels.
 
 # Results
 
-(ref:figure01-caption) My caption.
+## RQ1
 
-```{r figure01, fig.cap = "(ref:figure01-caption)"}
 
-knitr::include_graphics(here("results_in_repo/RQ1/timeseries_grand_average_ROI.png"))
 
-```
+## RQ2a
 
 ## RQ2b, RQ2c, RQ3a, RQ3b, RQ4a, RQ4b
 
