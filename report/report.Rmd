@@ -184,9 +184,9 @@ We were asked to test the following:
 
 > *RQ2c. There are effects of image novelty (i.e., between images shown for the first time/new vs. repeated/old images) within the time-range from 300--500 ms on alpha power at posterior channels.*
 
-To address these questions, we conducted a multilevel analysis contrasting the EEG data from trials with old images against trials with new images (see section \@ref(preprocessing---erp)). At the first level (i.e., the participant level), we computed the averaged time-frequency maps for each of the two conditions. We then tested the resulting averaged maps at the second level for significant group effects using a paired-sample *t*-test. We used cluster-based permutation testing, due to its stringent control of familywise error rates [@maris2007]. Specifically, for every sample across the three channels, we quantified the experimental effect by a *t*-value. Selection of samples for inclusion in a cluster was implemented using threshold-free cluster enhancement (*TFCE*) [@smith2009]. TFCE eliminates the free parameter initial threshold value that determines which points are included in clustering by approximating a continuous integration across possible threshold values with a standard Riemann sum. We subsequently clustered selected samples in connected sets based on temporal and spectral adjacency and computed cluster-level statistics by taking the sum of the *t*-values within every cluster. Subsequently, we performed permutation testing using the Monte Carlo method to compute the posterior significance probability of our observed effect [@maris2007]. This analysis results in a cluster of adjacent data points across time, frequencies, and channels, which significantly differs in activity between old and new images.\
-To test for differences in **theta** power at fronto-central channels, we focused on the frequency range from 4 - 8 Hz and all frontocentral channels (FC1, FCz, FC2).\
-To test for differences in **alpha** power at posterior channels, we focused on the frequency range from 8 - 13 Hz and all posterior channels (P7, P5, P3, P1, P2, P4, P6).
+To address these questions, we conducted a multilevel analysis contrasting the EEG data from trials with *old* images against trials with *new* images (see section \@ref(preprocessing---erp)). At the first level (i.e., the participant level), we computed the averaged time-frequency maps for each of the two conditions. We then tested the resulting averaged maps at the second level for significant group effects using a paired-sample *t*-test. We used cluster-based permutation testing, due to its stringent control of familywise error rates [@maris2007]. Specifically, for every sample across the three channels, we quantified the experimental effect by a *t*-value. Selection of samples for inclusion in a cluster was implemented using threshold-free cluster enhancement (*TFCE*) [@smith2009]. TFCE eliminates the free parameter initial threshold value that determines which points are included in clustering by approximating a continuous integration across possible threshold values with a standard Riemann sum. We subsequently clustered selected samples in connected sets based on temporal and spectral adjacency and computed cluster-level statistics by taking the sum of the *t*-values within every cluster. Subsequently, we performed permutation testing using the Monte Carlo method (1000 permutations) to compute the significance probability of our observed effect [@maris2007] ($\alpha$ = 0.05). This analysis results in a cluster of adjacent data points across time, frequencies, and channels, which significantly differs in activity between old and new images.\
+To test for differences in **theta** ($\theta$) power at fronto-central channels, we focused on the frequency range from 4 - 8 Hz and all frontocentral channels (FC1, FCz, FC2).\
+To test for differences in **alpha** ($\alpha$) power at posterior channels, we focused on the frequency range from 8 - 13 Hz and all posterior channels (P7, P5, P3, P1, P2, P4, P6).
 
 ## RQ3a
 
@@ -194,7 +194,7 @@ We were asked to test the following:
 
 > *RQ3a. There are effects of successful recognition of old images (i.e., a difference between old images correctly recognized as old [hits] vs. old images incorrectly judged as new [misses]) on EEG voltage at any channels, at any time.*
 
-
+We followed the same analysis approach described in section \@ref(rq2b-and-rq2c) but on time-series data, comparing *old-hit*/*old-miss* conditions (see section \@ref(preprocessing---erp)) and including all timepoints and channels.
 
 ## RQ3b
 
@@ -202,11 +202,15 @@ We were asked to test the following:
 
 > *RQ3b. There are effects of successful recognition of old images (i.e., a difference between old images correctly recognized as old [hits] vs. old images incorrectly judged as new [misses]) on spectral power, at any frequencies, at any channels, at any time.*
 
+We followed the same analysis approach described in section \@ref(rq2b-and-rq2c), this time on *old-hit*/*old-miss* conditions (see section \@ref(preprocessing---erp)) and including all frequencies, timepoints, and channels.
+
 ## RQ4a
 
 We were asked to test the following:
 
 > *RQ4a. There are effects of subsequent memory (i.e., a difference between images that will be successfully remembered vs. forgotten on a subsequent repetition) on EEG voltage at any channels, at any time.*
+
+We followed the same analysis approach described in section \@ref(rq3a), comparing *remembered*/*forgotten* conditions (see section \@ref(preprocessing---erp)) and including all timepoints and channels.
 
 ## RQ4b
 
@@ -214,11 +218,7 @@ We were asked to test the following:
 
 > *RQ4b. There are effects of subsequent memory (i.e., a difference between images that will be successfully remembered vs. forgotten on a subsequent repetition) on spectral power, at any frequencies, at any channels, at any time.*
 
-The same analysis approach as described for RQ2 was implemented for RQ3. Specifically, to test whether there are effects of successful recognition of old images on spectral power, at any frequencies, at any channel, at any time, we contrasted time-frequency decomposed EEG data from trials containing old images that were correctly recognized as old with old images incorrectly recognized as new (see section \@ref(preprocessing---erp)). Here we included all frequencies, timepoints, and channels in the analysis. The same thresholding procedure and permutation testing approach as above was used.
-
-## RQ4
-
-To test whether there are effects of subsequent memory, we conducted exactly the same analysis as described in RQ3, with the only difference that here we contrasted trial containing images that will be successfully remembered vs. forgotten on a subsequent repetition (see section \@ref(preprocessing---erp)).
+We followed the same analysis approach described in section \@ref(rq3b), this time on *remembered*/*forgotten* conditions (see section \@ref(preprocessing---erp)) and including all frequencies, timepoints, and channels.
 
 # Results
 
@@ -230,11 +230,9 @@ knitr::include_graphics(here("results_in_repo/RQ1/timeseries_grand_average_ROI.p
 
 ```
 
-No significant clusters were identified for any of the research questions (at $\alpha$ = 0.05).
+## RQ2b, RQ2c, RQ3a, RQ3b, RQ4a, RQ4b
 
-# Discussion
-
-ADD DISCUSSION HERE
+No statistically significant clusters were identified for any of these research questions.
 
 # Software
 
