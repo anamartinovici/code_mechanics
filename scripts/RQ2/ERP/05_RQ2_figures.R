@@ -178,14 +178,14 @@ raincloud_ERP_avg_trials <-
     alpha = 0.6
   ) +
   labs(
-    title = "N1",
+    title = "fronto-central activity",
     x = "condition",
     y = expression(paste("amplitude (", mu, "V)"))
   ) +
   scale_y_continuous(limits = c(-25, 0)) +
   scale_fill_manual(values = cividis(2)) +
   scale_color_manual(values = rep("black", 2)) +
-  coord_flip() +
+  # coord_flip() +
   theme_custom
 
 raincloud_ERP_avg_trials
