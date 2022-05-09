@@ -41,7 +41,7 @@ abstract: |
   
   Two or three sentences to provide a **broader perspective**, readily comprehensible to a scientist in any discipline.
 
-keywords          : ["EEG Many Pipelines", "scene categorization", "vision", "EEG", "ERP", "time-frequency analysis", "Bayesian multilevel linear regression", "TFCE"]
+keywords          : ["EEGManyPipelines", "scene categorization", "vision", "EEG", "ERP", "time-frequency analysis", "Bayesian multilevel linear regression", "TFCE"]
 wordcount         : "X" # to be added when the report is completed 
 bibliography      : "references.bib"
 link-citations    : true # create hyperlink to the corresponding bibliography entry
@@ -74,6 +74,7 @@ tinytex::install_tinytex()
 ```{r install-packages, include = FALSE, eval = FALSE}
 
 install.packages("here")
+install.packages("tidyverse")
 install.packages("devtools")
 devtools::install_github("crsh/papaja")
 
@@ -83,6 +84,7 @@ devtools::install_github("crsh/papaja")
 
 # load packages
 library("here")
+library("tidyverse")
 library("papaja")
 
 # knitr global chunk options
@@ -129,7 +131,7 @@ For each participant, the continuous EEG data was assigned electrode coordinates
 [^1]: For more details, see the documentation of [`NoisyChannels`](https://pyprep.readthedocs.io/en/latest/generated/pyprep.NoisyChannels.html#pyprep.NoisyChannels).
 
 Afterwards, the EEG data were re-referenced to the average signal across channels. Ocular artifacts were then corrected by means of independent component analysis via the `picard` algorithm [@ablin2018] and the resulting components were correlated with activity recorded from the EOG channels, in order to identify which components best represented horizontal eye movements and blinks. The components that correlated the highest with the EOG channels were then removed from the EEG data before re-conversion into channel space.\
-The EEG data was subsampled by a factor of four (i.e., from 512 Hz to 128 Hz), segmented into epochs extending from -200ms to +500ms time-locked to scene onset, and baseline corrected using the pre-stimulus interval. The epoched data was then subjected to *Autoreject*, an automated artifact detection algorithm based on machine-learning classifiers and cross-validation to estimate the optimal peak-to-peak threshold [@jas2017][^2]. This algorithm was implemented to remove artifacts not identified in previous preprocessing steps.[^2]\
+The EEG data was subsampled by a factor of four (i.e., from 512 Hz to 128 Hz), segmented into epochs extending from -200ms to +500ms time-locked to scene onset, and baseline corrected using the pre-stimulus interval. The epoched data was then subjected to *Autoreject*, an automated artifact detection algorithm based on machine-learning classifiers and cross-validation to estimate the optimal peak-to-peak threshold [@jas2017] [^2]. This algorithm was implemented to remove artifacts not identified in previous preprocessing steps.\
 
 [^2]: For more details, see the documentation of [`autoreject`](https://autoreject.github.io/stable/index.html).
 
@@ -192,11 +194,11 @@ knitr::include_graphics(here("results_in_repo/RQ1/raincloud_ERP_avg_trials_infor
 ```
 
 Subsequently, we fit a Bayesian multilevel linear model on N1 amplitude values, with *condition* (2 levels: *man-made*, *natural*) as *constant* (a.k.a. fixed) effect and participant and trial as *varying* (a.k.a. random) effects. We allowed intercepts and slopes to vary as a function of participant and trials, to model general and condition-specific inter-individual differences. As likelihood function, we chose a Gaussian distribution.\
-An important aspect of Bayesian analysis is the choice of priors [e.g., @natarajan2000]. Given the susceptibility of the electrophysiological signal to inter-individual differences (e.g., skull thickness, skin conductance, or hair), we decided to base our priors on the current data by visually inspecting the *collapsed localizer* (see above). For the main analysis, we placed **informative priors** on the *intercept* -- a normal distribution with mean $\mu$ = 4 and standard deviation $\sigma$ = 2: $Normal(4,2)$ -- and $\beta$ coefficient, $Normal(0,1)$. To assess whether our chosen informative prior would bias parameter estimates (and, consequently, the interpretation of the results; @depaoli2017), we ran the same multilevel linear model with **weakly informative** priors (*intercept*: $Normal(4,4)$ ; $\beta$: $Normal(0,4)$) and **uninformative** priors (*intercept*: $Normal(4,10)$ ; $\beta$: $Normal(0,10)$). The choice of prior had negligible effects on the posterior distributions, because the influence of the prior washes out with a large amount of data [@edwards1963]. Therefore, all reported results refer to the model with informative priors.\
+An important aspect of Bayesian analysis is the choice of priors [e.g., @natarajan2000]. Given the susceptibility of the electrophysiological signal to inter-individual differences (e.g., skull thickness, skin conductance, or hair), we decided to base our priors on the current data by visually inspecting the *collapsed localizer* (see above). For the main analysis, we placed **informative priors** on the *intercept* -- a normal distribution with mean $\mu$ = 4 and standard deviation $\sigma$ = 2: $Normal(4,2)$ -- and $\beta$ coefficient, $Normal(0,1)$. To assess whether our chosen informative prior would bias parameter estimates (and, consequently, the interpretation of the results; @depaoli2017), we ran the same multilevel linear model with **weakly informative** priors (*intercept*: $Normal(4,4)$ ; $\beta$: $Normal(0,4)$) and **uninformative** priors (*intercept*: $Normal(4,10)$ ; $\beta$: $Normal(0,10)$). We anticipate that the choice of prior had negligible effects on the posterior distributions, because the influence of the prior washes out with a large amount of data [@edwards1963].\
 Since we had no prior knowledge regarding the standard deviation of participant and trials, we placed a **weakly informative prior** on these varying effects: a *t*-distribution with degrees of freedom $\nu$ = 3, location $\mu$ = 0, and scale $\sigma$ = 2, $Student(3,0,2)$.\
 Models were fitted in *R* using the `brms` package [@bürkner2018], which employs the probabilistic programming language *Stan* [@carpenter2017] to implement a Markov chain Monte Carlo (MCMC) algorithm (i.e., No-U-Turn sampler; @homan2014) to estimate posterior distributions of the parameters of interest. Four MCMC chains with 4000 iterations (2000 warm-up) and no thinning were run to estimate parameters in each of the fitted models. Model convergence was assessed as follows: (*i*) visual inspection of trace plots, rank plots, and graphical posterior predictive checks [@gabry2019]; (*ii*) Gelman-Rubin $\hat{R}$ statistic [@gelman2013] -- comparing the between-chains variability to the within-chain variability -- between 1 and 1.05 [see also @Nalborczyk2019].\
 Posterior distributions of the model parameters were summarized using the mean and 95% credible interval (CI). Differences between conditions were calculated by computing the difference between posterior distributions of the respective conditions.\
-Statistical inference was performed using the **HDI + ROPE** decision rule [@kruschke2018]: difference values (i.e., *manmade* minus *natural*) were accepted or rejected against a null hypothesis considering a small effect as "practically equivalent to zero" (Region of Practical Equivalence; *ROPE*). To mitigate the inevitable subjectivity intrinsic in arbitrarily choosing the values "practically equivalent to zero", we employed a range of plausible ROPEs, from ±0.05 $\mu$*V* to ±0.5 $\mu$*V* in steps of 0.01 $\mu$*V*. If the percentage of the posterior differences within the full ROPE was smaller than 5%, the null hypothesis was rejected.
+Statistical inference was performed using the **HDI + ROPE** decision rule [@kruschke2018]: posterior differences were accepted or rejected against a null hypothesis considering a small effect as "practically equivalent to zero" (Region of Practical Equivalence; *ROPE*). To mitigate the inevitable subjectivity intrinsic in arbitrarily choosing the values "practically equivalent to zero", we employed a range of plausible ROPEs, from ±0.05 $\mu$*V* to ±0.5 $\mu$*V* in steps of 0.01 $\mu$*V*. If the percentage of the posterior differences within the full ROPE was smaller than 5%, the null hypothesis was rejected [@makowski2019].
 
 ## RQ2a
 
@@ -282,6 +284,121 @@ We followed the same analysis approach described in section \@ref(rq3b), this ti
 # Results
 
 ## RQ1
+
+### Descriptives and diagnostics
+
+```{r RQ1-summary-posteriors}
+
+summary_posteriors_informative_prior <- 
+	readRDS(
+		here("results_in_repo", "RQ1", "summary_posteriors_informative_prior.rds")
+		) %>% 
+	as_tibble() %>% # convert to tibble
+	add_column( # which prior was used?
+		Prior = rep("informative", 2),
+		.before = "Parameter"
+	) %>% 
+	mutate(
+		Parameter = recode_factor(
+			Parameter, # clarify labels
+			"b_Intercept" = "intercept",
+			"b_condition_RQ1natural" = "beta"
+		)
+	) %>% 
+	select(-c(SD, CI, ESS))
+
+summary_posteriors_weaklyinformative_prior <- 
+	readRDS(
+		here("results_in_repo", "RQ1", "summary_posteriors_weaklyinformative_prior.rds")
+	) %>% 
+	as_tibble() %>%
+	add_column(
+		Prior = rep("weakly_informative", 2),
+		.before = "Parameter"
+	) %>% 
+	mutate(
+		Parameter = recode_factor(
+			Parameter, 
+			"b_Intercept" = "intercept",
+			"b_condition_RQ1natural" = "beta"
+		)
+	) %>% 
+	select(-c(SD, CI, ESS))
+
+summary_posteriors_noninformative_prior <- 
+	readRDS(
+		here("results_in_repo", "RQ1", "summary_posteriors_noninformative_prior.rds")
+		) %>% 
+	as_tibble() %>%
+	add_column(
+		Prior = rep("uninformative", 2),
+		.before = "Parameter"
+	) %>% 
+	mutate(
+		Parameter = recode_factor(
+			Parameter, 
+			"b_Intercept" = "intercept",
+			"b_condition_RQ1natural" = "beta"
+		)
+	) %>% 
+	select(-c(SD, CI, ESS))
+
+```
+
+(ref:RQ1-summary-posteriors-table-caption) Means, 95% credible intervals (CI), and $\hat{R}$ statistic of the posterior distributions of intercept and $\beta$, separately for the models with informative, weakly informative, and uninformative priors (see section \@ref(rq1)).
+
+```{r RQ1-summary-posteriors-table}
+
+rbind(
+	summary_posteriors_informative_prior,
+	summary_posteriors_weaklyinformative_prior,
+	summary_posteriors_noninformative_prior
+) %>% 
+	apa_table(
+		caption = "(ref:RQ1-summary-posteriors-table-caption)",
+		note = "The slope refers to manmade minus natural conditions.",
+		escape = TRUE
+	)
+
+```
+
+Table \@ref(tab:RQ1-summary-posteriors-table) shows descriptives (means and 95% CI) of the posterior distributions of intercept and $\beta$. Model diagnostics (see $\hat{R}$ in Table \@ref(tab:RQ1-summary-posteriors-table) and Figure \@ref(fig:figure07)) confirmed that all models successfully converged.\
+As anticipated in section \@ref(rq1), posterior distributions do not remarkably differ as a function of prior. Therefore, all subsequent results refer to the model with informative priors.
+
+(ref:figure07-caption) Trace plots (panel *A1*), rank plots (panel *A2*), and graphical posterior predictive checks (panel *B*) for the model with informative priors.
+
+```{r figure07, fig.cap = "(ref:figure07-caption)"}
+
+knitr::include_graphics(here("results_in_repo/RQ1/model_diagnostics_informative_prior.png"))
+
+```
+
+### Hypothesis testing
+
+```{r RQ1-equivalence-test}
+
+equivalence_test_informative_prior <- 
+	readRDS(
+		here("results_in_repo", "RQ1", "equivalence_test_informative_prior.rds")
+		)
+
+max_ROPE <- 
+	equivalence_test_informative_prior %>%
+	filter(ROPE_Equivalence == "Rejected") %>% # keep values for which H0 is rejected
+	pull(ROPE_high) %>% # extract vector
+	max() # find largest value
+
+```
+
+The results of the **HDI + ROPE** procedure showed that 95% of the posterior distribution of the N1 amplitude difference between *manmade* and *natural* scenes was outside of a region of practical equivalence up until ±`r max_ROPE` $\mu$*V*. In other words, ***manmade* scenes elicited an N1 whose amplitude was at most `r max_ROPE` $\mu$*V* larger than the N1 elicited by *natural* scenes** (see Figure \@ref(fig:figure08)). 
+
+(ref:figure08-caption) Panel *A* shows the posterior distributions of *manmade* and *natural* conditions. Panel *B* shows the posterior distribution of their difference (*manmade* minus *natural*), as well as the largest ROPE (±`r max_ROPE` $\mu$*V*) for which the null hypothesis was rejected by using the *HDI + ROPE* procedure described in section \@ref(rq1).
+
+```{r figure08, fig.cap = "(ref:figure08-caption)"}
+
+knitr::include_graphics(here("results_in_repo/RQ1/posterior_distributions_informative_prior.png"))
+
+```
 
 ## RQ2a
 
