@@ -269,7 +269,7 @@ We followed the same analysis approach described in section \@ref(rq3b), this ti
 
 ```{r RQ1-summary-posteriors}
 
-summary_posteriors_informative_prior <- 
+RQ1_summary_posteriors_informative_prior <- 
 	readRDS(
 		here("results_in_repo", "RQ1", "summary_posteriors_informative_prior.rds")
 		) %>% 
@@ -287,7 +287,7 @@ summary_posteriors_informative_prior <-
 	) %>% 
 	select(-c(SD, CI, ESS))
 
-summary_posteriors_weaklyinformative_prior <- 
+RQ1_summary_posteriors_weaklyinformative_prior <- 
 	readRDS(
 		here("results_in_repo", "RQ1", "summary_posteriors_weaklyinformative_prior.rds")
 	) %>% 
@@ -305,7 +305,7 @@ summary_posteriors_weaklyinformative_prior <-
 	) %>% 
 	select(-c(SD, CI, ESS))
 
-summary_posteriors_noninformative_prior <- 
+RQ1_summary_posteriors_noninformative_prior <- 
 	readRDS(
 		here("results_in_repo", "RQ1", "summary_posteriors_noninformative_prior.rds")
 		) %>% 
@@ -325,14 +325,14 @@ summary_posteriors_noninformative_prior <-
 
 ```
 
-(ref:RQ1-summary-posteriors-table-caption) Means, 95% credible intervals (CI), and $\hat{R}$ statistic of the posterior distributions of intercept and $\beta$, separately for the models with informative, weakly informative, and uninformative priors (see section \@ref(rq1)).
+(ref:RQ1-summary-posteriors-table-caption) **RQ1**. Means, 95% credible intervals (CI), and $\hat{R}$ statistic of the posterior distributions of intercept and $\beta$, separately for the models with informative, weakly informative, and uninformative priors (see section \@ref(rq1)).
 
 ```{r RQ1-summary-posteriors-table}
 
 rbind(
-	summary_posteriors_informative_prior,
-	summary_posteriors_weaklyinformative_prior,
-	summary_posteriors_noninformative_prior
+	RQ1_summary_posteriors_informative_prior,
+	RQ1_summary_posteriors_weaklyinformative_prior,
+	RQ1_summary_posteriors_noninformative_prior
 ) %>% 
 	apa_table(
 		caption = "(ref:RQ1-summary-posteriors-table-caption)",
@@ -343,9 +343,9 @@ rbind(
 ```
 
 Table \@ref(tab:RQ1-summary-posteriors-table) shows descriptives (means and 95% CI) of the posterior distributions of intercept and $\beta$. Model diagnostics (see $\hat{R}$ in Table \@ref(tab:RQ1-summary-posteriors-table) and Figure \@ref(fig:figure07)) confirmed that all models successfully converged.\
-As anticipated in section \@ref(rq1), posterior distributions do not remarkably differ as a function of prior. Therefore, all subsequent results refer to the model with informative priors.
+As anticipated in section \@ref(rq1), posterior distributions did not remarkably differ as a function of prior. Therefore, all subsequent results refer to the model with informative priors.
 
-(ref:figure07-caption) Trace plots (panel *A1*), rank plots (panel *A2*), and graphical posterior predictive checks (panel *B*) for the model with informative priors.
+(ref:figure07-caption) **RQ1**. Trace plots (panel *A1*), rank plots (panel *A2*), and graphical posterior predictive checks (panel *B*) for the model with informative priors.
 
 ```{r figure07, fig.cap = "(ref:figure07-caption)"}
 
@@ -357,22 +357,22 @@ knitr::include_graphics(here("results_in_repo/RQ1/model_diagnostics_informative_
 
 ```{r RQ1-equivalence-test}
 
-equivalence_test_informative_prior <- 
+RQ1_equivalence_test_informative_prior <- 
 	readRDS(
 		here("results_in_repo", "RQ1", "equivalence_test_informative_prior.rds")
 		)
 
-max_ROPE <- 
-	equivalence_test_informative_prior %>%
+RQ1_max_ROPE <- 
+	RQ1_equivalence_test_informative_prior %>%
 	filter(ROPE_Equivalence == "Rejected") %>% # keep values for which H0 is rejected
 	pull(ROPE_high) %>% # extract vector
 	max() # find largest value
 
 ```
 
-The results of the **HDI + ROPE** procedure showed that 95% of the posterior distribution of the N1 amplitude difference between *manmade* and *natural* scenes was outside of a region of practical equivalence up until ±`r max_ROPE` $\mu$*V*. In other words, ***manmade*** **scenes elicited an N1 whose amplitude was at most `r max_ROPE`** $\mu$*V* larger than the N1 elicited by *natural* scenes (see Figure \@ref(fig:figure08)).
+The results of the **HDI + ROPE** procedure showed that 95% of the posterior distribution of the N1 amplitude difference between *manmade* and *natural* scenes was outside of a region of practical equivalence up until ±`r RQ1_max_ROPE` $\mu$*V*. In other words, ***manmade*** **scenes elicited an N1 whose amplitude was at most `r RQ1_max_ROPE`** $\mu$*V* larger than the N1 elicited by *natural* scenes (see Figure \@ref(fig:figure08)).
 
-(ref:figure08-caption) Panel *A* shows the posterior distributions of *manmade* and *natural* conditions. Panel *B* shows the posterior distribution of their difference (*manmade* minus *natural*), as well as the largest ROPE (±`r max_ROPE` $\mu$*V*) for which the null hypothesis was rejected by using the *HDI + ROPE* procedure described in section \@ref(rq1).
+(ref:figure08-caption) Panel *A* shows the posterior distributions of *manmade* and *natural* conditions. Panel *B* shows the posterior distribution of their difference (*manmade* minus *natural*), as well as the largest ROPE (±`r RQ1_max_ROPE` $\mu$*V*) for which the null hypothesis was rejected by using the *HDI + ROPE* procedure described in section \@ref(rq1).
 
 ```{r figure08, fig.cap = "(ref:figure08-caption)"}
 
@@ -382,9 +382,124 @@ knitr::include_graphics(here("results_in_repo/RQ1/posterior_distributions_inform
 
 ## RQ2a
 
+### Descriptives and diagnostics
+
+```{r RQ2a-summary-posteriors}
+
+RQ2a_summary_posteriors_informative_prior <- 
+	readRDS(
+		here("results_in_repo", "RQ2", "ERP", "summary_posteriors_informative_prior.rds")
+		) %>% 
+	as_tibble() %>%
+	add_column(
+		Prior = rep("informative", 2),
+		.before = "Parameter"
+	) %>% 
+	mutate(
+		Parameter = recode_factor(
+			Parameter,
+			"b_Intercept" = "intercept",
+			"b_condition_RQ2old" = "beta"
+		)
+	) %>% 
+	select(-c(SD, CI, ESS))
+
+RQ2a_summary_posteriors_weaklyinformative_prior <- 
+	readRDS(
+		here("results_in_repo", "RQ2", "ERP", "summary_posteriors_weaklyinformative_prior.rds")
+	) %>% 
+	as_tibble() %>%
+	add_column(
+		Prior = rep("weakly_informative", 2),
+		.before = "Parameter"
+	) %>% 
+	mutate(
+		Parameter = recode_factor(
+			Parameter, 
+			"b_Intercept" = "intercept",
+			"b_condition_RQ2old" = "beta"
+		)
+	) %>% 
+	select(-c(SD, CI, ESS))
+
+RQ2a_summary_posteriors_noninformative_prior <- 
+	readRDS(
+		here("results_in_repo", "RQ2", "ERP", "summary_posteriors_noninformative_prior.rds")
+		) %>% 
+	as_tibble() %>%
+	add_column(
+		Prior = rep("uninformative", 2),
+		.before = "Parameter"
+	) %>% 
+	mutate(
+		Parameter = recode_factor(
+			Parameter, 
+			"b_Intercept" = "intercept",
+			"b_condition_RQ2old" = "beta"
+		)
+	) %>% 
+	select(-c(SD, CI, ESS))
+
+```
+
+(ref:RQ2a-summary-posteriors-table-caption) **RQ2a**. Means, 95% credible intervals (CI), and $\hat{R}$ statistic of the posterior distributions of intercept and $\beta$, separately for the models with informative, weakly informative, and uninformative priors (see section \@ref(rq1)).
+
+```{r RQ2a-summary-posteriors-table}
+
+rbind(
+	RQ2a_summary_posteriors_informative_prior,
+	RQ2a_summary_posteriors_weaklyinformative_prior,
+	RQ2a_summary_posteriors_noninformative_prior
+) %>% 
+	apa_table(
+		caption = "(ref:RQ2a-summary-posteriors-table-caption)",
+		note = "The slope refers to manmade minus natural conditions.",
+		escape = TRUE
+	)
+
+```
+
+Table \@ref(tab:RQ2a-summary-posteriors-table) shows descriptives (means and 95% CI) of the posterior distributions of intercept and $\beta$. Model diagnostics (see $\hat{R}$ in Table \@ref(tab:RQ2a-summary-posteriors-table) and Figure \@ref(fig:figure09)) confirmed that all models successfully converged.\
+As anticipated in section \@ref(rq1), posterior distributions did not remarkably differ as a function of prior. Therefore, all subsequent results refer to the model with informative priors.
+
+(ref:figure09-caption) **RQ2a**. Trace plots (panel *A1*), rank plots (panel *A2*), and graphical posterior predictive checks (panel *B*) for the model with informative priors.
+
+```{r figure09, fig.cap = "(ref:figure09-caption)"}
+
+knitr::include_graphics(here("results_in_repo/RQ2/ERP/model_diagnostics_informative_prior.png"))
+
+```
+
+### Hypothesis testing
+
+```{r RQ2a-equivalence-test}
+
+RQ2a_equivalence_test_informative_prior <- 
+	readRDS(
+		here("results_in_repo", "RQ2", "ERP", "equivalence_test_informative_prior.rds")
+		)
+
+RQ2a_max_ROPE <- 
+	RQ2a_equivalence_test_informative_prior %>%
+	filter(ROPE_Equivalence == "Rejected") %>%
+	pull(ROPE_high) %>%
+	max()
+
+```
+
+The results of the **HDI + ROPE** procedure showed that 95% of the posterior distribution of the amplitude difference between *old* and *new* scenes was outside of a region of practical equivalence up until ±`r RQ2a_max_ROPE` $\mu$*V*. In other words, ***new*** **scenes elicited electrophysiological brain activity whose amplitude was at most `r RQ2a_max_ROPE`** $\mu$*V* more negative than the activity elicited by *old* scenes (see Figure \@ref(fig:figure10)).
+
+(ref:figure10-caption) **RQ2a**. Panel *A* shows the posterior distributions of *new* and *old* conditions. Panel *B* shows the posterior distribution of their difference (*new* minus *old*), as well as the largest ROPE (±`r RQ2a_max_ROPE` $\mu$*V*) for which the null hypothesis was rejected by using the *HDI + ROPE* procedure described in section \@ref(rq1).
+
+```{r figure10, fig.cap = "(ref:figure10-caption)"}
+
+knitr::include_graphics(here("results_in_repo/RQ2/ERP/posterior_distributions_informative_prior.png"))
+
+```
+
 ## RQ2b, RQ2c, RQ3a, RQ3b, RQ4a, RQ4b
 
-No statistically significant clusters were identified for any of these research questions.
+***No statistically significant clusters*** were identified for any of these research questions, ***at any time point, electrode, or frequency***.
 
 # Software
 
