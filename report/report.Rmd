@@ -110,15 +110,11 @@ authorship_order
 
 # Introduction
 
-Timeline of our contribution to the EEGManyPipelines project:
+This report describes the methods and results of our contribution to the [**EEGManyPipelines**](https://www.eegmanypipelines.org) project.\
+We registered as team **Code Mechanics**[^1] on September 15th 2021 and received a confirmation email five days later. Instructions on how to download the EEG data and which research hypotheses to test were sent on October 8th 2021. A copy can be found at `data_in_repo/original_data/instructions`.\
+We received the link to the submission portal on May 2nd 2022, submitted all relevant materials and filled out three questionnaires before the deadline (May 15th 2022).
 
--   we registered for the EEGManyPipelines project on 2021-09-15, and received the confirmation email 2021-09-20.
-
--   instructions for downloading the data and for analysis were sent 2021-10-08. These are saved within the repository at `data_in_repo/original_data/instructions`.
-
--   we received the link to the submission portal on 2022-05-02
-
--   we've submitted the pre-processed data on
+[^1]: A homage to [**The Organic Mechanic**](https://madmax.fandom.com/wiki/The_Organic_Mechanic), a doctor in the movie [**Mad Max: Fury Road**](https://en.wikipedia.org/wiki/Mad_Max:_Fury_Road).
 
 # Methods
 
@@ -126,14 +122,14 @@ Timeline of our contribution to the EEGManyPipelines project:
 
 ### ERP
 
-For each participant, the continuous EEG data was assigned electrode coordinates and filtered with two consecutive one-pass, zero-phase, non-causal FIR filters (Hamming window with 0.0194 passband ripple and 53 dB stopband attenuation): (*i*) high-pass: 0.1 Hz (-6 dB cutoff frequency: 0.05 Hz), length 16897 samples; (*ii*) low-pass: 40 Hz, upper transition bandwidth 10 Hz (-6 dB cutoff frequency: 45.00 Hz), length 169 samples [@widmann2015]. Bad or noisy channels were detected using several approaches implemented in the *PREP* pipeline [@bigdely-shamlo2015], including: (*i*) flat or missing signal; (*ii*) "bad-by-high-frequency-noise" (frequency components above 50 Hz considerably higher than median channel noisiness, as calculated using a robust *Z*-scoring method and default threshold *z* \> 5); (*iii*) "bad-by-correlation" (maximum correlation with another channel below the default *r* = .4, fraction of bad correlation windows above the default threshold of 0.01); (*iv*) "bad-by-deviation" (amplitude deviates from the median channel amplitude, as calculated using a robust *Z*-scoring method and default threshold *z* \> 5); and (*v*) signal prediction based on signals and spatial locations of other channels lower than default threshold of *r* = .75 (random sample consensus approach, *RANSAC*; @fischler1987).[^1] Channels identified as noisy were removed from the data and subsequently interpolated via a spherical spline procedure [@perrin1989].\
+For each participant, the continuous EEG data was assigned electrode coordinates and filtered with two consecutive one-pass, zero-phase, non-causal FIR filters (Hamming window with 0.0194 passband ripple and 53 dB stopband attenuation): (*i*) high-pass: 0.1 Hz (-6 dB cutoff frequency: 0.05 Hz), length 16897 samples; (*ii*) low-pass: 40 Hz, upper transition bandwidth 10 Hz (-6 dB cutoff frequency: 45.00 Hz), length 169 samples [@widmann2015]. Bad or noisy channels were detected using several approaches implemented in the *PREP* pipeline [@bigdely-shamlo2015], including: (*i*) flat or missing signal; (*ii*) "bad-by-high-frequency-noise" (frequency components above 50 Hz considerably higher than median channel noisiness, as calculated using a robust *Z*-scoring method and default threshold *z* \> 5); (*iii*) "bad-by-correlation" (maximum correlation with another channel below the default *r* = .4, fraction of bad correlation windows above the default threshold of 0.01); (*iv*) "bad-by-deviation" (amplitude deviates from the median channel amplitude, as calculated using a robust *Z*-scoring method and default threshold *z* \> 5); and (*v*) signal prediction based on signals and spatial locations of other channels lower than default threshold of *r* = .75 (random sample consensus approach, *RANSAC*; @fischler1987).[^2] Channels identified as noisy were removed from the data and subsequently interpolated via a spherical spline procedure [@perrin1989].\
 
-[^1]: For more details, see the documentation of [`NoisyChannels`](https://pyprep.readthedocs.io/en/latest/generated/pyprep.NoisyChannels.html#pyprep.NoisyChannels).
+[^2]: For more details, see the documentation of [`NoisyChannels`](https://pyprep.readthedocs.io/en/latest/generated/pyprep.NoisyChannels.html#pyprep.NoisyChannels).
 
 Afterwards, the EEG data were re-referenced to the average signal across channels. Ocular artifacts were then corrected by means of independent component analysis via the `picard` algorithm [@ablin2018] and the resulting components were correlated with activity recorded from the EOG channels, in order to identify which components best represented horizontal eye movements and blinks. The components that correlated the highest with the EOG channels were then removed from the EEG data before re-conversion into channel space.\
-The EEG data was subsampled by a factor of four (i.e., from 512 Hz to 128 Hz), segmented into epochs extending from -200ms to +500ms time-locked to scene onset, and baseline corrected using the pre-stimulus interval. The epoched data was then subjected to *Autoreject*, an automated artifact detection algorithm based on machine-learning classifiers and cross-validation to estimate the optimal peak-to-peak threshold [@jas2017] [^2]. This algorithm was implemented to remove artifacts not identified in previous preprocessing steps.\
+The EEG data was subsampled by a factor of four (i.e., from 512 Hz to 128 Hz), segmented into epochs extending from -200ms to +500ms time-locked to scene onset, and baseline corrected using the pre-stimulus interval. The epoched data was then subjected to *Autoreject*, an automated artifact detection algorithm based on machine-learning classifiers and cross-validation to estimate the optimal peak-to-peak threshold [@jas2017] [^3]. This algorithm was implemented to remove artifacts not identified in previous preprocessing steps.\
 
-[^2]: For more details, see the documentation of [`autoreject`](https://autoreject.github.io/stable/index.html).
+[^3]: For more details, see the documentation of [`autoreject`](https://autoreject.github.io/stable/index.html).
 
 ### TFR
 
