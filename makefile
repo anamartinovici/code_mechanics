@@ -25,11 +25,14 @@ DIR_RECEIPT = zzz_receipts
 PROJECT_SEED = 999
 
 # to process data, we need eeg_BIDS
-# the eeg_BIDS data we received for this project is too large for GitHub
-# this means we need to tell the scripts where to find these files outside of the repo
+# the eeg_BIDS data for this project is too large for GitHub
 # I STRONGLY!!!! advise you to keep this folder outside of the repository
 # otherwise you need to copy paste the folder every time you get a fresh clone
 # and there's a high risk you will lose data 
+
+# this means the scripts need to know the path to files outside of the repo
+# DIR_local_files need to contain `data_outside_repo/original_data/eeg_BIDS`
+# as the targets are built, other directories are created within DIR_local_files
 DIR_local_files = "Specify a PATH to your local_files directory"
 # the default value is set in order to force you to specify a path
 # see below for an example of how this path was specified
@@ -43,6 +46,7 @@ initial_setup: scripts/get_path_to_local_files.R \
 			   scripts/render_Rmd.R \
 			   scripts/test_make.Rmd \
 			   scripts/test_make.py
+	$(print-target-and-prereq-info)
 	@echo "before you can start the analysis, you first need to set up the repo"
 	@echo "---------------"
 	@echo "create the receipt and tmp folders within the repo"

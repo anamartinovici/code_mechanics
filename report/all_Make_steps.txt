@@ -1,0 +1,684 @@
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo initial_setup
+echo ""
+echo "All prerequisites for this target are:"
+echo scripts/get_path_to_local_files.R scripts/render_Rmd.R scripts/test_make.Rmd scripts/test_make.py
+echo ""
+echo "The prerequisites newer than the target are:"
+echo scripts/get_path_to_local_files.R scripts/render_Rmd.R scripts/test_make.Rmd scripts/test_make.py
+echo "---------"
+echo "before you can start the analysis, you first need to set up the repo"
+echo "---------------"
+echo "create the receipt and tmp folders within the repo"
+mkdir -p zzz_receipts/
+mkdir -p tmp/
+echo "---------------"	
+echo "restoring commit timestamps such that Make does not build based on git clone time"
+bash scripts/restore_file_timestamps.sh
+echo "---------------"
+echo "create an .Rdata file that store info about paths to local files"
+Rscript scripts/get_path_to_local_files.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics
+echo "---------------"
+echo "Check if test_make.html is created in tmp/"
+Rscript scripts/render_Rmd.R \
+		scripts/test_make.Rmd \
+		tmp/
+echo "done with initial_setup"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/ERP_process_data_step1
+echo ""
+echo "All prerequisites for this target are:"
+echo scripts/ERP_preproc_step1.py scripts/ERP_preproc_step1.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo scripts/ERP_preproc_step1.py scripts/ERP_preproc_step1.Rmd
+echo "---------"
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/data_outside_repo/processed_data/ERP/step1/
+Rscript scripts/render_Rmd.R \
+		scripts/ERP_preproc_step1.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/data_outside_repo/processed_data/ERP/step1/
+date > zzz_receipts/ERP_process_data_step1
+echo "done with zzz_receipts/ERP_process_data_step1"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/ERP_process_data_step2
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/ERP_process_data_step1 scripts/ERP_preproc_step2.py scripts/ERP_preproc_step2.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/ERP_process_data_step1 scripts/ERP_preproc_step2.py scripts/ERP_preproc_step2.Rmd
+echo "---------"
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/data_outside_repo/processed_data/ERP/step2/
+Rscript scripts/render_Rmd.R \
+		scripts/ERP_preproc_step2.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/data_outside_repo/processed_data/ERP/step2/
+date > zzz_receipts/ERP_process_data_step2
+echo "done with zzz_receipts/ERP_process_data_step2"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/ERP_process_data_step3
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/ERP_process_data_step2 scripts/ERP_preproc_step3.R
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/ERP_process_data_step2 scripts/ERP_preproc_step3.R
+echo "---------"
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/data_outside_repo/processed_data/ERP/step3/
+Rscript scripts/ERP_preproc_step3.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/data_outside_repo/processed_data/ERP/step2/ \
+	    D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/data_outside_repo/processed_data/ERP/step3/
+date > zzz_receipts/ERP_process_data_step3
+echo "done with zzz_receipts/ERP_process_data_step3"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ1_prep_data
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/ERP_process_data_step3 scripts/RQ1/00_RQ1_data_preparation.R
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/ERP_process_data_step3 scripts/RQ1/00_RQ1_data_preparation.R
+echo "---------"
+mkdir -p data_in_repo/processed_data/RQ1/
+Rscript scripts/RQ1/00_RQ1_data_preparation.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/data_outside_repo/processed_data/ERP/step3/
+date > zzz_receipts/RQ1_prep_data
+echo "done with zzz_receipts/RQ1_prep_data"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ1_plots
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ1_prep_data scripts/RQ1/01_RQ1_ERP_plots.R
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ1_prep_data scripts/RQ1/01_RQ1_ERP_plots.R
+echo "---------"
+mkdir -p results_in_repo/RQ1/
+Rscript scripts/RQ1/01_RQ1_ERP_plots.R \
+		999
+date > zzz_receipts/RQ1_plots
+echo "done with zzz_receipts/RQ1_plots"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ1_estimate_model
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ1_prep_data scripts/RQ1/02_RQ1_parameter_estimation.R
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ1_prep_data scripts/RQ1/02_RQ1_parameter_estimation.R
+echo "---------"
+# estimation results are too large for GitHub, so they are saved outside the repository
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ1/
+# we estimate the model 3 times, using different priors, to assess results sensitivity
+Rscript scripts/RQ1/02_RQ1_parameter_estimation.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ1/ \
+		"informative"
+Rscript scripts/RQ1/02_RQ1_parameter_estimation.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ1/ \
+		"weaklyinformative"
+Rscript scripts/RQ1/02_RQ1_parameter_estimation.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ1/ \
+		"noninformative"
+date > zzz_receipts/RQ1_estimate_model
+echo "done with zzz_receipts/RQ1_estimate_model"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ1_model_diagnostics
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ1_estimate_model scripts/RQ1/03_RQ1_model_diagnostics.R
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ1_estimate_model scripts/RQ1/03_RQ1_model_diagnostics.R
+echo "---------"
+# model diagnostics need to be checked for all types of priors used in estimation
+Rscript scripts/RQ1/03_RQ1_model_diagnostics.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ1/ \
+		"informative"
+Rscript scripts/RQ1/03_RQ1_model_diagnostics.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ1/ \
+		"weaklyinformative"
+Rscript scripts/RQ1/03_RQ1_model_diagnostics.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ1/ \
+		"noninformative"
+date > zzz_receipts/RQ1_model_diagnostics
+echo "done with zzz_receipts/RQ1_model_diagnostics"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ1_hypothesis_tests
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ1_estimate_model scripts/RQ1/04_RQ1_hypothesis_testing.R
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ1_estimate_model scripts/RQ1/04_RQ1_hypothesis_testing.R
+echo "---------"
+# check support for hypothesis
+Rscript scripts/RQ1/04_RQ1_hypothesis_testing.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ1/ \
+		"informative"
+Rscript scripts/RQ1/04_RQ1_hypothesis_testing.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ1/ \
+		"weaklyinformative"
+Rscript scripts/RQ1/04_RQ1_hypothesis_testing.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ1/ \
+		"noninformative"
+date > zzz_receipts/RQ1_hypothesis_tests
+echo "done with zzz_receipts/RQ1_hypothesis_tests"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ1_figures
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ1_estimate_model scripts/RQ1/05_RQ1_figures.R
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ1_estimate_model scripts/RQ1/05_RQ1_figures.R
+echo "---------"
+# generate plots
+Rscript scripts/RQ1/05_RQ1_figures.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ1/ \
+		"informative"
+Rscript scripts/RQ1/05_RQ1_figures.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ1/ \
+		"weaklyinformative"
+Rscript scripts/RQ1/05_RQ1_figures.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ1/ \
+		"noninformative"
+date > zzz_receipts/RQ1_figures
+echo "done with zzz_receipts/RQ1_figures"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ2_ERP_prep_data
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/ERP_process_data_step3 scripts/RQ2/ERP/00_RQ2_data_preparation.R
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/ERP_process_data_step3 scripts/RQ2/ERP/00_RQ2_data_preparation.R
+echo "---------"
+mkdir -p data_in_repo/processed_data/RQ2/ERP/
+Rscript scripts/RQ2/ERP/00_RQ2_data_preparation.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/data_outside_repo/processed_data/ERP/step3/ \
+	    data_in_repo/processed_data/RQ2/ERP/
+date > zzz_receipts/RQ2_ERP_prep_data
+echo "done with zzz_receipts/RQ2_ERP_prep_data"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ2_ERP_plots
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ2_ERP_prep_data scripts/RQ2/ERP/01_RQ2_ERP_plots.R
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ2_ERP_prep_data scripts/RQ2/ERP/01_RQ2_ERP_plots.R
+echo "---------"
+mkdir -p results_in_repo/RQ2/ERP/
+Rscript scripts/RQ2/ERP/01_RQ2_ERP_plots.R \
+		999
+date > zzz_receipts/RQ2_ERP_plots
+echo "done with zzz_receipts/RQ2_ERP_plots"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ2_ERP_estimate_model
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ2_ERP_prep_data scripts/RQ2/ERP/02_RQ2_parameter_estimation.R
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ2_ERP_prep_data scripts/RQ2/ERP/02_RQ2_parameter_estimation.R
+echo "---------"
+# estimation results are too large for GitHub, so they are saved outside the repository
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/ERP/
+Rscript scripts/RQ2/ERP/02_RQ2_parameter_estimation.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/ERP/ \
+		"informative"
+Rscript scripts/RQ2/ERP/02_RQ2_parameter_estimation.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/ERP/ \
+		"weaklyinformative"
+Rscript scripts/RQ2/ERP/02_RQ2_parameter_estimation.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/ERP/ \
+		"noninformative"
+date > zzz_receipts/RQ2_ERP_estimate_model
+echo "done with zzz_receipts/RQ2_ERP_estimate_model"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ2_ERP_model_diagnostics
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ2_ERP_estimate_model scripts/RQ2/ERP/03_RQ2_model_diagnostics.R
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ2_ERP_estimate_model scripts/RQ2/ERP/03_RQ2_model_diagnostics.R
+echo "---------"
+# model diagnostics need to be checked for all types of priors used in estimation
+Rscript scripts/RQ2/ERP/03_RQ2_model_diagnostics.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/ERP/ \
+		"informative"
+Rscript scripts/RQ2/ERP/03_RQ2_model_diagnostics.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/ERP/ \
+		"weaklyinformative"
+Rscript scripts/RQ2/ERP/03_RQ2_model_diagnostics.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/ERP/ \
+		"noninformative"
+date > zzz_receipts/RQ2_ERP_model_diagnostics
+echo "done with zzz_receipts/RQ2_ERP_model_diagnostics"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ2_ERP_hypothesis_tests
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ2_ERP_estimate_model scripts/RQ2/ERP/04_RQ2_hypothesis_testing.R
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ2_ERP_estimate_model scripts/RQ2/ERP/04_RQ2_hypothesis_testing.R
+echo "---------"
+Rscript scripts/RQ2/ERP/04_RQ2_hypothesis_testing.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/ERP/ \
+		"informative"
+Rscript scripts/RQ2/ERP/04_RQ2_hypothesis_testing.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/ERP/ \
+		"weaklyinformative"
+Rscript scripts/RQ2/ERP/04_RQ2_hypothesis_testing.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/ERP/ \
+		"noninformative"
+date > zzz_receipts/RQ2_ERP_hypothesis_tests
+echo "done with zzz_receipts/RQ2_ERP_hypothesis_tests"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ2_ERP_figures
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ2_ERP_estimate_model scripts/RQ2/ERP/05_RQ2_figures.R
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ2_ERP_estimate_model scripts/RQ2/ERP/05_RQ2_figures.R
+echo "---------"
+Rscript scripts/RQ2/ERP/05_RQ2_figures.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/ERP/ \
+		"informative"
+Rscript scripts/RQ2/ERP/05_RQ2_figures.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/ERP/ \
+		"weaklyinformative"
+Rscript scripts/RQ2/ERP/05_RQ2_figures.R \
+		999 \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/ERP/ \
+		"noninformative"
+date > zzz_receipts/RQ2_ERP_figures
+echo "done with zzz_receipts/RQ2_ERP_figures"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/TFR_process_data_step1
+echo ""
+echo "All prerequisites for this target are:"
+echo scripts/TFR_preproc_step1.py scripts/TFR_preproc_step1.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo scripts/TFR_preproc_step1.py scripts/TFR_preproc_step1.Rmd
+echo "---------"
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/data_outside_repo/processed_data/TFR/step1/
+Rscript scripts/render_Rmd.R \
+		scripts/TFR_preproc_step1.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/data_outside_repo/processed_data/TFR/step1/
+date > zzz_receipts/TFR_process_data_step1
+echo "done with zzz_receipts/TFR_process_data_step1"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ2_TFR_decomp_eq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/TFR_process_data_step1 scripts/RQ2/TFR/TFR_RQ2_Decomposition_equalized_events.py scripts/RQ2/TFR/TFR_RQ2_Decomposition_equalized_events.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/TFR_process_data_step1 scripts/RQ2/TFR/TFR_RQ2_Decomposition_equalized_events.py scripts/RQ2/TFR/TFR_RQ2_Decomposition_equalized_events.Rmd
+echo "---------"
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/TFR/equalized
+Rscript scripts/render_Rmd.R \
+		scripts/RQ2/TFR/TFR_RQ2_Decomposition_equalized_events.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/TFR/equalized/ 
+date > zzz_receipts/RQ2_TFR_decomp_eq
+echo "done with zzz_receipts/RQ2_TFR_decomp_eq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ2_TFR_analysis_eq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ2_TFR_decomp_eq scripts/RQ2/TFR/TFR_RQ2_Analysis_equalized_events.py scripts/RQ2/TFR/TFR_RQ2_Analysis_equalized_events.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ2_TFR_decomp_eq scripts/RQ2/TFR/TFR_RQ2_Analysis_equalized_events.py scripts/RQ2/TFR/TFR_RQ2_Analysis_equalized_events.Rmd
+echo "---------"
+mkdir -p tmp/
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/TFR/equalized
+Rscript scripts/render_Rmd.R \
+		scripts/RQ2/TFR/TFR_RQ2_Analysis_equalized_events.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/TFR/equalized/ 
+date > zzz_receipts/RQ2_TFR_analysis_eq
+echo "done with zzz_receipts/RQ2_TFR_analysis_eq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ2_TFR_decomp_NOTeq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/TFR_process_data_step1 scripts/RQ2/TFR/TFR_RQ2_Decomposition_not_equalized_events.py scripts/RQ2/TFR/TFR_RQ2_Decomposition_not_equalized_events.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/TFR_process_data_step1 scripts/RQ2/TFR/TFR_RQ2_Decomposition_not_equalized_events.py scripts/RQ2/TFR/TFR_RQ2_Decomposition_not_equalized_events.Rmd
+echo "---------"
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/TFR/not_equalized
+Rscript scripts/render_Rmd.R \
+		scripts/RQ2/TFR/TFR_RQ2_Decomposition_not_equalized_events.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/TFR/not_equalized/ 
+date > zzz_receipts/RQ2_TFR_decomp_NOTeq
+echo "done with zzz_receipts/RQ2_TFR_decomp_NOTeq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ2_TFR_analysis_NOTeq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ2_TFR_decomp_NOTeq scripts/RQ2/TFR/TFR_RQ2_Analysis_not_equalized_events.py scripts/RQ2/TFR/TFR_RQ2_Analysis_not_equalized_events.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ2_TFR_decomp_NOTeq scripts/RQ2/TFR/TFR_RQ2_Analysis_not_equalized_events.py scripts/RQ2/TFR/TFR_RQ2_Analysis_not_equalized_events.Rmd
+echo "---------"
+mkdir -p tmp/
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/TFR/not_equalized
+Rscript scripts/render_Rmd.R \
+		scripts/RQ2/TFR/TFR_RQ2_Analysis_not_equalized_events.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ2/TFR/not_equalized/ 
+date > zzz_receipts/RQ2_TFR_analysis_NOTeq
+echo "done with zzz_receipts/RQ2_TFR_analysis_NOTeq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ3_ERP_results_NOTeq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/ERP_process_data_step1 scripts/RQ3/ERP/RQ3_group_analysis_not_equalized.py scripts/RQ3/ERP/RQ3_group_analysis_not_equalized.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/ERP_process_data_step1 scripts/RQ3/ERP/RQ3_group_analysis_not_equalized.py scripts/RQ3/ERP/RQ3_group_analysis_not_equalized.Rmd
+echo "---------"
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ3/ERP/not_equalized
+Rscript scripts/render_Rmd.R \
+		scripts/RQ3/ERP/RQ3_group_analysis_not_equalized.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ3/ERP/not_equalized/ 
+date > zzz_receipts/RQ3_ERP_results_NOTeq
+echo "done with zzz_receipts/RQ3_ERP_results_NOTeq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ3_ERP_results_eq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/ERP_process_data_step1 scripts/RQ3/ERP/RQ3_group_analysis_equalized.py scripts/RQ3/ERP/RQ3_group_analysis_equalized.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/ERP_process_data_step1 scripts/RQ3/ERP/RQ3_group_analysis_equalized.py scripts/RQ3/ERP/RQ3_group_analysis_equalized.Rmd
+echo "---------"
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ3/ERP/equalized
+Rscript scripts/render_Rmd.R \
+		scripts/RQ3/ERP/RQ3_group_analysis_equalized.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ3/ERP/equalized/ 
+date > zzz_receipts/RQ3_ERP_results_eq
+echo "done with zzz_receipts/RQ3_ERP_results_eq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ3_TFR_decomp_NOTeq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/TFR_process_data_step1 scripts/RQ3/TFR/TFR_RQ3b_Decomposition_not_equalized_events.py scripts/RQ3/TFR/TFR_RQ3b_Decomposition_not_equalized_events.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/TFR_process_data_step1 scripts/RQ3/TFR/TFR_RQ3b_Decomposition_not_equalized_events.py scripts/RQ3/TFR/TFR_RQ3b_Decomposition_not_equalized_events.Rmd
+echo "---------"
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ3/TFR/not_equalized
+Rscript scripts/render_Rmd.R \
+		scripts/RQ3/TFR/TFR_RQ3b_Decomposition_not_equalized_events.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ3/TFR/not_equalized/ 
+date > zzz_receipts/RQ3_TFR_decomp_NOTeq
+echo "done with zzz_receipts/RQ3_TFR_decomp_NOTeq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ3_TFR_analysis_NOTeq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ3_TFR_decomp_NOTeq scripts/RQ3/TFR/TFR_RQ3b_Analysis_not_equalized_events.py scripts/RQ3/TFR/TFR_RQ3b_Analysis_not_equalized_events.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ3_TFR_decomp_NOTeq scripts/RQ3/TFR/TFR_RQ3b_Analysis_not_equalized_events.py scripts/RQ3/TFR/TFR_RQ3b_Analysis_not_equalized_events.Rmd
+echo "---------"
+mkdir -p tmp/
+Rscript scripts/render_Rmd.R \
+		scripts/RQ3/TFR/TFR_RQ3b_Analysis_not_equalized_events.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ3/TFR/not_equalized/ 
+date > zzz_receipts/RQ3_TFR_analysis_NOTeq
+echo "done with zzz_receipts/RQ3_TFR_analysis_NOTeq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ3_TFR_decomp_eq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/TFR_process_data_step1 scripts/RQ3/TFR/TFR_RQ3b_Decomposition_equalized_events.py scripts/RQ3/TFR/TFR_RQ3b_Decomposition_equalized_events.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/TFR_process_data_step1 scripts/RQ3/TFR/TFR_RQ3b_Decomposition_equalized_events.py scripts/RQ3/TFR/TFR_RQ3b_Decomposition_equalized_events.Rmd
+echo "---------"
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ3/TFR/equalized
+Rscript scripts/render_Rmd.R \
+		scripts/RQ3/TFR/TFR_RQ3b_Decomposition_equalized_events.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ3/TFR/equalized/ 
+date > zzz_receipts/RQ3_TFR_decomp_eq
+echo "done with zzz_receipts/RQ3_TFR_decomp_eq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ3_TFR_analysis_eq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ3_TFR_decomp_eq scripts/RQ3/TFR/TFR_RQ3b_Analysis_equalized_events.py scripts/RQ3/TFR/TFR_RQ3b_Analysis_equalized_events.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ3_TFR_decomp_eq scripts/RQ3/TFR/TFR_RQ3b_Analysis_equalized_events.py scripts/RQ3/TFR/TFR_RQ3b_Analysis_equalized_events.Rmd
+echo "---------"
+mkdir -p tmp/
+Rscript scripts/render_Rmd.R \
+		scripts/RQ3/TFR/TFR_RQ3b_Analysis_equalized_events.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ3/TFR/equalized/ 
+date > zzz_receipts/RQ3_TFR_analysis_eq
+echo "done with zzz_receipts/RQ3_TFR_analysis_eq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ4_ERP_results_eq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/ERP_process_data_step1 scripts/RQ4/ERP/RQ4_group_analysis_equalized.py scripts/RQ4/ERP/RQ4_group_analysis_equalized.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/ERP_process_data_step1 scripts/RQ4/ERP/RQ4_group_analysis_equalized.py scripts/RQ4/ERP/RQ4_group_analysis_equalized.Rmd
+echo "---------"
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ4/ERP/equalized
+Rscript scripts/render_Rmd.R \
+		scripts/RQ4/ERP/RQ4_group_analysis_equalized.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ4/ERP/equalized/ 
+date > zzz_receipts/RQ4_ERP_results_eq
+echo "done with zzz_receipts/RQ4_ERP_results_eq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ4_ERP_results_NOTeq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/ERP_process_data_step1 scripts/RQ4/ERP/RQ4_group_analysis_not_equalized.py scripts/RQ4/ERP/RQ4_group_analysis_not_equalized.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/ERP_process_data_step1 scripts/RQ4/ERP/RQ4_group_analysis_not_equalized.py scripts/RQ4/ERP/RQ4_group_analysis_not_equalized.Rmd
+echo "---------"
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ4/ERP/not_equalized
+Rscript scripts/render_Rmd.R \
+		scripts/RQ4/ERP/RQ4_group_analysis_not_equalized.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ4/ERP/not_equalized/ 
+date > zzz_receipts/RQ4_ERP_results_NOTeq
+echo "done with zzz_receipts/RQ4_ERP_results_NOTeq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ4_TFR_decomp_eq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/TFR_process_data_step1 scripts/RQ4/TFR/TFR_RQ4b_Decomposition_equalized_events.py scripts/RQ4/TFR/TFR_RQ4b_Decomposition_equalized_events.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/TFR_process_data_step1 scripts/RQ4/TFR/TFR_RQ4b_Decomposition_equalized_events.py scripts/RQ4/TFR/TFR_RQ4b_Decomposition_equalized_events.Rmd
+echo "---------"
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ4/TFR/equalized
+Rscript scripts/render_Rmd.R \
+		scripts/RQ4/TFR/TFR_RQ4b_Decomposition_equalized_events.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ4/TFR/equalized/ 
+date > zzz_receipts/RQ4_TFR_decomp_eq
+echo "done with zzz_receipts/RQ4_TFR_decomp_eq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ4_TFR_analysis_eq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ4_TFR_decomp_eq scripts/RQ4/TFR/TFR_RQ4b_Analysis_equalized_events.py scripts/RQ4/TFR/TFR_RQ4b_Analysis_equalized_events.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ4_TFR_decomp_eq scripts/RQ4/TFR/TFR_RQ4b_Analysis_equalized_events.py scripts/RQ4/TFR/TFR_RQ4b_Analysis_equalized_events.Rmd
+echo "---------"
+mkdir -p tmp/
+# note that this can use up to 50GB of RAM for 1000 permutations
+Rscript scripts/render_Rmd.R \
+		scripts/RQ4/TFR/TFR_RQ4b_Analysis_equalized_events.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ4/TFR/equalized/ 
+date > zzz_receipts/RQ4_TFR_analysis_eq
+echo "done with zzz_receipts/RQ4_TFR_analysis_eq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ4_TFR_decomp_NOTeq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/TFR_process_data_step1 scripts/RQ4/TFR/TFR_RQ4b_Decomposition_not_equalized_events.py scripts/RQ4/TFR/TFR_RQ4b_Decomposition_not_equalized_events.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/TFR_process_data_step1 scripts/RQ4/TFR/TFR_RQ4b_Decomposition_not_equalized_events.py scripts/RQ4/TFR/TFR_RQ4b_Decomposition_not_equalized_events.Rmd
+echo "---------"
+mkdir -p D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ4/TFR/not_equalized
+Rscript scripts/render_Rmd.R \
+		scripts/RQ4/TFR/TFR_RQ4b_Decomposition_not_equalized_events.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ4/TFR/not_equalized/ 
+date > zzz_receipts/RQ4_TFR_decomp_NOTeq
+echo "done with zzz_receipts/RQ4_TFR_decomp_NOTeq"
+echo "---------"
+echo "---------"
+echo "---------"
+echo "Target is:"
+echo zzz_receipts/RQ4_TFR_analysis_NOTeq
+echo ""
+echo "All prerequisites for this target are:"
+echo zzz_receipts/RQ4_TFR_decomp_NOTeq scripts/RQ4/TFR/TFR_RQ4b_Analysis_not_equalized_events.py scripts/RQ4/TFR/TFR_RQ4b_Analysis_not_equalized_events.Rmd
+echo ""
+echo "The prerequisites newer than the target are:"
+echo zzz_receipts/RQ4_TFR_decomp_NOTeq scripts/RQ4/TFR/TFR_RQ4b_Analysis_not_equalized_events.py scripts/RQ4/TFR/TFR_RQ4b_Analysis_not_equalized_events.Rmd
+echo "---------"
+mkdir -p tmp/
+# note that this can use up to 50GB of RAM for 1000 permutations
+Rscript scripts/render_Rmd.R \
+		scripts/RQ4/TFR/TFR_RQ4b_Analysis_not_equalized_events.Rmd \
+		D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics/results_outside_repo/RQ4/TFR/not_equalized/ 
+date > zzz_receipts/RQ4_TFR_analysis_NOTeq
+echo "done with zzz_receipts/RQ4_TFR_analysis_NOTeq"
+echo "---------"
