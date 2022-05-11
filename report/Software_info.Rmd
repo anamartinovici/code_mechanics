@@ -1,0 +1,99 @@
+---
+title: "Info about R packages and Python modules"
+author: "Ana Martinovici"
+date: "Last compiled on `r Sys.Date()`"
+output: 
+    html_document:
+        css: style.css
+        toc: true
+        toc_float: 
+            collapsed: false
+        number_sections: true
+        code_folding: hide
+        theme: cerulean
+editor_options: 
+  chunk_output_type: console
+---
+
+# R version and packages
+
+```{r}
+R.version
+
+packages_used <- c("bayesplot",
+				   "bayestestR",
+				   "brms",
+				   "dplyr",
+				   "eegUtils",
+				   "emmeans",
+				   "ggplot2",
+				   "here",
+				   "patchwork",
+				   "remotes",
+				   "reticulate",
+				   "rmarkdown",
+				   "Rmisc",
+				   "tidybayes",
+				   "tidyverse",
+				   "tools",
+				   "viridis")
+
+print_pkg_details <- function(pkg_name) {
+	paste0(pkg_name, ": ", packageVersion(pkg_name))
+}
+	
+sapply(packages_used, print_pkg_details, simplify = TRUE, USE.NAMES = FALSE)
+
+sapply(packages_used, citation)
+
+```
+
+# Python version and modules
+
+```{r}
+reticulate::py_discover_config()
+
+```
+
+Note that `__version__` is not set for the standard library modules such as `os`. Modules in the standard library do not have individual versions but follow the Python version.
+
+```{python}
+
+import autoreject
+print("autoreject version: " + autoreject.__version__)
+
+#import glob
+#print("glob version: " + glob.__version__)
+
+import mne
+print("mne version: " + mne.__version__)
+
+import mne_bids
+print("mne_bids version: " + mne_bids.__version__)
+
+import numpy
+print("numpy version: " + numpy.__version__)
+
+#import os
+#print("os version: " + os.__version__)
+
+import pandas
+print("pandas version: " + pandas.__version__)
+
+#import pathlib
+#print("pathlib version: " + pathlib.__version__)
+
+import pyprep
+print("pyprep version: " + pyprep.__version__)
+
+#import random
+#print("random version: " + random.__version__)
+
+#import sys
+#print("sys version: " + sys.__version__)
+
+#import time
+#print("time version: " + time.__version__)
+
+
+```
