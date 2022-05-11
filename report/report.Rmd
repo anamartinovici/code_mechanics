@@ -173,8 +173,8 @@ knitr::include_graphics(here("results_in_repo/RQ1/raincloud_ERP_avg_trials_infor
 
 ```
 
-Subsequently, we fit a Bayesian multilevel linear model on N1 amplitude values, with *condition* (2 levels: *man-made*, *natural*) as *constant* (a.k.a. fixed) effect and participant and trial as *varying* (a.k.a. random) effects. We allowed intercepts and slopes to vary as a function of participant and trials, to model general and condition-specific inter-individual differences. As likelihood function, we chose a Gaussian distribution.\
-An important aspect of Bayesian analysis is the choice of priors [e.g., @natarajan2000]. Given the susceptibility of the electrophysiological signal to inter-individual differences (e.g., skull thickness, skin conductance, or hair), we decided to base our priors on the current data by visually inspecting the *collapsed localizer* (see above). For the main analysis, we placed **informative priors** on the *intercept* -- a normal distribution with mean $\mu$ = 4 and standard deviation $\sigma$ = 2: $Normal(4,2)$ -- and $\beta$ coefficient, $Normal(0,1)$. To assess whether our chosen informative prior would bias parameter estimates (and, consequently, the interpretation of the results; @depaoli2017), we ran the same multilevel linear model with **weakly informative** priors (*intercept*: $Normal(4,4)$ ; $\beta$: $Normal(0,4)$) and **uninformative** priors (*intercept*: $Normal(4,10)$ ; $\beta$: $Normal(0,10)$). We anticipate that the choice of prior had negligible effects on the posterior distributions, because the influence of the prior washes out with a large amount of data [@edwards1963].\
+Subsequently, we fit a Bayesian multilevel linear model on N1 amplitude values, with *condition* (2 levels: *man-made*, *natural*) as **constant** (a.k.a. fixed) effect and *participant* and *trial* as **varying** (a.k.a. random) effects. We allowed intercepts and slopes to vary as a function of participant and trials, to model general and condition-specific inter-individual differences. As likelihood function, we chose a Gaussian distribution.\
+An important aspect of Bayesian analysis is the choice of priors [e.g., @natarajan2000]. Given the susceptibility of the electrophysiological signal to inter-individual differences (e.g., skull thickness, skin conductance, or hair), we decided to base our priors on the current data by visually inspecting the collapsed localizer (see above). For the main analysis, we placed **informative priors** on the *intercept* -- a normal distribution with mean $\mu$ = 4 and standard deviation $\sigma$ = 2: $Normal(4,2)$ -- and *slope*, $Normal(0,1)$. To assess whether our chosen informative prior would bias parameter estimates (and, consequently, the interpretation of the results; @depaoli2017), we ran the same multilevel linear model with **weakly informative** priors (*intercept*: $Normal(4,4)$ ; *slope*: $Normal(0,4)$) and **uninformative** priors (*intercept*: $Normal(4,10)$ ; *slope*: $Normal(0,10)$). We anticipate that the choice of prior would have negligible effects on the posterior distributions, because the influence of the prior washes out with a large amount of data [@edwards1963].\
 Since we had no prior knowledge regarding the standard deviation of participant and trials, we placed a **weakly informative prior** on these varying effects: a *t*-distribution with degrees of freedom $\nu$ = 3, location $\mu$ = 0, and scale $\sigma$ = 2, $Student(3,0,2)$.\
 Models were fitted in *R* using the `brms` package [@bürkner2018], which employs the probabilistic programming language *Stan* [@carpenter2017] to implement a Markov chain Monte Carlo (MCMC) algorithm (i.e., No-U-Turn sampler; @homan2014) to estimate posterior distributions of the parameters of interest. Four MCMC chains with 4000 iterations (2000 warm-up) and no thinning were run to estimate parameters in each of the fitted models. Model convergence was assessed as follows: (*i*) visual inspection of trace plots, rank plots, and graphical posterior predictive checks [@gabry2019]; (*ii*) Gelman-Rubin $\hat{R}$ statistic [@gelman2013] -- comparing the between-chains variability to the within-chain variability -- between 1 and 1.05 [see also @Nalborczyk2019].\
 Posterior distributions of the model parameters were summarized using the mean and 95% credible interval (CI). Differences between conditions were calculated by computing the difference between posterior distributions of the respective conditions.\
@@ -214,7 +214,7 @@ knitr::include_graphics(here("results_in_repo/RQ2/ERP/raincloud_ERP_avg_trials_i
 
 ```
 
-We fit Bayesian multilevel linear models following the procedure described in section \@ref(rq1), with the following differences in priors: (*i*) **informative priors**: $Normal(-8,2)$ on intercept, $Normal(0,1)$ on $\beta$; (*ii*) **weakly informative priors**: $Normal(-8,4)$ on intercept, $Normal(0,4)$ on $\beta$; (*iii*) **uninformative priors**: $Normal(-8,10)$ on intercept, $Normal(0,10)$ on $\beta$.\
+We fit Bayesian multilevel linear models following the procedure described in section \@ref(rq1), with the following differences in priors: (*i*) **informative priors**: $Normal(-8,2)$ on intercept, $Normal(0,1)$ on slope; (*ii*) **weakly informative priors**: $Normal(-8,4)$ on intercept, $Normal(0,4)$ on slope; (*iii*) **uninformative priors**: $Normal(-8,10)$ on intercept, $Normal(0,10)$ on slope.\
 Summaries of the posterior distributions of model parameters and statistical inference were performed as described in section \@ref(rq1).
 
 ## RQ2b and RQ2c
@@ -282,7 +282,7 @@ RQ1_summary_posteriors_informative_prior <-
 		Parameter = recode_factor(
 			Parameter, # clarify labels
 			"b_Intercept" = "intercept",
-			"b_condition_RQ1natural" = "beta"
+			"b_condition_RQ1natural" = "slope"
 		)
 	) %>% 
 	select(-c(SD, CI, ESS))
@@ -300,7 +300,7 @@ RQ1_summary_posteriors_weaklyinformative_prior <-
 		Parameter = recode_factor(
 			Parameter, 
 			"b_Intercept" = "intercept",
-			"b_condition_RQ1natural" = "beta"
+			"b_condition_RQ1natural" = "slope"
 		)
 	) %>% 
 	select(-c(SD, CI, ESS))
@@ -318,14 +318,14 @@ RQ1_summary_posteriors_noninformative_prior <-
 		Parameter = recode_factor(
 			Parameter, 
 			"b_Intercept" = "intercept",
-			"b_condition_RQ1natural" = "beta"
+			"b_condition_RQ1natural" = "slope"
 		)
 	) %>% 
 	select(-c(SD, CI, ESS))
 
 ```
 
-(ref:RQ1-summary-posteriors-table-caption) **RQ1**. Means, 95% credible intervals (CI), and $\hat{R}$ statistic of the posterior distributions of intercept and $\beta$, separately for the models with informative, weakly informative, and uninformative priors (see section \@ref(rq1)).
+(ref:RQ1-summary-posteriors-table-caption) **RQ1**. Means, 95% credible intervals (CI), and $\hat{R}$ statistic of the posterior distributions of intercept and slope, separately for the models with informative, weakly informative, and uninformative priors (see section \@ref(rq1)).
 
 ```{r RQ1-summary-posteriors-table}
 
@@ -342,7 +342,7 @@ rbind(
 
 ```
 
-Table \@ref(tab:RQ1-summary-posteriors-table) shows descriptives (means and 95% CI) of the posterior distributions of intercept and $\beta$. Model diagnostics (see $\hat{R}$ in Table \@ref(tab:RQ1-summary-posteriors-table) and Figure \@ref(fig:figure07)) confirmed that all models successfully converged.\
+Table \@ref(tab:RQ1-summary-posteriors-table) shows descriptives (means and 95% CI) of the posterior distributions of intercept and slope. Model diagnostics (see $\hat{R}$ in Table \@ref(tab:RQ1-summary-posteriors-table) and Figure \@ref(fig:figure07)) confirmed that all models successfully converged.\
 As anticipated in section \@ref(rq1), posterior distributions did not remarkably differ as a function of prior. Therefore, all subsequent results refer to the model with informative priors.
 
 (ref:figure07-caption) **RQ1**. Trace plots (panel *A1*), rank plots (panel *A2*), and graphical posterior predictive checks (panel *B*) for the model with informative priors.
@@ -399,7 +399,7 @@ RQ2a_summary_posteriors_informative_prior <-
 		Parameter = recode_factor(
 			Parameter,
 			"b_Intercept" = "intercept",
-			"b_condition_RQ2old" = "beta"
+			"b_condition_RQ2old" = "slope"
 		)
 	) %>% 
 	select(-c(SD, CI, ESS))
@@ -417,7 +417,7 @@ RQ2a_summary_posteriors_weaklyinformative_prior <-
 		Parameter = recode_factor(
 			Parameter, 
 			"b_Intercept" = "intercept",
-			"b_condition_RQ2old" = "beta"
+			"b_condition_RQ2old" = "slope"
 		)
 	) %>% 
 	select(-c(SD, CI, ESS))
@@ -435,14 +435,14 @@ RQ2a_summary_posteriors_noninformative_prior <-
 		Parameter = recode_factor(
 			Parameter, 
 			"b_Intercept" = "intercept",
-			"b_condition_RQ2old" = "beta"
+			"b_condition_RQ2old" = "slope"
 		)
 	) %>% 
 	select(-c(SD, CI, ESS))
 
 ```
 
-(ref:RQ2a-summary-posteriors-table-caption) **RQ2a**. Means, 95% credible intervals (CI), and $\hat{R}$ statistic of the posterior distributions of intercept and $\beta$, separately for the models with informative, weakly informative, and uninformative priors (see section \@ref(rq1)).
+(ref:RQ2a-summary-posteriors-table-caption) **RQ2a**. Means, 95% credible intervals (CI), and $\hat{R}$ statistic of the posterior distributions of intercept and slope, separately for the models with informative, weakly informative, and uninformative priors (see section \@ref(rq1)).
 
 ```{r RQ2a-summary-posteriors-table}
 
@@ -459,7 +459,7 @@ rbind(
 
 ```
 
-Table \@ref(tab:RQ2a-summary-posteriors-table) shows descriptives (means and 95% CI) of the posterior distributions of intercept and $\beta$. Model diagnostics (see $\hat{R}$ in Table \@ref(tab:RQ2a-summary-posteriors-table) and Figure \@ref(fig:figure09)) confirmed that all models successfully converged.\
+Table \@ref(tab:RQ2a-summary-posteriors-table) shows descriptives (means and 95% CI) of the posterior distributions of intercept and slope. Model diagnostics (see $\hat{R}$ in Table \@ref(tab:RQ2a-summary-posteriors-table) and Figure \@ref(fig:figure09)) confirmed that all models successfully converged.\
 As anticipated in section \@ref(rq1), posterior distributions did not remarkably differ as a function of prior. Therefore, all subsequent results refer to the model with informative priors.
 
 (ref:figure09-caption) **RQ2a**. Trace plots (panel *A1*), rank plots (panel *A2*), and graphical posterior predictive checks (panel *B*) for the model with informative priors.
