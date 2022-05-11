@@ -69,12 +69,10 @@ ifeq "$(strip $(user_name))" "aschetti"
 	DIR_local_files = /home/aschetti/Documents/Projects/code_mechanics_DROPBOX
 endif
 
-initial_setup: tmp/initial_setup
-
-tmp/initial_setup: scripts/get_path_to_local_files.R \
-				   scripts/render_Rmd.R \
-				   scripts/test_make.Rmd \
-				   scripts/test_make.py
+initial_setup: scripts/get_path_to_local_files.R \
+			   scripts/render_Rmd.R \
+			   scripts/test_make.Rmd \
+			   scripts/test_make.py
 	@echo "before you can start the analysis, you first need to set up the repo"
 	@echo "---------------"
 	@echo "create the receipt and tmp folders within the repo"
