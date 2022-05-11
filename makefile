@@ -1,25 +1,18 @@
-# if you type 'make' in the terminal test make
-# if the test is succesfull, then you can go ahead and start building targets as needed
-all: initial_setup
+all: initial_setup analysis
 
 # targets in this file:
-#		first_target
-#			is called "first" because it needs to be built before any processing and analysis
-#			contains:
-#				create_receipt_directory
-#				restore_file_timestamps
-#				initial_setup
-#				test_make
+#		initial_setup
+#			this needs to be built before any processing and analysis, to:
+#			1. create the tmp and receipts directories
+#			2. restore file timestamps, such that outdated targets are 
+#			correctly detected and built
+#			3. the .Rmd and reticulate combo is tested
+# 
 #		analysis 
-#			contains:
-#				RQ1 
-#				RQ2
-#				RQ3
-#				RQ4
+#			this processes the data and performs the analysis for RQ1-RQ4
 
-# to build a target, you need to write "make name_of_target"" explicitly in the terminal
-# analysis builds RQ1, RQ2, RQ3, and RQ4. If you want to build the targets associated with
-#		a specific research question, then type "make name_of_target" in the terminal
+# to build the targets specified in `all`, type `make` in the terminal
+# this will first build `initial_setup` and then `analysis`
 
 #################################################
 ##
@@ -34,39 +27,16 @@ PROJECT_SEED = 999
 # to process data, we need eeg_BIDS
 # the eeg_BIDS data we received for this project is too large for GitHub
 # this means we need to tell the scripts where to find these files outside of the repo
-
-# you can choose to keep files that are too big for GitHub in a folder called `local_files`
-# the folder is ignored (see .gitignore), which means that changes are not tracked
-
 # I STRONGLY!!!! advise you to keep this folder outside of the repository
 # otherwise you need to copy paste the folder every time you get a fresh clone
 # and there's a high risk you will lose data 
 DIR_local_files = "Specify a PATH to your local_files directory"
-# the default value is set as such in order to force you to specify a path
-
+# the default value is set in order to force you to specify a path
+# see below for an example of how this path was specified
 user_name=$(shell whoami)
-# this is Ana's personal laptop
-ifeq "$(strip $(user_name))" "anama"
-	DIR_local_files = C:/Users/anama/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics
-endif
-
-ifeq "$(strip $(user_name))" "desktop-mcvpqoa\anama"
-	DIR_local_files = C:/Users/anama/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics
-endif
-
-# this is Ana's RSM laptop
-ifeq "$(strip $(user_name))" "marti"
-	DIR_local_files = C:/Users/marti/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics
-endif
-
 # this is Ana's RSM PC
 ifeq "$(strip $(user_name))" "STAFF+67003ama"
 	DIR_local_files = D:/Dropbox/Research/Data/EEG_Many_Pipelines/code_mechanics
-endif
-
-# this is Antonio's PC
-ifeq "$(strip $(user_name))" "aschetti"
-	DIR_local_files = /home/aschetti/Documents/Projects/code_mechanics_DROPBOX
 endif
 
 initial_setup: scripts/get_path_to_local_files.R \
@@ -101,6 +71,10 @@ initial_setup: scripts/get_path_to_local_files.R \
 #################################################
 
 analysis: RQ1 RQ2 RQ3 RQ4
+
+# to build a specific target, type "make name_of_target" in the terminal
+# For example, analysis builds targets: RQ1, RQ2, RQ3, and RQ4. 
+# If you want to build the targets associated with RQ1, type "make RQ1"
 
 #################################################
 ##
