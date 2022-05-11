@@ -110,18 +110,31 @@ analysis: RQ1 RQ2 RQ3 RQ4
 
 RQ4: RQ4_ERP RQ4_TFR
 
-RQ4_ERP: $(strip $(DIR_RECEIPT))/RQ4_ERP_results
+RQ4_ERP: $(strip $(DIR_RECEIPT))/RQ4_ERP_results_eq
+RQ4_ERP: $(strip $(DIR_RECEIPT))/RQ4_ERP_results_NOTeq
 RQ4_TFR: $(strip $(DIR_RECEIPT))/RQ4_TFR_analysis_eq	
 RQ4_TFR: $(strip $(DIR_RECEIPT))/RQ4_TFR_analysis_NOTeq
 
-$(strip $(DIR_RECEIPT))/RQ4_ERP_results: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
-								  	     scripts/RQ4/ERP/RQ4_group_analysis.py \
-								  	     scripts/RQ4/ERP/RQ4_group_analysis.Rmd
+$(strip $(DIR_RECEIPT))/RQ4_ERP_results_eq: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
+								  	        scripts/RQ4/ERP/RQ4_group_analysis_equalized.py \
+								  	        scripts/RQ4/ERP/RQ4_group_analysis_equalized.Rmd
 	$(print-target-and-prereq-info)
-	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ4/ERP
+	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ4/ERP/equalized
 	Rscript scripts/render_Rmd.R \
-			scripts/RQ4/ERP/RQ4_group_analysis.Rmd \
-			$(strip $(DIR_local_files))/results_outside_repo/RQ4/ERP/ 
+			scripts/RQ4/ERP/RQ4_group_analysis_equalized.Rmd \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ4/ERP/equalized/ 
+	date > $@
+	@echo "done with $@"
+	@echo "---------"
+
+$(strip $(DIR_RECEIPT))/RQ4_ERP_results_NOTeq: $(strip $(DIR_RECEIPT))/ERP_process_data_step1 \
+								  	           scripts/RQ4/ERP/RQ4_group_analysis_not_equalized.py \
+								  	           scripts/RQ4/ERP/RQ4_group_analysis_not_equalized.Rmd
+	$(print-target-and-prereq-info)
+	mkdir -p $(strip $(DIR_local_files))/results_outside_repo/RQ4/ERP/not_equalized
+	Rscript scripts/render_Rmd.R \
+			scripts/RQ4/ERP/RQ4_group_analysis_not_equalized.Rmd \
+			$(strip $(DIR_local_files))/results_outside_repo/RQ4/ERP/not_equalized/ 
 	date > $@
 	@echo "done with $@"
 	@echo "---------"

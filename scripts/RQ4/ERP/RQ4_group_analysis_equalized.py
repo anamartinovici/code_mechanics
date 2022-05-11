@@ -1,4 +1,4 @@
-def f_RQ4_group_analysis(project_seed, path_to_ERP_step1_output):
+def f_RQ4_group_analysis_eq(project_seed, path_to_ERP_step1_output):
     #!/usr/bin/env python3
     # -*- coding: utf-8 -*-
     '''
