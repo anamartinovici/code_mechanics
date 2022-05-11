@@ -1,5 +1,5 @@
 ---
-title             : "EEG Many Pipelines - Code Mechanics"
+title             : "EEG Many Pipelines - The Code Mechanics"
 shorttitle        : "Code Mechanics"
 author:
   - name          : "Sebastian Speer"
@@ -23,7 +23,7 @@ affiliation:
 authornote: |
   Authorship order was randomly determined via the `sample` function in *R*. 
   
-  **SS** preprocessed the data and performed time-frequency analysis (research questions 2b, 2c, 3b, 4b). **AS** preprocessed the data and performed ERP analysis (research questions 1, 2a, 3a, 4a). **AM** was responsible for project management, GitHub repository, and reproducibility. **SS**, **AS**, and **AM** wrote the report.
+  **AS** preprocessed the data and performed ERP analysis (research questions 1, 2a, 3a, 4a). **SS** preprocessed the data and performed time-frequency analysis (research questions 2b, 2c, 3b, 4b). **AM** was responsible for project management, GitHub repository, and reproducibility. **AS**, **SS**, and **AM** wrote the report.
   
 keywords          : ["EEGManyPipelines", "scene categorization", "vision", "EEG", "ERP", "time-frequency analysis", "Bayesian multilevel linear regression", "TFCE"]
 wordcount         : "X" # to be added when the report is completed 
@@ -95,7 +95,7 @@ authorship_order
 # Introduction
 
 This report describes the methods and results of our contribution to the [**EEGManyPipelines**](https://www.eegmanypipelines.org) project.\
-We registered as team **Code Mechanics**[^1] on September 15th 2021 and received a confirmation email five days later. Instructions on how to download the EEG data and which research hypotheses to test were sent on October 8th 2021. A copy can be found at `data_in_repo/original_data/instructions`.\
+We registered our team as **The Code Mechanics**[^1] on September 15th 2021 and received a confirmation email five days later. Instructions on how to download the EEG data and which research hypotheses to test were sent on October 8th 2021. A copy can be found at `data_in_repo/original_data/instructions`.\
 We received the link to the submission portal on May 2nd 2022, submitted all relevant materials and filled out three questionnaires before the deadline (May 15th 2022).
 
 [^1]: A homage to [**The Organic Mechanic**](https://madmax.fandom.com/wiki/The_Organic_Mechanic), a doctor in the movie [**Mad Max: Fury Road**](https://en.wikipedia.org/wiki/Mad_Max:_Fury_Road).
