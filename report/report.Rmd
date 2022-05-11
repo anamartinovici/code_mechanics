@@ -26,7 +26,7 @@ authornote: |
   **AS** preprocessed the data and performed ERP analysis (research questions 1, 2a, 3a, 4a). **SS** preprocessed the data and performed time-frequency analysis (research questions 2b, 2c, 3b, 4b). **AM** was responsible for project management, GitHub repository, and reproducibility. **AS**, **SS**, and **AM** wrote the report.
   
 keywords          : ["EEGManyPipelines", "scene categorization", "vision", "EEG", "ERP", "time-frequency analysis", "Bayesian multilevel linear regression", "TFCE"]
-wordcount         : "X" # to be added when the report is completed 
+wordcount         : "3209" # to be added when the report is completed 
 bibliography      : "references.bib"
 link-citations    : true # create hyperlink to the corresponding bibliography entry
 zotero            : "EEGManyPipelines_CodeMechanics" # Zotero group library 
