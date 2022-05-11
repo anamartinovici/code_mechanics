@@ -1612,9 +1612,8 @@ modules</h1>
 </div>
 
 
-<div id="r-version-and-packages" class="section level1" number="1">
-<h1><span class="header-section-number">1</span> R version and
-packages</h1>
+<div id="r-version" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> R version</h1>
 <pre class="r"><code>R.version</code></pre>
 <pre><code>##                _                                
 ## platform       x86_64-w64-mingw32               
@@ -1632,6 +1631,35 @@ packages</h1>
 ## language       R                                
 ## version.string R version 4.2.0 (2022-04-22 ucrt)
 ## nickname       Vigorous Calisthenics</code></pre>
+</div>
+<div id="r-session-info" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> R session info</h1>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>## R version 4.2.0 (2022-04-22 ucrt)
+## Platform: x86_64-w64-mingw32/x64 (64-bit)
+## Running under: Windows 10 x64 (build 19042)
+## 
+## Matrix products: default
+## 
+## locale:
+## [1] LC_COLLATE=Dutch_Netherlands.utf8  LC_CTYPE=Dutch_Netherlands.utf8   
+## [3] LC_MONETARY=Dutch_Netherlands.utf8 LC_NUMERIC=C                      
+## [5] LC_TIME=Dutch_Netherlands.utf8    
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## loaded via a namespace (and not attached):
+##  [1] digest_0.6.29   R6_2.5.1        jsonlite_1.8.0  magrittr_2.0.3 
+##  [5] evaluate_0.15   stringi_1.7.6   rlang_1.0.2     cli_3.3.0      
+##  [9] rstudioapi_0.13 jquerylib_0.1.4 bslib_0.3.1     rmarkdown_2.14 
+## [13] tools_4.2.0     stringr_1.4.0   xfun_0.31       yaml_2.3.5     
+## [17] fastmap_1.1.0   compiler_4.2.0  htmltools_0.5.2 knitr_1.39     
+## [21] sass_0.4.1</code></pre>
+</div>
+<div id="versions-of-r-packages" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Versions of R
+packages</h1>
 <pre class="r"><code>packages_used &lt;- c(&quot;bayesplot&quot;,
                    &quot;bayestestR&quot;,
                    &quot;brms&quot;,
@@ -1661,6 +1689,10 @@ sapply(packages_used, print_pkg_details, simplify = TRUE, USE.NAMES = FALSE)</co
 ## [10] &quot;remotes: 2.4.2&quot;     &quot;reticulate: 1.24&quot;   &quot;rmarkdown: 2.14&quot;   
 ## [13] &quot;Rmisc: 1.5.1&quot;       &quot;tidybayes: 3.0.2&quot;   &quot;tidyverse: 1.3.1&quot;  
 ## [16] &quot;tools: 4.2.0&quot;       &quot;viridis: 0.6.2&quot;</code></pre>
+</div>
+<div id="r-packages-citations" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> R packages
+citations</h1>
 <pre class="r"><code>sapply(packages_used, citation)</code></pre>
 <pre><code>## $bayesplot
 ## 
@@ -2023,9 +2055,9 @@ sapply(packages_used, print_pkg_details, simplify = TRUE, USE.NAMES = FALSE)</co
 ##     doi = {10.5281/zenodo.4679424},
 ##   }</code></pre>
 </div>
-<div id="python-version-and-modules" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> Python version and
-modules</h1>
+<div id="python-version---reticulate-config" class="section level1" number="5">
+<h1><span class="header-section-number">5</span> Python version -
+reticulate config</h1>
 <pre class="r"><code>reticulate::py_discover_config()</code></pre>
 <pre><code>## python:         C:/Users/67003ama/AppData/Local/r-miniconda/envs/r-reticulate/python.exe
 ## libpython:      C:/Users/67003ama/AppData/Local/r-miniconda/envs/r-reticulate/python38.dll
@@ -2036,6 +2068,10 @@ modules</h1>
 ## numpy_version:  1.21.6
 ## 
 ## NOTE: Python version was forced by RETICULATE_PYTHON</code></pre>
+</div>
+<div id="versions-of-python-modules" class="section level1" number="6">
+<h1><span class="header-section-number">6</span> Versions of Python
+modules</h1>
 <p>Note that <code>__version__</code> is not set for the standard
 library modules such as <code>os</code>. Modules in the standard library
 do not have individual versions but follow the Python version.</p>

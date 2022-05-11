@@ -15,10 +15,21 @@ editor_options:
   chunk_output_type: console
 ---
 
-# R version and packages
+# R version 
 
 ```{r}
 R.version
+```
+
+# R session info
+
+```{r}
+sessionInfo()
+```
+
+# Versions of R packages
+
+```{r}
 
 packages_used <- c("bayesplot",
 				   "bayestestR",
@@ -43,17 +54,24 @@ print_pkg_details <- function(pkg_name) {
 }
 	
 sapply(packages_used, print_pkg_details, simplify = TRUE, USE.NAMES = FALSE)
+```
+
+# R packages citations
+
+```{r}
 
 sapply(packages_used, citation)
 
 ```
 
-# Python version and modules
+# Python version - reticulate config
 
 ```{r}
 reticulate::py_discover_config()
 
 ```
+
+# Versions of Python modules
 
 Note that `__version__` is not set for the standard library modules such as `os`. Modules in the standard library do not have individual versions but follow the Python version.
 
