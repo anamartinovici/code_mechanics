@@ -26,7 +26,7 @@ authornote: |
   **AS** preprocessed the data and performed ERP analysis (research questions 1, 2a, 3a, 4a). **SS** preprocessed the data and performed time-frequency analysis (research questions 2b, 2c, 3b, 4b). **AM** was responsible for project management, GitHub repository, and reproducibility. **AS**, **SS**, and **AM** wrote the report.
   
 keywords          : ["EEGManyPipelines", "scene categorization", "vision", "EEG", "ERP", "time-frequency analysis", "Bayesian multilevel linear regression", "TFCE"]
-wordcount         : "3209" # to be added when the report is completed 
+wordcount         : "3915" # to be added when the report is completed 
 bibliography      : "references.bib"
 link-citations    : true # create hyperlink to the corresponding bibliography entry
 zotero            : "EEGManyPipelines_CodeMechanics" # Zotero group library 
@@ -503,29 +503,29 @@ knitr::include_graphics(here("results_in_repo/RQ2/ERP/posterior_distributions_in
 
 # Reproducibility
 
-To increase the likelihood of numerical reproducibility, and to ensure that all the data processing and analysis steps were executed in the correct sequence, we used GNU Make ([@MakeBook]) to manage the workflow for this project. For an introduction to GNU Make and basic concepts related to using a `Makefile`, we recommend sections 1-3 of [@JSSMake]. 
+To increase the likelihood of numerical reproducibility and ensure that all the data processing and analysis steps were executed in the correct sequence, we used GNU Make [@MakeBook] to manage the workflow for this project. For an introduction to GNU Make and basic concepts related to using a `Makefile`, we recommend sections 1-3 of [@JSSMake].
 
 The `makefile` for this project has two targets specified in `all`: `initial_setup` and `analysis`. `initial_setup` is built before any processing and analysis, and does the following three steps:
 
-1. create the `tmp` and `zzz_receipts` directories
+1.  create the `tmp` and `zzz_receipts` directories
 
 The `tmp` directory is used to store files that are not added to the repository, but that are necessary for processing data and doing the analysis. For example, one of the files stores information about machine-specific paths to directories outside the repository where large files are stored (i.e., `eeg_BIDS`).
 
-2. restore file timestamps, such that outdated targets are correctly detected and built
+2.  restore file timestamps, such that outdated targets are correctly detected and built
 
-Because some of the files are too large to be added to the GitHub hosted repository, we are saving receipts (in `zzz_receipts`) to keep track of which targets need to be build. When cloning the repository, the timestamp of the files within the repo corresponds to the time when they were cloned on the device. In addition, files are cloned in alphabetic order. This means that `filename_A` will be downloaded before `filename_B` and as a result, the Makefile will see `filename_B` as more recent than `filename_A`. This leads to unnecessarely rebuilding targets, which is an issue if those steps are computationally intensive. To address this issue, `scripts/restore_file_timestamps.sh` changes the timestamp of all files in the repository to match the time of the most recent commit (instead of the time when they were cloned). 
+Because some of the files are too large to be added to the GitHub hosted repository, we are saving receipts (in `zzz_receipts`) to keep track of which targets need to be build. When cloning the repository, the timestamp of the files within the repo corresponds to the time when they were cloned on the device. In addition, files are cloned in alphabetic order. This means that `filename_A` will be downloaded before `filename_B` and as a result, the Makefile will see `filename_B` as more recent than `filename_A`. This leads to unnecessarely rebuilding targets, which is an issue if those steps are computationally intensive. To address this issue, `scripts/restore_file_timestamps.sh` changes the timestamp of all files in the repository to match the time of the most recent commit (instead of the time when they were cloned).
 
 Note that this approach can be risky and lead to issues. To avoid problems, the user needs to always build all targets (type `make` in the terminal) before commiting and pushing to the repository. By doing so, all outdated targets are build before commit and push, which means that the date of the commit is informative of when the target was last built.
 
-3. test the `.Rmd` and `reticulate` combination
+3.  test the `.Rmd` and `reticulate` combination
 
-The preprocessing steps and part of the analysis scripts are using `python`. If `python` scripts are executed in the terminal, then the output that is printed in the terminal cannot be inspected at a later time because it is not saved on the machine executing the script. To keep records of this output, we are executing `python` from within an `.Rmd` file, making use of `reticulate` tools. This setup is relatively more complex, and it is advisable that it is tested before trying to build any of the analysis targets. `initial_setup` tests if `python` can be executed from within R. If the test is successful, then `test_make.html` is generated in `tmp/`. 
+The preprocessing steps and part of the analysis scripts are using `python`. If `python` scripts are executed in the terminal, then the output that is printed in the terminal cannot be inspected at a later time because it is not saved on the machine executing the script. To keep records of this output, we are executing `python` from within an `.Rmd` file, making use of `reticulate` tools. This setup is relatively more complex, and it is advisable that it is tested before trying to build any of the analysis targets. `initial_setup` tests if `python` can be executed from within R. If the test is successful, then `test_make.html` is generated in `tmp/`.
 
-The `analysis` targets contains four sub-targets, one for each RQ. These targets have as prerequisites the preprocessing and analysis steps. 
+The `analysis` targets contains four sub-targets, one for each RQ. These targets have as prerequisites the preprocessing and analysis steps.
 
 To build the targets specified in `all`, type `make` in the terminal. This will first build `initial_setup` and then `analysis`. Before building the targets, the user needs to specify the path to a local directory (`DIR_local_files` in the `makefile`), outside of the repository, that contains the raw data: `data_outside_repo/original_data/eeg_BIDS`. `eeg_BIDS` has the same structure and content as the directory provided on October 8th 2021. As the targets are built, other directories are created within `DIR_local_files`, where large files are stored.
 
-*Important note*: building all targets is time consuming and computaitonally intensive (e.g., up to 7-10 days on a Windows machine with 64GB of RAM and Intel Xeon CPU E5-1620 V3 3.5Hz). See `report/all_Make_steps.txt` for a print of all the targets that are build, the order in which each of the scripts are executed, and the arguments provided for each script. 
+*Important note*: building all targets is time consuming and computaitonally intensive (e.g., up to 7-10 days on a Windows machine with 64GB of RAM and Intel Xeon CPU E5-1620 V3 3.5Hz). See `report/all_Make_steps.txt` for a print of all the targets that are built, the order in which each of the scripts are executed, and the arguments provided for each script.
 
 ## Software
 
@@ -535,31 +535,19 @@ Information about the software used for this project is available in `report/Sof
 
 -   **automation**: `GNU Make` *v*4.3
 
--   **R, Python, and the interface between them**: *R* *v*4.2.0 [@R-base], *RStudio IDE* *v*2022.02.2+485 [@R-studio], *Python* *v*3.8.13 [@vanrossum-2009], `reticulate` *v*1.24 [@reticulate]. 
+-   **R, Python, and the interface between them**: *R* *v*4.2.0 [@R-base], *RStudio IDE* *v*2022.02.2+485 [@R-studio], *Python* *v*3.8.13 [@vanrossum-2009], `reticulate` *v*1.24 [@reticulate].
 
-`python` packages were installed using `reticulate::py_install("name_of_package")`. `R` packages available on CRAN were installed using `install.packages("name_of_package")` and `R` packages available only at GitHub were installed using the `install_github` function in `remotes` *v*2.4.2 [@remotes]. 
+`python` packages were installed using `reticulate::py_install("name_of_package")`. `R` packages available on CRAN were installed using `install.packages("name_of_package")` and `R` packages available only at GitHub were installed using the `install_github` function in `remotes` *v*2.4.2 [@remotes].
 
--   **Python packages**: `mne` *v*1.0.2 [@gramfort2013], `autoreject` *v*0.3.1 [@jas2017], `mne_bids` *v*0.10 [@Appelhoff2019] [@pernet2019eeg], `numpy` *v*1.21.6 [@harris2020array], `pandas` *v*1.4.2 [@reback2020pandas], `pyprep` *v*0.4.2. 
+-   **Python packages**: `mne` *v*1.0.2 [@gramfort2013], `autoreject` *v*0.3.1 [@jas2017], `mne_bids` *v*0.10 [@Appelhoff2019] [@pernet2019eeg], `numpy` *v*1.21.6 [@harris2020array], `pandas` *v*1.4.2 [@reback2022pandas], `pyprep` *v*0.4.2 [@appelhoff2022].
 
-### Antonio: I could only find this for `pyprep` 10.5281/zenodo.6363576
-Can you please add it? I don't know what to do with it, but I'm hoping you do.
-
--   **R packages**: 
+-   **R packages**:
 
     -   **data wrangling and analysis**: `here` *v*1.0.1 [@here], `Rmisc` *v*1.5.1 [@Rmisc], `tidyverse` *v*1.3.1 [@tidyverse] -- in particular `tibble` *v*3.1.7 [@tibble], `tidyr` *v*1.2.0 [@tidyr], `readr` *v*2.1.2 [@readr], `dplyr` *v*1.0.9 [@dplyr] --, `brms` *v*2.17.0 [@bürkner2018], `eegUtils` *v*0.7.0 [@eegUtils], `emmeans` *v*1.7.3 [@emmeans], `bayestestR` *v*0.12.1 [@bayestestR], `tools` *v*4.2.0 [@R-base]
 
-    -   **visualization**: `ggplot2` *v*3.3.6 [@ggplot2], `eegUtils` *v*0.7.0 [@eegUtils], `bayesplot` *v*1.9.0 [@bayesplot], `viridis` *v*0.6.2 [@garnier2021], `tidybayes` *v*3.0.2 [@tidybayes], `patchwork` *v*1.1.1 [@patchwork]
+    -   **visualization**: `ggplot2` *v*3.3.6 [@ggplot2], `eegUtils` *v*0.7.0 [@eegUtils], `bayesplot` *v*1.9.0 [@bayesplot], `viridis` *v*0.6.2 [@viridis], `tidybayes` *v*3.0.2 [@tidybayes], `patchwork` *v*1.1.1 [@patchwork]
 
     -   **report generation**: `knitr` *v*1.39 [@knitr], `rmarkdown` *v*2.14 [@rmarkdown], `papaja` *v*0.1.0.9999 [@papaja]
-
-
-
-
-
-
-
-
-
 
 \newpage
 
