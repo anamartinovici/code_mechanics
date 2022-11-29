@@ -84,21 +84,21 @@ def f_TFR_RQ2_analysis_eq(project_seed, path_to_TFR_step1_output, path_to_TFR_RQ
     print("--------------------")
 
     # Cluster-Based Permutation test over all channels and freqs - tests both RQ2b and RQ2c simultaneously
-    start_time = time.time()
-    T_obs, clusters, cluster_p_values, H0 = \
-        mne.stats.permutation_cluster_test([power_all_old.data[:,:,:,:], 
-                                            power_all_new.data[:,:,:,:]], 
-                                           n_jobs = n_cores,
-                                           n_permutations = n_perm,
-                                           threshold = threshold_tfce,
-                                           tail = 0, 
-                                           buffer_size = 100,
-                                           verbose = "error", 
-                                           seed = 888)
-    print("--------------------")
-    print("--- perm cluster test for old vs new ---")
-    print("--- %s seconds ---" % (time.time() - start_time))
-    print(cluster_p_values[cluster_p_values < 0.05]) # we keep 0.05
+    # start_time = time.time()
+    # T_obs, clusters, cluster_p_values, H0 = \
+    #     mne.stats.permutation_cluster_test([power_all_old.data[:,:,:,:], 
+    #                                         power_all_new.data[:,:,:,:]], 
+    #                                        n_jobs = n_cores,
+    #                                        n_permutations = n_perm,
+    #                                        threshold = threshold_tfce,
+    #                                        tail = 0, 
+    #                                        buffer_size = 100,
+    #                                        verbose = "error", 
+    #                                        seed = 888)
+    # print("--------------------")
+    # print("--- perm cluster test for old vs new ---")
+    # print("--- %s seconds ---" % (time.time() - start_time))
+    # print(cluster_p_values[cluster_p_values < 0.05]) # we keep 0.05
     
     
     # Cluster-Based Permutation test over 3 midfrontal channels and theta range - RQ2b
@@ -110,8 +110,8 @@ def f_TFR_RQ2_analysis_eq(project_seed, path_to_TFR_step1_output, path_to_TFR_RQ
     
     start_time = time.time()
     T_obs, clusters, cluster_p_values, H0 = \
-        mne.stats.permutation_cluster_test([power_all_old.data[:, spec_channel_list, 0:6,:], 
-                                            power_all_old.data[:, spec_channel_list, 0:6,:]], 
+        mne.stats.permutation_cluster_test([power_all_old.data[:, spec_channel_list, 0:6, 38:], 
+                                            power_all_old.data[:, spec_channel_list, 0:6, 38:]], 
         						           n_jobs = n_cores,
                                            n_permutations = n_perm, 
                                            threshold = threshold_tfce, 
@@ -134,8 +134,8 @@ def f_TFR_RQ2_analysis_eq(project_seed, path_to_TFR_step1_output, path_to_TFR_RQ
     
     start_time = time.time()
     T_obs, clusters, cluster_p_values, H0 = \
-        mne.stats.permutation_cluster_test([power_all_old.data[:, spec_channel_list, 5:10,:], 
-                                            power_all_old.data[:, spec_channel_list, 5:10,:]],
+        mne.stats.permutation_cluster_test([power_all_old.data[:, spec_channel_list, 5:10, 38:], 
+                                            power_all_old.data[:, spec_channel_list, 5:10, 38:]],
                                            n_jobs = n_cores,
                                            n_permutations = n_perm, 
                                            threshold = threshold_tfce, 
