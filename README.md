@@ -1,10 +1,13 @@
-The `make_workflow` branch is where I (Ana) will set up the `Makefile` and then one-by-one add the code that implements the steps of the project, as they are done by Antonio and Sebastian.
+[![DOI](https://zenodo.org/badge/407556181.svg)](https://zenodo.org/badge/latestdoi/407556181)
 
-This repository uses a `Makefile` to improve numerical reproducibility.
+# General info
+
+This repository documents the work that we have done as part of the EEGManyPipelines project (https://eegmanypipelines.github.io/)
+
+The repository uses a `Makefile` to improve numerical reproducibility. 
+The `make_workflow` branch is where I (Ana) set up the `Makefile` to ensure that the results of the EEG analysis (done by Antonio and Sebastian) are computationaly reproducible.
 
 If you want to learn more about `Make`, these are some resources you can use:
-
-- https://merely-useful.tech/py-rse/automate.html
 
 - https://stat545.com/make-test-drive.html
 
@@ -32,15 +35,12 @@ Open a terminal -> make sure that the working directory is the local copy of the
 
 Typing `make test_make` in the terminal checks if make can be used. If `success_test_make.txt` is created in the root directory of the git repo, then open the file and enjoy the success :) If `saved_from_test_make_py.txt` is created in the root directory of the git repo, then you can execute python from the Makefile, and the rest of the targets should be build without issue.
 
-
-how receipts work:
- if receipts/ERP_process_data_step1 exists, and the prerequisite
- (scripts/ERP_preproc_step1.py) is not newer than the target 
- (receipts/ERP_process_data_step1), then the .py script is not executed
- this is great because it means you only process data if you need it
-
-
 Because some of the files we're generating during data processing are 
 too large for GitHub, I am using receipts to keep track of which `make` 
 targets are already built and which need to be reconstructed.
 
+
+How receipts work: If `receipts/ERP_process_data_step1` exists, and the prerequisite
+ (`scripts/ERP_preproc_step1.py`) is not newer than the target 
+ (`receipts/ERP_process_data_step1`), then the `.py` script is not executed.
+ This is great because it means that data is processed only when necessary.
